@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "truffle": "^4.0.6"
+  }
+}

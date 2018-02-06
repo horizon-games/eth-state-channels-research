@@ -1,6 +1,72 @@
 {
+  "name": "dgame",
+  "version": "0.1.0",
+  "private": true,
+  "license": "none",
+  "scripts": {
+    "start": "yarn dev",
+    "dev": "webpack-dev-server --progress --color --disable-host-check --config config/webpack/webpack.config.dev.js",
+    "build": "yarn dist:build",
+    "dist": "yarn dist:build",
+    "dist:build": "yarn dist:clean && webpack --color --config config/webpack/webpack.config.dist.js",
+    "dist:clean": "rm -rf ./dist",
+    "dist:client": "serve --silent --port 3000 ./dist",
+    "dist:server": "node dist/server",
+    "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
+    "lint": "tslint -c tslint.json client/**/*.ts client/**/*.tsx",
+    "test:watch": "jest --watchAll",
+    "test": "jest --ci --runInBand"
+  },
   "dependencies": {
+    "core-js": "^2.5.3",
+    "ethers": "^2.2.5",
+    "global": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.1.1",
+    "dotenv": "^5.0.0",
+    "express": "^4.16.2",
+    "file-loader": "^1.1.6",
+    "fork-ts-checker-webpack-plugin": "^0.3.0",
+    "html-webpack-plugin": "^2.28.0",
+    "jest": "^22.1.4",
+    "node-fetch": "^2.0.0",
+    "prettier": "^1.10.2",
+    "serve": "^6.4.9",
+    "source-map-loader": "^0.2.1",
     "truffle": "^4.0.6",
-    "typescript": "^2.7.1"
+    "ts-jest": "^22.0.3",
+    "ts-loader": "^3.4.0",
+    "tslint": "^5.9.1",
+    "typescript": "2.7.1",
+    "uglifyjs-webpack-plugin": "^1.1.8",
+    "url-loader": "^0.6.2",
+    "webpack": "^3.10.0",
+    "webpack-assets-by-type-plugin": "^0.1.0",
+    "webpack-bundle-analyzer": "^2.10.0",
+    "webpack-dev-server": "^2.11.1"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "skipBabel": true
+      }
+    },
+    "setupFiles": [
+      "<rootDir>/config/tests/browserMocks.js"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/config/tests/fileMock.js",
+      "\\.(css|scss)$": "<rootDir>/config/tests/styleMock.js"
+    }
   }
 }

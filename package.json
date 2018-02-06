@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "truffle": "^4.0.6"
+    "truffle": "^4.0.6",
+    "typescript": "^2.7.1"
   }
 }

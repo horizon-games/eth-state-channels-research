@@ -9,4 +9,4 @@ typescript:
 	tsc
 
 clean:
-	-rm -r build
+	-rm -r build client/*/*.js{,.map}

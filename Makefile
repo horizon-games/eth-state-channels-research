@@ -1,9 +1,12 @@
-.PHONY: all contracts clean
+.PHONY: all contracts typescript clean
 
-all: contracts
+all: contracts typescript
 
 contracts:
 	yarn run truffle compile
+
+typescript:
+	tsc
 
 clean:
 	-rm -r build

@@ -1,13 +1,12 @@
 pragma solidity ^0.4.19;
+pragma experimental ABIEncoderV2;
 
 contract DGame {
-  enum Status {
-    Playing,
-    Waiting,
-    Moving,
-    Done,
-    Won,
-    Cheated
+  struct DState {
+    DType type_;
+    bytes data;
+    Status[] statuses;
+    State state;
   }
 
   enum DType {
@@ -18,17 +17,19 @@ contract DGame {
     RevealingSecret
   }
 
-  struct DState {
-    DType type_;
-    bytes data;
-    Status[] statuses;
-    State state;
-  }
-
   struct State {
     uint8 type_;
     bytes data;
     Status[] statuses;
+  }
+
+  enum Status {
+    Playing,
+    Waiting,
+    Moving,
+    Done,
+    Won,
+    Cheated
   }
 
   struct Move {
@@ -40,6 +41,119 @@ contract DGame {
     uint8 v;
     bytes32 r;
     bytes32 s;
+  }
+
+  function playerStatus(DState state, uint8 player) public pure returns (Status) {
+    Status status;
+
+    status = Status.Playing;
+
+    if (state.statuses.length > player) {
+      status = state.statuses[player];
+    }
+
+    if (status == Status.Playing) {
+      if (state.state.statuses.length > player) {
+        status = state.state.statuses[player];
+      }
+
+      if (status == Status.Playing) {
+        status = playerStatusInternal(state.state, player);
+      }
+    }
+
+    return status;
+  }
+
+  function isMoveLegal(DState state, Move move) public pure returns (bool) {
+    bytes32 hash;
+    uint8 i;
+    uint8 j;
+
+    if (playerStatus(state, move.player) != Status.Moving) {
+      return false;
+    }
+
+    if (state.type_ == DType.None) {
+      return isMoveLegalInternal(state.state, move);
+    } else if (state.type_ == DType.CommittingRandom) {
+      return move.data.length == 32;
+    } else if (state.type_ == DType.RevealingRandom) {
+      if (move.data.length != uint(state.data[0])) {
+        return false;
+      }
+
+      hash = keccak256(move.data);
+      i = uint8(state.data[1 + move.player]);
+
+      for (j = 0; j < 32; j++) {
+        if (hash[j] != state.data[1 + state.statuses.length + i * 32 + j]) {
+          return false;
+        }
+      }
+
+      return true;
+    } else if (state.type_ == DType.CommittingSecret) {
+      return move.data.length == 32;
+    } else if (state.type_ == DType.RevealingSecret) {
+      hash = keccak256(move.data);
+      i = uint8(state.data[move.player]);
+
+      for (j = 0; j < 32; j++) {
+        if (hash[j] != state.data[state.statuses.length + i * 32 + j]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+  }
+
+  function nextState(DState state, Move[] moves) public pure returns (DState) {
+    bytes memory data;
+    uint8 i;
+    uint8 j;
+
+    if (state.type_ == DType.None) {
+      return nextStateInternal(state.state, moves);
+    } else if (state.type_ == DType.CommittingRandom) {
+      data = new bytes(1 + state.statuses.length + moves.length * 32);
+      data[0] = state.data[0];
+
+      for (i = 0; i < moves.length; i++) {
+        data[1 + moves[i].player] = byte(i);
+
+        for (j = 0; j < 32; j++) {
+          data[1 + state.statuses.length + i * 32 + j] = moves[i].data[j];
+        }
+      }
+
+      return DState(DType.RevealingRandom, data, state.statuses, state.state);
+    } else if (state.type_ == DType.RevealingRandom) {
+      data = new bytes(uint(state.data[0]));
+
+      for (i = 0; i < moves.length; i++) {
+        for (j = 0; j < data.length; j++) {
+          data[j] ^= moves[i].data[j];
+        }
+      }
+
+      return onRandomizeInternal(state.state, data);
+    } else if (state.type_ == DType.CommittingSecret) {
+      data = new bytes(state.statuses.length + moves.length * 32);
+
+      for (i = 0; i < moves.length; i++) {
+        data[moves[i].player] = byte(i);
+
+        for (j = 0; j < 32; j++) {
+          data[state.statuses.length + i * 32 + j] = moves[i].data[j];
+        }
+      }
+
+      return DState(DType.RevealingRandom, data, state.statuses, state.state);
+    } else if (state.type_ == DType.RevealingSecret) {
+      return onExchangeInternal(state.state, moves);
+    }
   }
 
   function playerStatusInternal(State state, uint8 player) internal pure returns (Status);
@@ -116,118 +230,5 @@ contract DGame {
     }
 
     return DState(DType.CommittingSecret, new bytes(0), statuses, state);
-  }
-
-  function playerStatus(DState state, uint8 player) private pure returns (Status) {
-    Status status;
-
-    status = Status.Playing;
-
-    if (state.statuses.length > player) {
-      status = state.statuses[player];
-    }
-
-    if (status == Status.Playing) {
-      if (state.state.statuses.length > player) {
-        status = state.state.statuses[player];
-      }
-
-      if (status == Status.Playing) {
-        status = playerStatusInternal(state.state, player);
-      }
-    }
-
-    return status;
-  }
-
-  function isMoveLegal(DState state, Move move) private pure returns (bool) {
-    bytes32 hash;
-    uint8 i;
-    uint8 j;
-
-    if (playerStatus(state, move.player) != Status.Moving) {
-      return false;
-    }
-
-    if (state.type_ == DType.None) {
-      return isMoveLegalInternal(state.state, move);
-    } else if (state.type_ == DType.CommittingRandom) {
-      return move.data.length == 32;
-    } else if (state.type_ == DType.RevealingRandom) {
-      if (move.data.length != uint(state.data[0])) {
-        return false;
-      }
-
-      hash = keccak256(move.data);
-      i = uint8(state.data[1 + move.player]);
-
-      for (j = 0; j < 32; j++) {
-        if (hash[j] != state.data[1 + state.statuses.length + i * 32 + j]) {
-          return false;
-        }
-      }
-
-      return true;
-    } else if (state.type_ == DType.CommittingSecret) {
-      return move.data.length == 32;
-    } else if (state.type_ == DType.RevealingSecret) {
-      hash = keccak256(move.data);
-      i = uint8(state.data[move.player]);
-
-      for (j = 0; j < 32; j++) {
-        if (hash[j] != state.data[state.statuses.length + i * 32 + j]) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-  }
-
-  function nextState(DState state, Move[] moves) private pure returns (DState) {
-    bytes memory data;
-    uint8 i;
-    uint8 j;
-
-    if (state.type_ == DType.None) {
-      return nextStateInternal(state.state, moves);
-    } else if (state.type_ == DType.CommittingRandom) {
-      data = new bytes(1 + state.statuses.length + moves.length * 32);
-      data[0] = state.data[0];
-
-      for (i = 0; i < moves.length; i++) {
-        data[1 + moves[i].player] = byte(i);
-
-        for (j = 0; j < 32; j++) {
-          data[1 + state.statuses.length + i * 32 + j] = moves[i].data[j];
-        }
-      }
-
-      return DState(DType.RevealingRandom, data, state.statuses, state.state);
-    } else if (state.type_ == DType.RevealingRandom) {
-      data = new bytes(uint(state.data[0]));
-
-      for (i = 0; i < moves.length; i++) {
-        for (j = 0; j < data.length; j++) {
-          data[j] ^= moves[i].data[j];
-        }
-      }
-
-      return onRandomizeInternal(state.state, data);
-    } else if (state.type_ == DType.CommittingSecret) {
-      data = new bytes(state.statuses.length + moves.length * 32);
-
-      for (i = 0; i < moves.length; i++) {
-        data[moves[i].player] = byte(i);
-
-        for (j = 0; j < 32; j++) {
-          data[state.statuses.length + i * 32 + j] = moves[i].data[j];
-        }
-      }
-
-      return DState(DType.RevealingRandom, data, state.statuses, state.state);
-    } else if (state.type_ == DType.RevealingSecret) {
-      return onExchangeInternal(state.state, moves);
-    }
   }
 }

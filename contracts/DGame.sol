@@ -42,15 +42,15 @@ contract DGame {
     bytes32 s;
   }
 
-  function playerStatus(State state, uint8 player) internal pure returns (Status);
-  function isMoveLegal(State state, Move move) internal pure returns (bool);
-  function nextState(State state, Move[] moves) internal pure returns (DState);
+  function playerStatusInternal(State state, uint8 player) internal pure returns (Status);
+  function isMoveLegalInternal(State state, Move move) internal pure returns (bool);
+  function nextStateInternal(State state, Move[] moves) internal pure returns (DState);
 
-  function onRandomize(State state, bytes) internal pure returns (DState) {
+  function onRandomizeInternal(State state, bytes) internal pure returns (DState) {
     return id(state);
   }
 
-  function onExchange(State state, Move[]) internal pure returns (DState) {
+  function onExchangeInternal(State state, Move[]) internal pure returns (DState) {
     return id(state);
   }
 
@@ -118,7 +118,7 @@ contract DGame {
     return DState(DType.CommittingSecret, new bytes(0), statuses, state);
   }
 
-  function playerStatusInternal(DState state, uint8 player) private pure returns (Status) {
+  function playerStatus(DState state, uint8 player) private pure returns (Status) {
     Status status;
 
     status = Status.Playing;
@@ -133,24 +133,24 @@ contract DGame {
       }
 
       if (status == Status.Playing) {
-        status = playerStatus(state.state, player);
+        status = playerStatusInternal(state.state, player);
       }
     }
 
     return status;
   }
 
-  function isMoveLegalInternal(DState state, Move move) private pure returns (bool) {
+  function isMoveLegal(DState state, Move move) private pure returns (bool) {
     bytes32 hash;
     uint8 i;
     uint8 j;
 
-    if (playerStatusInternal(state, move.player) != Status.Moving) {
+    if (playerStatus(state, move.player) != Status.Moving) {
       return false;
     }
 
     if (state.type_ == DType.None) {
-      return isMoveLegal(state.state, move);
+      return isMoveLegalInternal(state.state, move);
     } else if (state.type_ == DType.CommittingRandom) {
       return move.data.length == 32;
     } else if (state.type_ == DType.RevealingRandom) {
@@ -184,13 +184,13 @@ contract DGame {
     }
   }
 
-  function nextStateInternal(DState state, Move[] moves) private pure returns (DState) {
+  function nextState(DState state, Move[] moves) private pure returns (DState) {
     bytes memory data;
     uint8 i;
     uint8 j;
 
     if (state.type_ == DType.None) {
-      return nextState(state.state, moves);
+      return nextStateInternal(state.state, moves);
     } else if (state.type_ == DType.CommittingRandom) {
       data = new bytes(1 + state.statuses.length + moves.length * 32);
       data[0] = state.data[0];
@@ -213,7 +213,7 @@ contract DGame {
         }
       }
 
-      return onRandomize(state.state, data);
+      return onRandomizeInternal(state.state, data);
     } else if (state.type_ == DType.CommittingSecret) {
       data = new bytes(state.statuses.length + moves.length * 32);
 
@@ -227,7 +227,7 @@ contract DGame {
 
       return DState(DType.RevealingRandom, data, state.statuses, state.state);
     } else if (state.type_ == DType.RevealingSecret) {
-      return onExchange(state.state, moves);
+      return onExchangeInternal(state.state, moves);
     }
   }
 }

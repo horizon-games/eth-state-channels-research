@@ -3,7 +3,7 @@ pragma solidity ^0.4.19;
 import './DGame.sol';
 
 contract TTT is DGame {
-  function playerStatus(State state, uint8 player) internal pure returns (Status) {
+  function playerStatusInternal(State state, uint8 player) internal pure returns (Status) {
     uint8 winner;
 
     winner = result(state);
@@ -23,7 +23,7 @@ contract TTT is DGame {
     }
   }
 
-  function isMoveLegal(State state, Move move) internal pure returns (bool) {
+  function isMoveLegalInternal(State state, Move move) internal pure returns (bool) {
     if (move.data.length != 1) {
       return false;
     }
@@ -39,7 +39,7 @@ contract TTT is DGame {
     return true;
   }
 
-  function nextState(State state, Move[] moves) internal pure returns (DState) {
+  function nextStateInternal(State state, Move[] moves) internal pure returns (DState) {
     bytes memory data;
 
     data = new bytes(state.data.length);

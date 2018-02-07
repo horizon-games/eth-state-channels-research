@@ -1,11 +1,7 @@
 import * as ethers from 'ethers'
 
-const sample = require('./sample.json')
-const sample2 = require('../../sample2.json')
+const provider = new ethers.providers.JsonRpcProvider('http://localhost:9545')
+const contract = require('../../build/contracts/TTT.json')
+const ttt = new ethers.Contract('0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f', contract.abi, provider)
 
-console.log('ethers', ethers)
-
-console.log('suppppp')
-
-console.log(sample)
-console.log(sample2)
+console.log(ttt)

@@ -34,11 +34,11 @@ contract Arcadeum {
     msg.sender.transfer(balance);
   }
 
-  function lock(address game, uint32 match_, address[] players, uint deposit) external restricted {
+  function lock(address game, uint32 matchID, address[] players, uint deposit) external restricted {
     bytes24 key;
     uint i;
 
-    key = (bytes24(game) << 32) | bytes24(match_);
+    key = (bytes24(game) << 32) | bytes24(matchID);
 
     for (i = 0; i < players.length; i++) {
       player[players[i]].balance -= deposit;
@@ -47,12 +47,12 @@ contract Arcadeum {
     }
   }
 
-  function unlock(address game, uint32 match_, address[] players) external restricted {
+  function unlock(address game, uint32 matchID, address[] players) external restricted {
     bytes24 key;
     uint i;
     uint deposit;
 
-    key = (bytes24(game) << 32) | bytes24(match_);
+    key = (bytes24(game) << 32) | bytes24(matchID);
 
     for (i = 0; i < players.length; i++) {
       deposit = player[players[i]].deposit[key];

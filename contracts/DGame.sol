@@ -18,6 +18,12 @@ contract DGame {
     RevealingSecret
   }
 
+  struct MetaMove {
+    bytes32 metaStateHash;
+    Move move;
+    Signature signature;
+  }
+
   struct Signature {
     uint8 v;
     bytes32 r;

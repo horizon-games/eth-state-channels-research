@@ -2,15 +2,15 @@ pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
-  struct DState {
+  struct MetaState {
     uint16 nonce;
-    DType type_;
+    MetaType tag;
     bytes data;
     Status[] statuses;
     State state;
   }
 
-  enum DType {
+  enum MetaType {
     None,
     CommittingRandom,
     RevealingRandom,
@@ -19,7 +19,7 @@ contract DGame {
   }
 
   struct State {
-    uint8 type_;
+    uint8 tag;
     bytes data;
     Status[] statuses;
   }
@@ -34,7 +34,7 @@ contract DGame {
   }
 
   struct Move {
-    uint8 player;
+    uint8 playerID;
     bytes data;
   }
 
@@ -44,64 +44,68 @@ contract DGame {
     bytes32 s;
   }
 
-  function playerStatus(DState state, uint8 player) public pure returns (Status) {
+  function playerStatus(MetaState mState, uint8 playerID) public pure returns (Status) {
     Status status;
 
     status = Status.Playing;
 
-    if (state.statuses.length > player) {
-      status = state.statuses[player];
+    if (mState.statuses.length > playerID) {
+      status = mState.statuses[playerID];
     }
 
     if (status == Status.Playing) {
-      if (state.state.statuses.length > player) {
-        status = state.state.statuses[player];
+      if (mState.state.statuses.length > playerID) {
+        status = mState.state.statuses[playerID];
       }
 
       if (status == Status.Playing) {
-        status = playerStatusInternal(state.state, player);
+        status = playerStatusInternal(mState.state, playerID);
       }
     }
 
     return status;
   }
 
-  function isMoveLegal(DState state, Move move) public pure returns (bool) {
+  function isMoveLegal(MetaState mState, Move move) public pure returns (bool) {
     bytes32 hash;
     uint8 i;
     uint8 j;
 
-    if (playerStatus(state, move.player) != Status.Moving) {
+    if (playerStatus(mState, move.playerID) != Status.Moving) {
       return false;
     }
 
-    if (state.type_ == DType.None) {
-      return isMoveLegalInternal(state.state, move);
-    } else if (state.type_ == DType.CommittingRandom) {
+    if (mState.tag == MetaType.None) {
+      return isMoveLegalInternal(mState.state, move);
+
+    } else if (mState.tag == MetaType.CommittingRandom) {
       return move.data.length == 32;
-    } else if (state.type_ == DType.RevealingRandom) {
-      if (move.data.length != uint(state.data[0])) {
+
+    } else if (mState.tag == MetaType.RevealingRandom) {
+      if (move.data.length != uint(mState.data[0])) {
         return false;
       }
 
       hash = keccak256(move.data);
-      i = uint8(state.data[1 + move.player]);
+      i = uint8(mState.data[1 + move.playerID]);
 
       for (j = 0; j < 32; j++) {
-        if (hash[j] != state.data[1 + state.statuses.length + i * 32 + j]) {
+        if (hash[j] != mState.data[1 + mState.statuses.length + i * 32 + j]) {
           return false;
         }
       }
 
       return true;
-    } else if (state.type_ == DType.CommittingSecret) {
+
+    } else if (mState.tag == MetaType.CommittingSecret) {
       return move.data.length == 32;
-    } else if (state.type_ == DType.RevealingSecret) {
+
+    } else if (mState.tag == MetaType.RevealingSecret) {
       hash = keccak256(move.data);
-      i = uint8(state.data[move.player]);
+      i = uint8(mState.data[move.playerID]);
 
       for (j = 0; j < 32; j++) {
-        if (hash[j] != state.data[state.statuses.length + i * 32 + j]) {
+        if (hash[j] != mState.data[mState.statuses.length + i * 32 + j]) {
           return false;
         }
       }
@@ -110,29 +114,31 @@ contract DGame {
     }
   }
 
-  function nextState(DState state, Move[] moves) public pure returns (DState) {
-    DState memory next;
+  function nextState(MetaState mState, Move[] moves) public pure returns (MetaState) {
+    MetaState memory next;
     bytes memory data;
     uint8 i;
     uint8 j;
 
-    if (state.type_ == DType.None) {
-      next = nextStateInternal(state.state, moves);
-    } else if (state.type_ == DType.CommittingRandom) {
-      data = new bytes(1 + state.statuses.length + moves.length * 32);
-      data[0] = state.data[0];
+    if (mState.tag == MetaType.None) {
+      next = nextStateInternal(mState.state, moves);
+
+    } else if (mState.tag == MetaType.CommittingRandom) {
+      data = new bytes(1 + mState.statuses.length + moves.length * 32);
+      data[0] = mState.data[0];
 
       for (i = 0; i < moves.length; i++) {
-        data[1 + moves[i].player] = byte(i);
+        data[1 + moves[i].playerID] = byte(i);
 
         for (j = 0; j < 32; j++) {
-          data[1 + state.statuses.length + i * 32 + j] = moves[i].data[j];
+          data[1 + mState.statuses.length + i * 32 + j] = moves[i].data[j];
         }
       }
 
-      next = DState(0, DType.RevealingRandom, data, state.statuses, state.state);
-    } else if (state.type_ == DType.RevealingRandom) {
-      data = new bytes(uint(state.data[0]));
+      next = MetaState(0, MetaType.RevealingRandom, data, mState.statuses, mState.state);
+
+    } else if (mState.tag == MetaType.RevealingRandom) {
+      data = new bytes(uint(mState.data[0]));
 
       for (i = 0; i < moves.length; i++) {
         for (j = 0; j < data.length; j++) {
@@ -140,51 +146,53 @@ contract DGame {
         }
       }
 
-      next = onRandomizeInternal(state.state, data);
-    } else if (state.type_ == DType.CommittingSecret) {
-      data = new bytes(state.statuses.length + moves.length * 32);
+      next = onRandomizeInternal(mState.state, data);
+
+    } else if (mState.tag == MetaType.CommittingSecret) {
+      data = new bytes(mState.statuses.length + moves.length * 32);
 
       for (i = 0; i < moves.length; i++) {
-        data[moves[i].player] = byte(i);
+        data[moves[i].playerID] = byte(i);
 
         for (j = 0; j < 32; j++) {
-          data[state.statuses.length + i * 32 + j] = moves[i].data[j];
+          data[mState.statuses.length + i * 32 + j] = moves[i].data[j];
         }
       }
 
-      next = DState(0, DType.RevealingSecret, data, state.statuses, state.state);
-    } else if (state.type_ == DType.RevealingSecret) {
-      next = onExchangeInternal(state.state, moves);
+      next = MetaState(0, MetaType.RevealingSecret, data, mState.statuses, mState.state);
+
+    } else if (mState.tag == MetaType.RevealingSecret) {
+      next = onExchangeInternal(mState.state, moves);
     }
 
-    next.nonce = state.nonce + 1;
+    next.nonce = mState.nonce + 1;
     return next;
   }
 
-  function playerStatusInternal(State state, uint8 player) internal pure returns (Status);
+  function playerStatusInternal(State state, uint8 playerID) internal pure returns (Status);
   function isMoveLegalInternal(State state, Move move) internal pure returns (bool);
-  function nextStateInternal(State state, Move[] moves) internal pure returns (DState);
+  function nextStateInternal(State state, Move[] moves) internal pure returns (MetaState);
 
-  function onRandomizeInternal(State state, bytes) internal pure returns (DState) {
+  function onRandomizeInternal(State state, bytes) internal pure returns (MetaState) {
     return id(state);
   }
 
-  function onExchangeInternal(State state, Move[]) internal pure returns (DState) {
+  function onExchangeInternal(State state, Move[]) internal pure returns (MetaState) {
     return id(state);
   }
 
-  function id(State state) internal pure returns (DState) {
-    return DState(0, DType.None, new bytes(0), new Status[](0), state);
+  function id(State state) internal pure returns (MetaState) {
+    return MetaState(0, MetaType.None, new bytes(0), new Status[](0), state);
   }
 
-  function randomize(State state, uint8 bytes_, uint8[] players) internal pure returns (DState) {
+  function randomize(State state, uint8 numBytes, uint8[] playerIDs) internal pure returns (MetaState) {
     bytes memory data;
     Status[] memory statuses;
     Status status;
     uint8 i;
 
     data = new bytes(1);
-    data[0] = byte(bytes_);
+    data[0] = byte(numBytes);
 
     statuses = new Status[](state.statuses.length);
 
@@ -198,18 +206,18 @@ contract DGame {
       statuses[i] = status;
     }
 
-    for (i = 0; i < players.length; i++) {
-      status = statuses[players[i]];
+    for (i = 0; i < playerIDs.length; i++) {
+      status = statuses[playerIDs[i]];
 
       if (status == Status.Waiting) {
-        statuses[players[i]] = Status.Moving;
+        statuses[playerIDs[i]] = Status.Moving;
       }
     }
 
-    return DState(0, DType.CommittingRandom, data, statuses, state);
+    return MetaState(0, MetaType.CommittingRandom, data, statuses, state);
   }
 
-  function exchange(State state, uint8[] players) internal pure returns (DState) {
+  function exchange(State state, uint8[] playerIDs) internal pure returns (MetaState) {
     Status[] memory statuses;
     Status status;
     uint8 i;
@@ -226,14 +234,14 @@ contract DGame {
       statuses[i] = status;
     }
 
-    for (i = 0; i < players.length; i++) {
-      status = statuses[players[i]];
+    for (i = 0; i < playerIDs.length; i++) {
+      status = statuses[playerIDs[i]];
 
       if (status == Status.Waiting) {
-        statuses[players[i]] = Status.Moving;
+        statuses[playerIDs[i]] = Status.Moving;
       }
     }
 
-    return DState(0, DType.CommittingSecret, new bytes(0), statuses, state);
+    return MetaState(0, MetaType.CommittingSecret, new bytes(0), statuses, state);
   }
 }

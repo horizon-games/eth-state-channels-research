@@ -4,20 +4,20 @@ pragma experimental ABIEncoderV2;
 import './DGame.sol';
 
 contract TTT is DGame {
-  function playerStatusInternal(State state, uint8 player) internal pure returns (Status) {
+  function playerStatusInternal(State state, uint8 playerID) internal pure returns (Status) {
     uint8 winner;
 
     winner = result(state);
 
     if (winner != 0) {
-      if (player + 1 == winner) {
+      if (playerID + 1 == winner) {
         return Status.Won;
       } else {
         return Status.Done;
       }
     }
 
-    if (state.type_ % 2 == player) {
+    if (state.tag % 2 == playerID) {
       return Status.Moving;
     } else {
       return Status.Waiting;
@@ -40,7 +40,7 @@ contract TTT is DGame {
     return true;
   }
 
-  function nextStateInternal(State state, Move[] moves) internal pure returns (DState) {
+  function nextStateInternal(State state, Move[] moves) internal pure returns (MetaState) {
     bytes memory data;
 
     data = new bytes(state.data.length);
@@ -53,9 +53,9 @@ contract TTT is DGame {
     data[6] = state.data[6];
     data[7] = state.data[7];
     data[8] = state.data[8];
-    data[uint(moves[0].data[0])] = byte(moves[0].player);
+    data[uint(moves[0].data[0])] = byte(moves[0].playerID);
 
-    return id(State(state.type_ + 1, data, new Status[](0)));
+    return id(State(state.tag + 1, data, new Status[](0)));
   }
 
   function result(State state) private pure returns (uint8) {

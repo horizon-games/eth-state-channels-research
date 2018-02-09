@@ -8,11 +8,11 @@ console.log(ttt)
 
 const state = {
   nonce: 0,
-  type_: 0,
+  tag: 0,
   data: new Uint8Array(0),
   statuses: [],
   state: {
-    type_: 0,
+    tag: 0,
     data: new Uint8Array(0),
     statuses: []
   }

@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 contract DGame {
   struct DState {
+    uint16 nonce;
     DType type_;
     bytes data;
     Status[] statuses;
@@ -110,12 +111,13 @@ contract DGame {
   }
 
   function nextState(DState state, Move[] moves) public pure returns (DState) {
+    DState memory next;
     bytes memory data;
     uint8 i;
     uint8 j;
 
     if (state.type_ == DType.None) {
-      return nextStateInternal(state.state, moves);
+      next = nextStateInternal(state.state, moves);
     } else if (state.type_ == DType.CommittingRandom) {
       data = new bytes(1 + state.statuses.length + moves.length * 32);
       data[0] = state.data[0];
@@ -128,7 +130,7 @@ contract DGame {
         }
       }
 
-      return DState(DType.RevealingRandom, data, state.statuses, state.state);
+      next = DState(0, DType.RevealingRandom, data, state.statuses, state.state);
     } else if (state.type_ == DType.RevealingRandom) {
       data = new bytes(uint(state.data[0]));
 
@@ -138,7 +140,7 @@ contract DGame {
         }
       }
 
-      return onRandomizeInternal(state.state, data);
+      next = onRandomizeInternal(state.state, data);
     } else if (state.type_ == DType.CommittingSecret) {
       data = new bytes(state.statuses.length + moves.length * 32);
 
@@ -150,10 +152,13 @@ contract DGame {
         }
       }
 
-      return DState(DType.RevealingSecret, data, state.statuses, state.state);
+      next = DState(0, DType.RevealingSecret, data, state.statuses, state.state);
     } else if (state.type_ == DType.RevealingSecret) {
-      return onExchangeInternal(state.state, moves);
+      next = onExchangeInternal(state.state, moves);
     }
+
+    next.nonce = state.nonce + 1;
+    return next;
   }
 
   function playerStatusInternal(State state, uint8 player) internal pure returns (Status);
@@ -169,7 +174,7 @@ contract DGame {
   }
 
   function id(State state) internal pure returns (DState) {
-    return DState(DType.None, new bytes(0), new Status[](0), state);
+    return DState(0, DType.None, new bytes(0), new Status[](0), state);
   }
 
   function randomize(State state, uint8 bytes_, uint8[] players) internal pure returns (DState) {
@@ -201,7 +206,7 @@ contract DGame {
       }
     }
 
-    return DState(DType.CommittingRandom, data, statuses, state);
+    return DState(0, DType.CommittingRandom, data, statuses, state);
   }
 
   function exchange(State state, uint8[] players) internal pure returns (DState) {
@@ -229,6 +234,6 @@ contract DGame {
       }
     }
 
-    return DState(DType.CommittingSecret, new bytes(0), statuses, state);
+    return DState(0, DType.CommittingSecret, new bytes(0), statuses, state);
   }
 }

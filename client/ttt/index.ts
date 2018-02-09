@@ -7,6 +7,7 @@ const ttt = new ethers.Contract('0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f', co
 console.log(ttt)
 
 const state = {
+  nonce: 0,
   type_: 0,
   data: new Uint8Array(0),
   statuses: [],

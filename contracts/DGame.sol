@@ -150,7 +150,7 @@ contract DGame {
         }
       }
 
-      return DState(DType.RevealingRandom, data, state.statuses, state.state);
+      return DState(DType.RevealingSecret, data, state.statuses, state.state);
     } else if (state.type_ == DType.RevealingSecret) {
       return onExchangeInternal(state.state, moves);
     }

@@ -44,6 +44,10 @@ contract DGame {
     bytes data;
   }
 
+  function playerRank(address account, bytes seed) public pure returns (uint32) {
+    return playerRankInternal(account, seed);
+  }
+
   function playerStatus(MetaState mState, uint8 playerID) public pure returns (Status) {
     Status status;
 
@@ -167,6 +171,10 @@ contract DGame {
 
     next.nonce = mState.nonce + 1;
     return next;
+  }
+
+  function playerRankInternal(address, bytes) internal pure returns (uint32) {
+    return 0;
   }
 
   function playerStatusInternal(State state, uint8 playerID) internal pure returns (Status);

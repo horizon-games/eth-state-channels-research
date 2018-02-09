@@ -2,6 +2,20 @@ pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
+  struct Match {
+    DGame game;
+    uint32 matchID;
+    Player[] players;
+  }
+
+  struct Player {
+    address account;
+    address subkey;
+    Signature subkeySignature;
+    bytes seed;
+    Signature seedSignature;
+  }
+
   struct MetaState {
     uint16 nonce;
     MetaType tag;

@@ -18,6 +18,12 @@ contract DGame {
     RevealingSecret
   }
 
+  struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
   struct State {
     uint8 tag;
     bytes data;
@@ -36,12 +42,6 @@ contract DGame {
   struct Move {
     uint8 playerID;
     bytes data;
-  }
-
-  struct Signature {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
   }
 
   function playerStatus(MetaState mState, uint8 playerID) public pure returns (Status) {

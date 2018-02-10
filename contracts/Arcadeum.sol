@@ -8,7 +8,7 @@ contract Arcadeum {
 
   struct Player {
     uint balance;
-    uint deposits;
+    uint numDeposits;
     mapping(bytes24 => uint) deposit;
   }
 
@@ -25,7 +25,7 @@ contract Arcadeum {
 
     balance = player[msg.sender].balance;
 
-    if (player[msg.sender].deposits == 0) {
+    if (player[msg.sender].numDeposits == 0) {
       delete player[msg.sender];
     } else {
       player[msg.sender].balance = 0;
@@ -42,7 +42,7 @@ contract Arcadeum {
 
     for (i = 0; i < players.length; i++) {
       player[players[i]].balance -= deposit;
-      player[players[i]].deposits++;
+      player[players[i]].numDeposits++;
       player[players[i]].deposit[key] += deposit;
     }
   }
@@ -57,7 +57,7 @@ contract Arcadeum {
     for (i = 0; i < players.length; i++) {
       deposit = player[players[i]].deposit[key];
       delete player[players[i]].deposit[key];
-      player[players[i]].deposits--;
+      player[players[i]].numDeposits--;
       player[players[i]].balance += deposit;
     }
   }

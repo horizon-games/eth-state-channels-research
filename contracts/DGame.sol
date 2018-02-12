@@ -92,8 +92,8 @@ contract DGame {
 
   function isMoveLegal(MetaState mState, Move move) public pure returns (bool) {
     bytes32 hash;
-    uint8 i;
-    uint8 j;
+    uint i;
+    uint j;
 
     if (playerStatus(mState, move.playerID) != Status.Moving) {
       return false;
@@ -111,7 +111,7 @@ contract DGame {
       }
 
       hash = keccak256(move.data);
-      i = uint8(mState.data[1 + move.playerID]);
+      i = uint(mState.data[1 + move.playerID]);
 
       for (j = 0; j < 32; j++) {
         if (hash[j] != mState.data[1 + mState.statuses.length + i * 32 + j]) {
@@ -126,7 +126,7 @@ contract DGame {
 
     } else if (mState.tag == MetaType.RevealingSecret) {
       hash = keccak256(move.data);
-      i = uint8(mState.data[move.playerID]);
+      i = uint(mState.data[move.playerID]);
 
       for (j = 0; j < 32; j++) {
         if (hash[j] != mState.data[mState.statuses.length + i * 32 + j]) {
@@ -141,8 +141,8 @@ contract DGame {
   function nextState(MetaState mState, Move[] moves) public pure returns (MetaState) {
     MetaState memory next;
     bytes memory data;
-    uint8 i;
-    uint8 j;
+    uint i;
+    uint j;
 
     if (mState.tag == MetaType.None) {
       next = nextStateInternal(mState.state, moves);
@@ -217,7 +217,7 @@ contract DGame {
     bytes memory data;
     Status[] memory statuses;
     Status status;
-    uint8 i;
+    uint i;
 
     data = new bytes(1);
     data[0] = byte(numBytes);
@@ -248,7 +248,7 @@ contract DGame {
   function exchange(State state, uint8[] playerIDs) internal pure returns (MetaState) {
     Status[] memory statuses;
     Status status;
-    uint8 i;
+    uint i;
 
     statuses = new Status[](state.statuses.length);
 

@@ -6,6 +6,7 @@ contract DGame {
     DGame game;
     uint32 matchID;
     Player[] players;
+    Signature signature; // matchmaker.sign(hash(game, matchID, accounts))
   }
 
   struct Player {

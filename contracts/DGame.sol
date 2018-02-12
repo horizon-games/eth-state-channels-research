@@ -12,9 +12,9 @@ contract DGame {
   struct Player {
     address account;
     address subkey;
-    Signature subkeySignature;
+    Signature1 subkeySignature; // account.sign(hash(format(game, matchID, subkey)))
     bytes seed;
-    Signature seedSignature;
+    Signature2 seedSignature; // subkey.sign(hash(seed))
   }
 
   struct MetaState {
@@ -40,6 +40,20 @@ contract DGame {
   }
 
   struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
+  // https://github.com/ethereum/solidity/issues/3275
+  struct Signature1 {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
+  // https://github.com/ethereum/solidity/issues/3275
+  struct Signature2 {
     uint8 v;
     bytes32 r;
     bytes32 s;

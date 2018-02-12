@@ -105,6 +105,90 @@ contract DGame {
     return status;
   }
 
+  function isMoveSigned(Match match_, MetaState mState, MetaMove mMove) public pure returns (bool) {
+    bytes memory message;
+    byte b;
+    uint8 hi;
+    uint8 lo;
+    uint i;
+
+    message = "Sign to play!\n\nGame: 0x????????????????????????????????????????\nMatch: 0x????????\nSubkey: 0x????????????????????????????????????????\n";
+
+    for (i = 0; i < 20; i++) {
+      b = bytes20(address(match_.game))[i];
+      hi = uint8(b) / 16;
+      lo = uint8(b) % 16;
+
+      if (hi < 10) {
+        hi += 48;
+      } else {
+        hi += 87;
+      }
+
+      if (lo < 10) {
+        lo += 48;
+      } else {
+        lo += 87;
+      }
+
+      message[23 + i] = byte(hi);
+      message[24 + i] = byte(lo);
+
+      b = bytes20(match_.players[mMove.move.playerID].subkey)[i];
+      hi = uint8(b) / 16;
+      lo = uint8(b) % 16;
+
+      if (hi < 10) {
+        hi += 48;
+      } else {
+        hi += 87;
+      }
+
+      if (lo < 10) {
+        lo += 48;
+      } else {
+        lo += 87;
+      }
+
+      message[92 + i] = byte(hi);
+      message[93 + i] = byte(lo);
+    }
+
+    for (i = 0; i < 4; i++) {
+      hi = uint8(b) / 16;
+      lo = uint8(b) % 16;
+
+      if (hi < 10) {
+        hi += 48;
+      } else {
+        hi += 87;
+      }
+
+      if (lo < 10) {
+        lo += 48;
+      } else {
+        lo += 87;
+      }
+
+      message[73 + i] = byte(hi);
+      message[73 + i] = byte(lo);
+    }
+
+    if (ecrecover(keccak256(message), match_.players[mMove.move.playerID].subkeySignature.v, match_.players[mMove.move.playerID].subkeySignature.r, match_.players[mMove.move.playerID].subkeySignature.s) != match_.players[mMove.move.playerID].account) {
+      return false;
+    }
+
+    if (keccak256(mState.nonce, mState.tag, mState.data, mState.statuses, mState.state.tag, mState.state.data, mState.state.statuses) != mMove.mStateHash) {
+      return false;
+    }
+
+    if (ecrecover(keccak256(mMove.mStateHash, mMove.move.playerID, mMove.move.data), mMove.signature.v, mMove.signature.r, mMove.signature.s) != match_.players[mMove.move.playerID].subkey) {
+      return false;
+    }
+
+    return true;
+  }
+
   function isMoveLegal(MetaState mState, Move move) public pure returns (bool) {
     bytes32 hash;
     uint i;

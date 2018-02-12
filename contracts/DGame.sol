@@ -79,6 +79,19 @@ contract DGame {
     bytes data;
   }
 
+  function matchmaker(Match match_) public pure returns (address) {
+    address[] memory players;
+    uint i;
+
+    players = new address[](match_.players.length);
+
+    for (i = 0; i < players.length; i++) {
+      players[i] = match_.players[i].account;
+    }
+
+    return ecrecover(keccak256(match_.game, match_.matchID, players), match_.signature.v, match_.signature.r, match_.signature.s);
+  }
+
   function playerRank(address account, bytes seed) public pure returns (uint32) {
     return playerRankInternal(account, seed);
   }

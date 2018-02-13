@@ -43,7 +43,7 @@ const buildConfig = (name, app) => {
       new ForkTsCheckerWebpackPlugin({
         tslint: true,
         checkSyntacticErrors: true,
-        watch: ['./src'] // optional but improves performance (fewer stat calls)
+        watch: ['./client'] // optional but improves performance (fewer stat calls)
       }),
       // new webpack.NoEmitOnErrorsPlugin(),
       // new webpack.DefinePlugin(shared.appEnvVars('config/app.dev.env')),
@@ -63,13 +63,13 @@ const buildConfig = (name, app) => {
           loader: 'ts-loader', options: { transpileOnly: true }
         }],
         exclude: path.resolve(process.cwd(), 'node_modules'),
-        include: path.resolve(process.cwd(), 'src'),
+        include: path.resolve(process.cwd(), 'client'),
       }]
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       alias: {
-        src: path.join(process.cwd(), 'src')
+        src: path.join(process.cwd(), 'client')
       }
     },
     devtool: 'inline-source-map',

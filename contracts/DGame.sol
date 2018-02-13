@@ -35,7 +35,7 @@ contract DGame {
   struct MetaMove {
     bytes32 metaStateHash;
     Move move;
-    Signature signature;
+    Signature signature; // subkey.sign(hash(mStateHash, playerID, data))
   }
 
   struct Signature {

@@ -12,6 +12,7 @@ contract DGame {
   struct Player {
     address account;
     address subkey;
+    Signature0 signature;
   }
 
   struct MetaState {
@@ -40,6 +41,13 @@ contract DGame {
     bytes32 s;
   }
 
+  // XXX: https://github.com/ethereum/solidity/issues/3275
+  struct Signature0 {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
   struct State {
     uint tag;
     bytes data;
@@ -50,7 +58,85 @@ contract DGame {
     bytes data;
   }
 
+  string constant playerMessage = '\x19Ethereum Signed Message:\n158Sign to play! This won\'t cost anything.\n\nGame: 0x0000000000000000000000000000000000000000\nMatch: 0x00000000\nPlayer: 0x0000000000000000000000000000000000000000';
+  uint constant gamePosition = 121 - 36 - 3 - 1 - 1 - 2;
+  uint constant matchPosition = 172 - 36 - 3 - 1 - 1 - 2 - 1;
+  uint constant subkeyPosition = 192 - 36 - 3 - 1 - 1 - 2 - 1 - 1;
+
   function isSubkeySigned(Match dMatch, uint playerID) public pure returns (bool) {
+    bytes memory message;
+    uint i;
+    uint8 b;
+
+    message = bytes(playerMessage);
+
+    for (i = 0; i < 20; i++) {
+      b = uint8(bytes20(address(dMatch.game))[i]) / 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[gamePosition + 2 * i] = byte(b);
+
+      b = uint8(bytes20(address(dMatch.game))[i]) % 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[gamePosition + 2 * i + 1] = byte(b);
+    }
+
+    for (i = 0; i < 4; i++) {
+      b = uint8(bytes4(dMatch.matchID)[i]) / 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[matchPosition + 2 * i] = byte(b);
+
+      b = uint8(bytes4(dMatch.matchID)[i]) % 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[matchPosition + 2 * i + 1] = byte(b);
+    }
+
+    for (i = 0; i < 20; i++) {
+      b = uint8(bytes20(dMatch.players[playerID].subkey)[i]) / 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[subkeyPosition + 2 * i] = byte(b);
+
+      b = uint8(bytes20(dMatch.players[playerID].subkey)[i]) % 16;
+
+      if (b < 10) {
+        b += 48;
+      } else {
+        b += 87;
+      }
+
+      message[subkeyPosition + 2 * i + 1] = byte(b);
+    }
+
+    return ecrecover(keccak256(message), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
   }
 
   function winner(MetaState mState) public pure returns (uint) {

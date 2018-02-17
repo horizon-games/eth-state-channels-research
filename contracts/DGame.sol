@@ -58,85 +58,88 @@ contract DGame {
     bytes data;
   }
 
-  string constant playerMessage = '\x19Ethereum Signed Message:\n158Sign to play! This won\'t cost anything.\n\nGame: 0x0000000000000000000000000000000000000000\nMatch: 0x00000000\nPlayer: 0x0000000000000000000000000000000000000000';
-  uint constant gamePosition = 121 - 36 - 3 - 1 - 1 - 2;
-  uint constant matchPosition = 172 - 36 - 3 - 1 - 1 - 2 - 1;
-  uint constant subkeyPosition = 192 - 36 - 3 - 1 - 1 - 2 - 1 - 1;
+  string constant ETH_SIGN_PREFIX = '\x19Ethereum Signed Message:\n';
+  string constant MESSAGE_LENGTH = '158'; // INVITATION.length + GAME_PREFIX.length + 40 + MATCH_PREFIX.length + 8 + SUBKEY_PREFIX.length + 40
+  string constant INVITATION = 'Sign to play! This won\'t cost anything.\n';
+  string constant GAME_PREFIX = '\nGame: 0x';
+  string constant MATCH_PREFIX = '\nMatch: 0x';
+  string constant SUBKEY_PREFIX = '\nPlayer: 0x';
 
   function isSubkeySigned(Match dMatch, uint playerID) public pure returns (bool) {
-    bytes memory message;
+    bytes memory gameString;
+    bytes memory matchString;
+    bytes memory subkeyString;
     uint i;
     uint8 b;
+    uint8 hi;
+    uint8 lo;
 
-    message = bytes(playerMessage);
+    gameString = new bytes(40);
+    matchString = new bytes(8);
+    subkeyString = new bytes(40);
 
     for (i = 0; i < 20; i++) {
-      b = uint8(bytes20(address(dMatch.game))[i]) / 16;
+      b = uint8(bytes20(address(dMatch.game))[i]);
+      hi = b / 16;
+      lo = b % 16;
 
-      if (b < 10) {
-        b += 48;
+      if (hi < 10) {
+        hi += 48;
       } else {
-        b += 87;
+        hi += 87;
       }
 
-      message[gamePosition + 2 * i] = byte(b);
-
-      b = uint8(bytes20(address(dMatch.game))[i]) % 16;
-
-      if (b < 10) {
-        b += 48;
+      if (lo < 10) {
+        lo += 48;
       } else {
-        b += 87;
+        lo += 87;
       }
 
-      message[gamePosition + 2 * i + 1] = byte(b);
+      gameString[2 * i] = byte(hi);
+      gameString[2 * i + 1] = byte(lo);
+
+      b = uint8(bytes20(address(dMatch.players[playerID].subkey))[i]);
+      hi = b / 16;
+      lo = b % 16;
+
+      if (hi < 10) {
+        hi += 48;
+      } else {
+        hi += 87;
+      }
+
+      if (lo < 10) {
+        lo += 48;
+      } else {
+        lo += 87;
+      }
+
+      subkeyString[2 * i] = byte(hi);
+      subkeyString[2 * i + 1] = byte(lo);
     }
 
     for (i = 0; i < 4; i++) {
-      b = uint8(bytes4(dMatch.matchID)[i]) / 16;
+      b = uint8(bytes4(dMatch.matchID)[i]);
+      hi = b / 16;
+      lo = b % 16;
 
-      if (b < 10) {
-        b += 48;
+      if (hi < 10) {
+        hi += 48;
       } else {
-        b += 87;
+        hi += 87;
       }
 
-      message[matchPosition + 2 * i] = byte(b);
-
-      b = uint8(bytes4(dMatch.matchID)[i]) % 16;
-
-      if (b < 10) {
-        b += 48;
+      if (lo < 10) {
+        lo += 48;
       } else {
-        b += 87;
+        lo += 87;
       }
 
-      message[matchPosition + 2 * i + 1] = byte(b);
+      matchString[2 * i] = byte(hi);
+      matchString[2 * i + 1] = byte(lo);
     }
 
-    for (i = 0; i < 20; i++) {
-      b = uint8(bytes20(dMatch.players[playerID].subkey)[i]) / 16;
-
-      if (b < 10) {
-        b += 48;
-      } else {
-        b += 87;
-      }
-
-      message[subkeyPosition + 2 * i] = byte(b);
-
-      b = uint8(bytes20(dMatch.players[playerID].subkey)[i]) % 16;
-
-      if (b < 10) {
-        b += 48;
-      } else {
-        b += 87;
-      }
-
-      message[subkeyPosition + 2 * i + 1] = byte(b);
-    }
-
-    return ecrecover(keccak256(message), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
+    return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
   }
 
   function winner(MetaState mState) public pure returns (uint) {

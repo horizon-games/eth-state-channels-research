@@ -233,7 +233,8 @@ contract DGame {
     }
   }
 
-  function nextState(MetaState mState, Move move) public pure returns (MetaState) {
+  // XXX: https://github.com/ethers-io/ethers.js/issues/119
+  function nextState1(MetaState mState, Move move) public pure returns (MetaState) {
     MetaState memory next;
 
     if (mState.tag == MetaTag.Playing) {
@@ -258,7 +259,8 @@ contract DGame {
     return next;
   }
 
-  function nextState(MetaState mState, Move moveA, Move moveB) public pure returns (MetaState) {
+  // XXX: https://github.com/ethers-io/ethers.js/issues/119
+  function nextState2(MetaState mState, Move moveA, Move moveB) public pure returns (MetaState) {
     MetaState memory next;
     Move[2] memory moves;
     bytes memory data;

@@ -23,7 +23,7 @@ const mMove = {
 
 console.log(mState)
 
-ttt.nextState(mState, mMove).then((mState) => {
+ttt.nextState1(mState, mMove).then((mState) => {
   console.log(mState[0])
 
   const mMove = {
@@ -31,7 +31,7 @@ ttt.nextState(mState, mMove).then((mState) => {
     data: '0x00'
   }
 
-  return ttt.nextState(mState[0], mMove)
+  return ttt.nextState1(mState[0], mMove)
 
 }).then((mState) => {
   console.log(mState[0])

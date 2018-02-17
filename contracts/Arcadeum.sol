@@ -69,7 +69,7 @@ contract Arcadeum {
         return false;
       }
 
-      nextState = dMatch.game.nextState(mState, loserMove.move, winnerMoves[0].move);
+      nextState = dMatch.game.nextState2(mState, loserMove.move, winnerMoves[0].move);
 
       i = 1;
 
@@ -78,7 +78,7 @@ contract Arcadeum {
         return false;
       }
 
-      nextState = dMatch.game.nextState(mState, loserMove.move);
+      nextState = dMatch.game.nextState1(mState, loserMove.move);
 
       i = 0;
 
@@ -95,7 +95,7 @@ contract Arcadeum {
         return false;
       }
 
-      nextState = dMatch.game.nextState(nextState, winnerMoves[i].move);
+      nextState = dMatch.game.nextState1(nextState, winnerMoves[i].move);
     }
 
     * XXX: https://github.com/ethereum/solidity/issues/3516 */

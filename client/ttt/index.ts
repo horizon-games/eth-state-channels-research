@@ -24,26 +24,16 @@ const mMove = {
 console.log(mState)
 
 ttt.nextState(mState, mMove).then((mState) => {
-  console.log(mState)
-
-  mState = {
-    nonce: mState[0].nonce,
-    tag: mState[0].tag,
-    data: mState[0].data,
-    state: {
-      tag: mState[0].state.tag,
-      data: mState[0].state.data
-    }
-  }
+  console.log(mState[0])
 
   const mMove = {
     playerID: 1,
     data: '0x00'
   }
 
-  return ttt.nextState(mState, mMove)
+  return ttt.nextState(mState[0], mMove)
 
 }).then((mState) => {
-  console.log(mState)
+  console.log(mState[0])
 
 })

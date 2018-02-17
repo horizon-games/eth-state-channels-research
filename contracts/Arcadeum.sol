@@ -4,10 +4,10 @@ pragma experimental ABIEncoderV2;
 import './DGame.sol';
 
 contract Arcadeum {
-  uint constant openChannelRestrictedGas = 21000;
-  uint constant closeChannelRestrictedGas = 21000;
-  uint constant playerWonRestrictedGas = 21000;
-  uint constant playerCheatedRestrictedGas = 21000;
+  uint constant openChannelRestrictedGas = 21000; // XXX
+  uint constant closeChannelRestrictedGas = 21000; // XXX
+  uint constant playerWonRestrictedGas = 21000; // XXX
+  uint constant playerCheatedRestrictedGas = 21000; // XXX
 
   function Arcadeum() public {
     owner = msg.sender;

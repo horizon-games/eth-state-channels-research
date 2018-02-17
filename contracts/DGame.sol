@@ -273,15 +273,27 @@ contract DGame {
       next = nextStateInternal(mState.state, moves[0], moves[1]);
 
     } else if (mState.tag == MetaTag.CommittingRandomness) {
-      data = new bytes(65);
-      data[0] = mState.data[0];
-
       for (i = 0; i < 32; i++) {
-        data[1 + i] = moves[0].data[i];
-        data[33 + i] = moves[1].data[i];
+        if (moves[0].data[i] != moves[1].data[i]) {
+          break;
+        }
       }
 
-      next = MetaState(0, MetaTag.RevealingRandomness, data, mState.state);
+      if (i == 32) {
+        next = mState;
+
+      } else {
+        data = new bytes(65);
+        data[0] = mState.data[0];
+
+        for (i = 0; i < 32; i++) {
+          data[1 + i] = moves[0].data[i];
+          data[33 + i] = moves[1].data[i];
+        }
+
+        next = MetaState(0, MetaTag.RevealingRandomness, data, mState.state);
+
+      }
 
     } else if (mState.tag == MetaTag.RevealingRandomness) {
       data = new bytes(uint(mState.data[0]));
@@ -293,14 +305,26 @@ contract DGame {
       next = onRandomizeInternal(data, mState.state);
 
     } else if (mState.tag == MetaTag.CommittingSecret) {
-      data = new bytes(64);
-
       for (i = 0; i < 32; i++) {
-        data[i] = moves[0].data[i];
-        data[32 + i] = moves[1].data[i];
+        if (moves[0].data[i] != moves[1].data[i]) {
+          break;
+        }
       }
 
-      next = MetaState(0, MetaTag.RevealingSecret, data, mState.state);
+      if (i == 32) {
+        next = mState;
+
+      } else {
+        data = new bytes(64);
+
+        for (i = 0; i < 32; i++) {
+          data[i] = moves[0].data[i];
+          data[32 + i] = moves[1].data[i];
+        }
+
+        next = MetaState(0, MetaTag.RevealingSecret, data, mState.state);
+
+      }
 
     } else if (mState.tag == MetaTag.RevealingSecret) {
       next = onRevealInternal(moves[0].data, moves[1].data, mState.state);

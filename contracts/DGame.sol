@@ -49,7 +49,7 @@ contract DGame {
   }
 
   struct State {
-    uint tag;
+    uint32 tag;
     bytes data;
   }
 

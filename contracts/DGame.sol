@@ -142,6 +142,10 @@ contract DGame {
     return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
   }
 
+  function seedRating(bytes seed) public pure returns (uint) {
+    return seedRatingInternal(seed);
+  }
+
   function winner(MetaState mState) public pure returns (uint) {
     if (mState.tag == MetaTag.Playing) {
       return winnerInternal(mState.state);
@@ -336,6 +340,10 @@ contract DGame {
     next.nonce = mState.nonce + 1;
 
     return next;
+  }
+
+  function seedRatingInternal(bytes) internal pure returns (uint) {
+    return 0;
   }
 
   function winnerInternal(State state) internal pure returns (uint);

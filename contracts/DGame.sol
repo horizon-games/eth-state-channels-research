@@ -142,7 +142,7 @@ contract DGame {
     return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
   }
 
-  function seedRating(bytes seed) public pure returns (uint) {
+  function seedRating(bytes seed) public pure returns (uint32) {
     return seedRatingInternal(seed);
   }
 
@@ -342,7 +342,7 @@ contract DGame {
     return next;
   }
 
-  function seedRatingInternal(bytes) internal pure returns (uint) {
+  function seedRatingInternal(bytes) internal pure returns (uint32) {
     return 0;
   }
 

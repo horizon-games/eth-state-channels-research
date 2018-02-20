@@ -12,7 +12,7 @@ contract DGame {
   struct Player {
     address account;
     address subkey;
-    Signature0 signature;
+    Signature0 subkeySignature;
   }
 
   struct MetaState {
@@ -139,7 +139,7 @@ contract DGame {
       matchString[2 * i + 1] = byte(lo);
     }
 
-    return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].signature.v, dMatch.players[playerID].signature.r, dMatch.players[playerID].signature.s) == dMatch.players[playerID].account;
+    return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].subkeySignature.v, dMatch.players[playerID].subkeySignature.r, dMatch.players[playerID].subkeySignature.s) == dMatch.players[playerID].account;
   }
 
   function seedRating(bytes seed) public pure returns (uint32) {

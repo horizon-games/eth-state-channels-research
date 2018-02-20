@@ -56,7 +56,7 @@ metamask.listAccounts().then((accounts) => {
         {
           account: accounts[0],
           subkey: subkey.getAddress(),
-          signature: {
+          subkeySignature: {
             v: signatureBytes[64],
             r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
             s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))
@@ -65,7 +65,7 @@ metamask.listAccounts().then((accounts) => {
         {
           account: accounts[0],
           subkey: subkey.getAddress(),
-          signature: {
+          subkeySignature: {
             v: signatureBytes[64],
             r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
             s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))

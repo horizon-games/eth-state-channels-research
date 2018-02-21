@@ -20,6 +20,7 @@ contract DGame {
     address account;
     address subkey;
     Signature0 subkeySignature;
+    bytes publicSeed;
   }
 
   struct MetaState {

@@ -234,7 +234,7 @@ contract Arcadeum {
   function matchMaker(DGame.Match dMatch) private pure returns (address) {
     bytes32 hash;
 
-    hash = keccak256(dMatch.game, dMatch.matchID, dMatch.players[0].account, dMatch.players[1].account);
+    hash = keccak256(dMatch.game, dMatch.matchID, dMatch.players[0].account, dMatch.players[1].account, dMatch.players[0].publicSeed, dMatch.players[1].publicSeed);
 
     return ecrecover(hash, dMatch.signature.v, dMatch.signature.r, dMatch.signature.s);
   }

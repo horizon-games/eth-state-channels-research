@@ -65,8 +65,8 @@ contract DGame {
     bytes data;
   }
 
-  function seedRating(address account, bytes seed) public pure returns (uint32) {
-    return seedRatingInternal(account, seed);
+  function secretSeedRating(address account, bytes secretSeed) public pure returns (uint32) {
+    return secretSeedRatingInternal(account, secretSeed);
   }
 
   function isSubkeySigned(Match dMatch, uint playerID) public pure returns (bool) {
@@ -342,7 +342,7 @@ contract DGame {
     return next;
   }
 
-  function seedRatingInternal(address, bytes) internal pure returns (uint32) {
+  function secretSeedRatingInternal(address, bytes) internal pure returns (uint32) {
     return 0;
   }
 

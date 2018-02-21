@@ -60,7 +60,8 @@ metamask.listAccounts().then((accounts) => {
             v: signatureBytes[64],
             r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
             s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))
-          }
+          },
+          publicSeed: '0x'
         },
         {
           account: accounts[0],
@@ -69,7 +70,8 @@ metamask.listAccounts().then((accounts) => {
             v: signatureBytes[64],
             r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
             s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))
-          }
+          },
+          publicSeed: '0x'
         }
       ],
       signature: {

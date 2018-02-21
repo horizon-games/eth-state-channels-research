@@ -1,6 +1,8 @@
 pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
+import './Arcadeum.sol';
+
 contract DGame {
   uint constant META_STATE_DATA_LENGTH = 3;
   uint constant STATE_DATA_LENGTH = 1;
@@ -67,6 +69,10 @@ contract DGame {
   struct Move {
     uint8 playerID;
     bytes data;
+  }
+
+  function DGame(Arcadeum arcadeum) internal {
+    owner = arcadeum;
   }
 
   function secretSeedRating(address account, bytes secretSeed) public pure returns (uint32) {
@@ -350,6 +356,8 @@ contract DGame {
     return next;
   }
 
+  modifier restricted() { require(msg.sender == address(owner)); _; }
+
   function secretSeedRatingInternal(address, bytes) internal pure returns (uint32) {
     return 0;
   }
@@ -407,4 +415,6 @@ contract DGame {
 
     return mState;
   }
+
+  Arcadeum owner;
 }

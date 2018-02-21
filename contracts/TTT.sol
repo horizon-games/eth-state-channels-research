@@ -4,6 +4,9 @@ pragma experimental ABIEncoderV2;
 import './DGame.sol';
 
 contract TTT is DGame {
+  function TTT(Arcadeum arcadeum) DGame(arcadeum) public {
+  }
+
   function winnerInternal(State state) internal pure returns (uint) {
     if (byte(0) != state.data[0][0] && state.data[0][0] == state.data[0][1] && state.data[0][1] == state.data[0][2]) {
       return uint(state.data[0][0]);

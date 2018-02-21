@@ -200,7 +200,7 @@ contract DGame {
 
     next = nextPlayers(mState);
 
-    if (next != 3 && next != move.playerID + 1) {
+    if (next != 3 && next != 1 + move.playerID) {
       return false;
     }
 

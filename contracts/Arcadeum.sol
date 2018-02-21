@@ -56,7 +56,7 @@ contract Arcadeum {
 
     winner = dMatch.game.winner(mState);
 
-    if (winner == winnerID + 1) {
+    if (winner == 1 + winnerID) {
       return true;
     }
 
@@ -74,7 +74,7 @@ contract Arcadeum {
       i = 1;
 
     } else {
-      if (nextPlayers != loserID + 1) {
+      if (nextPlayers != 1 + loserID) {
         return false;
       }
 
@@ -91,7 +91,7 @@ contract Arcadeum {
 
       nextPlayers = dMatch.game.nextPlayers(nextState);
 
-      if (nextPlayers != winnerID + 1) {
+      if (nextPlayers != 1 + winnerID) {
         return false;
       }
 
@@ -102,7 +102,7 @@ contract Arcadeum {
 
     winner = dMatch.game.winner(nextState);
 
-    return winner == winnerID + 1;
+    return winner == 1 + winnerID;
   }
 
   function didPlayerCheat(DGame.Match dMatch, DGame.MetaState mState, DGame.MetaMove cheaterMove) public view returns (bool) {

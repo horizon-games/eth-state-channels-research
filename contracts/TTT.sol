@@ -39,7 +39,7 @@ contract TTT is DGame {
       return 0;
     }
 
-    return state.tag % 2 + 1;
+    return 1 + state.tag % 2;
   }
 
   function isMoveLegalInternal(State state, Move move) internal pure returns (bool) {
@@ -67,7 +67,7 @@ contract TTT is DGame {
     data[6] = state.data[6];
     data[7] = state.data[7];
     data[8] = state.data[8];
-    data[uint(move.data[0])] = byte(move.playerID + 1);
+    data[uint(move.data[0])] = byte(1 + move.playerID);
 
     return play(State(state.tag + 1, data));
   }

@@ -2,6 +2,13 @@ pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
+  string constant ETH_SIGN_PREFIX = '\x19Ethereum Signed Message:\n';
+  string constant MESSAGE_LENGTH = '158'; // INVITATION.length + GAME_PREFIX.length + 40 + MATCH_PREFIX.length + 8 + SUBKEY_PREFIX.length + 40
+  string constant INVITATION = 'Sign to play! This won\'t cost anything.\n';
+  string constant GAME_PREFIX = '\nGame: 0x';
+  string constant MATCH_PREFIX = '\nMatch: 0x';
+  string constant SUBKEY_PREFIX = '\nPlayer: 0x';
+
   struct Match {
     DGame game;
     uint32 matchID;
@@ -58,12 +65,9 @@ contract DGame {
     bytes data;
   }
 
-  string constant ETH_SIGN_PREFIX = '\x19Ethereum Signed Message:\n';
-  string constant MESSAGE_LENGTH = '158'; // INVITATION.length + GAME_PREFIX.length + 40 + MATCH_PREFIX.length + 8 + SUBKEY_PREFIX.length + 40
-  string constant INVITATION = 'Sign to play! This won\'t cost anything.\n';
-  string constant GAME_PREFIX = '\nGame: 0x';
-  string constant MATCH_PREFIX = '\nMatch: 0x';
-  string constant SUBKEY_PREFIX = '\nPlayer: 0x';
+  function seedRating(address account, bytes seed) public pure returns (uint32) {
+    return seedRatingInternal(account, seed);
+  }
 
   function isSubkeySigned(Match dMatch, uint playerID) public pure returns (bool) {
     bytes memory gameString;
@@ -140,10 +144,6 @@ contract DGame {
     }
 
     return ecrecover(keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, INVITATION, GAME_PREFIX, gameString, MATCH_PREFIX, matchString, SUBKEY_PREFIX, subkeyString), dMatch.players[playerID].subkeySignature.v, dMatch.players[playerID].subkeySignature.r, dMatch.players[playerID].subkeySignature.s) == dMatch.players[playerID].account;
-  }
-
-  function seedRating(address account, bytes seed) public pure returns (uint32) {
-    return seedRatingInternal(account, seed);
   }
 
   function winner(MetaState mState) public pure returns (uint) {

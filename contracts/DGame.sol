@@ -2,6 +2,9 @@ pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
+  uint constant META_STATE_DATA_LENGTH = 3;
+  uint constant STATE_DATA_LENGTH = 1;
+
   string constant ETH_SIGN_PREFIX = '\x19Ethereum Signed Message:\n';
   string constant MESSAGE_LENGTH = '158'; // INVITATION.length + GAME_PREFIX.length + 40 + MATCH_PREFIX.length + 8 + SUBKEY_PREFIX.length + 40
   string constant INVITATION = 'Sign to play! This won\'t cost anything.\n';
@@ -26,7 +29,7 @@ contract DGame {
   struct MetaState {
     uint32 nonce;
     MetaTag tag;
-    bytes data;
+    bytes32[META_STATE_DATA_LENGTH] data;
     State state;
   }
 
@@ -58,7 +61,7 @@ contract DGame {
 
   struct State {
     uint32 tag;
-    bytes data;
+    bytes32[STATE_DATA_LENGTH] data;
   }
 
   struct Move {
@@ -195,8 +198,6 @@ contract DGame {
 
   function isMoveLegal(MetaState mState, Move move) public pure returns (bool) {
     uint next;
-    bytes32 hash;
-    uint i;
 
     next = nextPlayers(mState);
 
@@ -215,29 +216,13 @@ contract DGame {
         return false;
       }
 
-      hash = keccak256(move.data);
-
-      for (i = 0; i < 32; i++) {
-        if (hash[i] != mState.data[1 + 32 * move.playerID + i]) {
-          return false;
-        }
-      }
-
-      return true;
+      return keccak256(move.data) == mState.data[1 + move.playerID];
 
     } else if (mState.tag == MetaTag.CommittingSecret) {
       return move.data.length == 32;
 
     } else if (mState.tag == MetaTag.RevealingSecret) {
-      hash = keccak256(move.data);
-
-      for (i = 0; i < 32; i++) {
-        if (hash[i] != mState.data[32 * move.playerID + i]) {
-          return false;
-        }
-      }
-
-      return true;
+      return keccak256(move.data) == mState.data[move.playerID];
 
     }
   }
@@ -294,15 +279,15 @@ contract DGame {
         next = mState;
 
       } else {
-        data = new bytes(65);
-        data[0] = mState.data[0];
+        next.tag = MetaTag.RevealingRandomness;
+        next.data[0] = mState.data[0];
 
         for (i = 0; i < 32; i++) {
-          data[1 + i] = moves[0].data[i];
-          data[33 + i] = moves[1].data[i];
+          next.data[1] |= bytes32(moves[0].data[i]) << ((31 - i) * 8);
+          next.data[2] |= bytes32(moves[1].data[i]) << ((31 - i) * 8);
         }
 
-        next = MetaState(0, MetaTag.RevealingRandomness, data, mState.state);
+        next.state = mState.state;
 
       }
 
@@ -326,14 +311,14 @@ contract DGame {
         next = mState;
 
       } else {
-        data = new bytes(64);
+        next.tag = MetaTag.RevealingSecret;
 
         for (i = 0; i < 32; i++) {
-          data[i] = moves[0].data[i];
-          data[32 + i] = moves[1].data[i];
+          next.data[0] |= bytes32(moves[0].data[i]) << ((31 - i) * 8);
+          next.data[1] |= bytes32(moves[1].data[i]) << ((31 - i) * 8);
         }
 
-        next = MetaState(0, MetaTag.RevealingSecret, data, mState.state);
+        next.state = mState.state;
 
       }
 
@@ -376,21 +361,32 @@ contract DGame {
   }
 
   function play(State state) internal pure returns (MetaState) {
-    return MetaState(0, MetaTag.Playing, new bytes(0), state);
+    MetaState memory mState;
+
+    mState.tag = MetaTag.Playing;
+    mState.state = state;
+
+    return mState;
   }
 
   function randomize(uint nBytes, State state) internal pure returns (MetaState) {
-    bytes memory data;
+    MetaState memory mState;
 
     require(nBytes < 256);
 
-    data = new bytes(1);
-    data[0] = byte(nBytes);
+    mState.tag = MetaTag.CommittingRandomness;
+    mState.data[0] = bytes32(nBytes);
+    mState.state = state;
 
-    return MetaState(0, MetaTag.CommittingRandomness, data, state);
+    return mState;
   }
 
   function commit(State state) internal pure returns (MetaState) {
-    return MetaState(0, MetaTag.CommittingSecret, new bytes(0), state);
+    MetaState memory mState;
+
+    mState.tag = MetaTag.CommittingSecret;
+    mState.state = state;
+
+    return mState;
   }
 }

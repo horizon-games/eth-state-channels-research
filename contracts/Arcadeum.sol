@@ -4,8 +4,8 @@ pragma experimental ABIEncoderV2;
 import './DGame.sol';
 
 contract Arcadeum {
-  uint constant openChannelRestrictedGas = 21000; // XXX
-  uint constant closeChannelRestrictedGas = 21000; // XXX
+  uint constant beginMatchRestrictedGas = 21000; // XXX
+  uint constant endMatchRestrictedGas = 21000; // XXX
   uint constant playerWonRestrictedGas = 21000; // XXX
   uint constant playerCheatedRestrictedGas = 21000; // XXX
 
@@ -150,7 +150,7 @@ contract Arcadeum {
 
   modifier restricted() { require(msg.sender == owner); _; }
 
-  function openChannelRestricted(DGame game, uint32 matchID, uint stake, address[2] players) public restricted {
+  function beginMatchRestricted(DGame game, uint32 matchID, uint stake, address[2] players) public restricted {
     bytes24 channelID;
 
     channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
@@ -164,25 +164,25 @@ contract Arcadeum {
     balance[players[1]] -= stake;
 
     channel[channelID].stake = stake;
-    channel[channelID].openCost = (openChannelRestrictedGas * tx.gasprice + 1) & ~uint(1);
+    channel[channelID].beginCost = (beginMatchRestrictedGas * tx.gasprice + 1) & ~uint(1);
     channel[channelID].players = players;
   }
 
-  function closeChannelRestricted(DGame game, uint32 matchID) public restricted {
+  function endMatchRestricted(DGame game, uint32 matchID) public restricted {
     bytes24 channelID;
-    uint closeCost;
+    uint endCost;
     uint refund;
 
     channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
 
     require(channel[channelID].stake > 0);
 
-    closeCost = (closeChannelRestrictedGas * tx.gasprice + 1) & ~uint(1);
-    refund = channel[channelID].stake - channel[channelID].openCost / 2 - closeCost / 2;
+    endCost = (endMatchRestrictedGas * tx.gasprice + 1) & ~uint(1);
+    refund = channel[channelID].stake - channel[channelID].beginCost / 2 - endCost / 2;
 
     balance[channel[channelID].players[0]] += refund;
     balance[channel[channelID].players[1]] += refund;
-    balance[owner] += channel[channelID].openCost + closeCost;
+    balance[owner] += channel[channelID].beginCost + endCost;
     delete channel[channelID];
   }
 
@@ -206,28 +206,28 @@ contract Arcadeum {
     playerCheatedInternal(game, matchID, cheaterID, playerCheatedRestrictedGas);
   }
 
-  function playerWonInternal(DGame game, uint32 matchID, uint winnerID, uint closeGas) private {
+  function playerWonInternal(DGame game, uint32 matchID, uint winnerID, uint endGas) private {
     bytes24 channelID;
-    uint closeCost;
+    uint endCost;
 
     channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
-    closeCost = closeGas * tx.gasprice;
+    endCost = endGas * tx.gasprice;
 
-    balance[channel[channelID].players[winnerID]] += channel[channelID].stake - channel[channelID].openCost - closeCost;
+    balance[channel[channelID].players[winnerID]] += channel[channelID].stake - channel[channelID].beginCost - endCost;
     balance[channel[channelID].players[1 - winnerID]] += channel[channelID].stake;
-    balance[owner] += channel[channelID].openCost + closeCost;
+    balance[owner] += channel[channelID].beginCost + endCost;
     delete channel[channelID];
   }
 
-  function playerCheatedInternal(DGame game, uint32 matchID, uint cheaterID, uint closeGas) private {
+  function playerCheatedInternal(DGame game, uint32 matchID, uint cheaterID, uint endGas) private {
     bytes24 channelID;
-    uint closeCost;
+    uint endCost;
 
     channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
-    closeCost = closeGas * tx.gasprice;
+    endCost = endGas * tx.gasprice;
 
-    balance[channel[channelID].players[1 - cheaterID]] += channel[channelID].stake * 3 / 2 - channel[channelID].openCost - closeCost;
-    balance[owner] += (channel[channelID].stake + 1) / 2 + channel[channelID].openCost + closeCost;
+    balance[channel[channelID].players[1 - cheaterID]] += channel[channelID].stake * 3 / 2 - channel[channelID].beginCost - endCost;
+    balance[owner] += (channel[channelID].stake + 1) / 2 + channel[channelID].beginCost + endCost;
     delete channel[channelID];
   }
 
@@ -259,7 +259,7 @@ contract Arcadeum {
 
   struct Channel {
     uint stake;
-    uint openCost;
+    uint beginCost;
     address[2] players;
   }
 }

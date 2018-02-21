@@ -227,6 +227,24 @@ contract DGame {
     }
   }
 
+  // XXX: https://github.com/ethereum/solidity/issues/3516
+  function nextState1XXX(MetaState mState, Move move) public pure returns (uint32, MetaTag, bytes32[META_STATE_DATA_LENGTH], uint32, bytes32[STATE_DATA_LENGTH]) {
+    MetaState memory next;
+
+    next = nextState1(mState, move);
+
+    return (mState.nonce, mState.tag, mState.data, mState.state.tag, mState.state.data);
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/3516
+  function nextState2XXX(MetaState mState, Move moveA, Move moveB) public pure returns (uint32, MetaTag, bytes32[META_STATE_DATA_LENGTH], uint32, bytes32[STATE_DATA_LENGTH]) {
+    MetaState memory next;
+
+    next = nextState2(mState, moveA, moveB);
+
+    return (mState.nonce, mState.tag, mState.data, mState.state.tag, mState.state.data);
+  }
+
   // XXX: https://github.com/ethers-io/ethers.js/issues/119
   function nextState1(MetaState mState, Move move) public pure returns (MetaState) {
     MetaState memory next;

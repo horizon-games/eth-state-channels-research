@@ -62,14 +62,12 @@ contract Arcadeum {
 
     nextPlayers = dMatch.game.nextPlayers(mState);
 
-    /* XXX: https://github.com/ethereum/solidity/issues/3516 *
-
     if (nextPlayers == 3) {
       if (winnerMoves[0].move.playerID != winnerID) {
         return false;
       }
 
-      nextState = dMatch.game.nextState2(mState, loserMove.move, winnerMoves[0].move);
+      (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = dMatch.game.nextState2XXX(mState, loserMove.move, winnerMoves[0].move);
 
       i = 1;
 
@@ -78,7 +76,7 @@ contract Arcadeum {
         return false;
       }
 
-      nextState = dMatch.game.nextState1(mState, loserMove.move);
+      (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = dMatch.game.nextState1XXX(mState, loserMove.move);
 
       i = 0;
 
@@ -95,10 +93,8 @@ contract Arcadeum {
         return false;
       }
 
-      nextState = dMatch.game.nextState1(nextState, winnerMoves[i].move);
+      (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = dMatch.game.nextState1XXX(nextState, winnerMoves[i].move);
     }
-
-    * XXX: https://github.com/ethereum/solidity/issues/3516 */
 
     winner = dMatch.game.winner(nextState);
 

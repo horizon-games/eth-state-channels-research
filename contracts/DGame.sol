@@ -381,7 +381,7 @@ contract DGame {
   function initialStateInternal(Match) internal pure returns (MetaState) {
     State memory state;
 
-    return play(state);
+    return meta(state);
   }
 
   function winnerInternal(State state) internal pure returns (uint);
@@ -410,7 +410,7 @@ contract DGame {
   function onPlayerCheatedInternal(Match, uint) internal {
   }
 
-  function play(State state) internal pure returns (MetaState) {
+  function meta(State state) internal pure returns (MetaState) {
     MetaState memory mState;
 
     mState.tag = MetaTag.Playing;

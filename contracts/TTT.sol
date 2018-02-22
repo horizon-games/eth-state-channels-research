@@ -63,7 +63,7 @@ contract TTT is DGame {
     mask = bytes32(1 + move.playerID);
     mask <<= (31 - uint(move.data[0])) * 8;
 
-    return play(State(state.tag + 1, [state.data[0] | mask]));
+    return meta(State(state.tag + 1, [state.data[0] | mask]));
   }
 
   function onPlayerWonInternal(Match dMatch, uint winnerID) internal {

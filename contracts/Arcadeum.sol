@@ -213,6 +213,8 @@ contract Arcadeum {
     balance[channel[channelID].players[1 - winnerID]] += channel[channelID].stake;
     balance[owner] += channel[channelID].beginCost + endCost;
     delete channel[channelID];
+
+    dMatch.game.playerWonRestricted(dMatch, winnerID);
   }
 
   function playerCheatedInternal(DGame.Match dMatch, uint cheaterID, uint endGas) private {
@@ -225,6 +227,8 @@ contract Arcadeum {
     balance[channel[channelID].players[1 - cheaterID]] += channel[channelID].stake * 3 / 2 - channel[channelID].beginCost - endCost;
     balance[owner] += (channel[channelID].stake + 1) / 2 + channel[channelID].beginCost + endCost;
     delete channel[channelID];
+
+    dMatch.game.playerCheatedRestricted(dMatch, cheaterID);
   }
 
   function matchMaker(DGame.Match dMatch) private pure returns (address) {

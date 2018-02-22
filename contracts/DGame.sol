@@ -358,6 +358,14 @@ contract DGame {
 
   modifier restricted() { require(msg.sender == address(owner)); _; }
 
+  function playerWonRestricted(Match dMatch, uint winnerID) public restricted {
+    onPlayerWonInternal(dMatch, winnerID);
+  }
+
+  function playerCheatedRestricted(Match dMatch, uint cheaterID) public restricted {
+    onPlayerCheatedInternal(dMatch, cheaterID);
+  }
+
   function secretSeedRatingInternal(address, bytes) internal pure returns (uint32) {
     return 0;
   }
@@ -384,6 +392,12 @@ contract DGame {
 
   function onRevealInternal(bytes, bytes, State) internal pure returns (MetaState) {
     assert(false);
+  }
+
+  function onPlayerWonInternal(Match, uint) internal {
+  }
+
+  function onPlayerCheatedInternal(Match, uint) internal {
   }
 
   function play(State state) internal pure returns (MetaState) {

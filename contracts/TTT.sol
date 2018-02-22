@@ -65,4 +65,30 @@ contract TTT is DGame {
 
     return play(State(state.tag + 1, [state.data[0] | mask]));
   }
+
+  function onPlayerWonInternal(Match dMatch, uint winnerID) internal {
+    uint loserID;
+
+    loserID = 1 - winnerID;
+
+    record[dMatch.players[winnerID].account].wins++;
+    record[dMatch.players[loserID].account].losses++;
+  }
+
+  function onPlayerCheatedInternal(Match dMatch, uint cheaterID) internal {
+    uint winnerID;
+
+    winnerID = 1 - cheaterID;
+
+    record[dMatch.players[winnerID].account].wins++;
+    record[dMatch.players[cheaterID].account].cheats++;
+  }
+
+  mapping(address => Record) public record;
+
+  struct Record {
+    uint wins;
+    uint losses;
+    uint cheats;
+  }
 }

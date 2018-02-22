@@ -135,13 +135,13 @@ contract Arcadeum {
   function playerWon(DGame.Match dMatch, DGame.MetaState mState, DGame.MetaMove loserMove, DGame.MetaMove[] winnerMoves) public {
     require(didPlayerWin(dMatch, mState, loserMove, winnerMoves));
 
-    playerWonInternal(dMatch.game, dMatch.matchID, 1 - loserMove.move.playerID, 0);
+    playerWonInternal(dMatch, 1 - loserMove.move.playerID, 0);
   }
 
   function playerCheated(DGame.Match dMatch, DGame.MetaState mState, DGame.MetaMove cheaterMove) public {
     require(didPlayerCheat(dMatch, mState, cheaterMove));
 
-    playerCheatedInternal(dMatch.game, dMatch.matchID, cheaterMove.move.playerID, 0);
+    playerCheatedInternal(dMatch, cheaterMove.move.playerID, 0);
   }
 
   modifier restricted() { require(msg.sender == owner); _; }
@@ -182,31 +182,31 @@ contract Arcadeum {
     delete channel[channelID];
   }
 
-  function playerWonRestricted(DGame game, uint32 matchID, uint winnerID) public restricted {
+  function playerWonRestricted(DGame.Match dMatch, uint winnerID) public restricted {
     bytes24 channelID;
 
-    channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
+    channelID = (bytes24(address(dMatch.game)) << 32) | bytes24(dMatch.matchID);
 
     require(channel[channelID].stake > 0);
 
-    playerWonInternal(game, matchID, winnerID, playerWonRestrictedGas);
+    playerWonInternal(dMatch, winnerID, playerWonRestrictedGas);
   }
 
-  function playerCheatedRestricted(DGame game, uint32 matchID, uint cheaterID) public restricted {
+  function playerCheatedRestricted(DGame.Match dMatch, uint cheaterID) public restricted {
     bytes24 channelID;
 
-    channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
+    channelID = (bytes24(address(dMatch.game)) << 32) | bytes24(dMatch.matchID);
 
     require(channel[channelID].stake > 0);
 
-    playerCheatedInternal(game, matchID, cheaterID, playerCheatedRestrictedGas);
+    playerCheatedInternal(dMatch, cheaterID, playerCheatedRestrictedGas);
   }
 
-  function playerWonInternal(DGame game, uint32 matchID, uint winnerID, uint endGas) private {
+  function playerWonInternal(DGame.Match dMatch, uint winnerID, uint endGas) private {
     bytes24 channelID;
     uint endCost;
 
-    channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
+    channelID = (bytes24(address(dMatch.game)) << 32) | bytes24(dMatch.matchID);
     endCost = endGas * tx.gasprice;
 
     balance[channel[channelID].players[winnerID]] += channel[channelID].stake - channel[channelID].beginCost - endCost;
@@ -215,11 +215,11 @@ contract Arcadeum {
     delete channel[channelID];
   }
 
-  function playerCheatedInternal(DGame game, uint32 matchID, uint cheaterID, uint endGas) private {
+  function playerCheatedInternal(DGame.Match dMatch, uint cheaterID, uint endGas) private {
     bytes24 channelID;
     uint endCost;
 
-    channelID = (bytes24(address(game)) << 32) | bytes24(matchID);
+    channelID = (bytes24(address(dMatch.game)) << 32) | bytes24(dMatch.matchID);
     endCost = endGas * tx.gasprice;
 
     balance[channel[channelID].players[1 - cheaterID]] += channel[channelID].stake * 3 / 2 - channel[channelID].beginCost - endCost;

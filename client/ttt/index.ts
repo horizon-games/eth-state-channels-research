@@ -1,96 +1,78 @@
-import * as ethers from 'ethers'
+import * as dgame from 'dgame'
 
-const truffle = new ethers.providers.JsonRpcProvider('http://localhost:9545')
-const contract = require('../../build/contracts/TTT.json')
-const ttt = new ethers.Contract('0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f', contract.abi, truffle)
+main()
 
-console.log(ttt)
+async function main(): Promise<void> {
+  const match = new dgame.Match(`0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f`, 12345)
+  match[`[object Object]`] = match.players // XXX
+  await match.createAndSignSubkey(0)
+  await match.createAndSignSubkey(1)
 
-const mState = {
-  nonce: 0,
-  tag: 0,
-  data: [
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-    '0x0000000000000000000000000000000000000000000000000000000000000000'
-  ],
-  state: {
-    tag: 0,
-    data: [
-      '0x0000000000000000000000000000000000000000000000000000000000000000'
-    ]
-  }
-}
-
-const mMove = {
-  playerID: 0,
-  data: '0x04'
-}
-
-console.log(mState)
-
-ttt.nextState1(mState, mMove).then((mState) => {
-  console.log(mState[0])
-
-  const mMove = {
-    playerID: 1,
-    data: '0x00'
+  if (await match.isSubkeySigned(0)) {
+    console.log(`subkey 0 is signed`)
+  } else {
+    console.log(`subkey 0 not signed`)
   }
 
-  return ttt.nextState1(mState[0], mMove)
+  if (await match.isSubkeySigned(1)) {
+    console.log(`subkey 1 is signed`)
+  } else {
+    console.log(`subkey 1 not signed`)
+  }
 
-}).then((mState) => {
-  console.log(mState[0])
+  let state = await match.initialState
+  let winner = await state.winner
+  let players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-})
+  state = await state.nextState(new dgame.Move(0, `0x00`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-const game = '0x0123456789012345678901234567890123456789'
-const matchID = 12345
-const matchIDHex = ethers.utils.hexlify(ethers.utils.padZeros(ethers.utils.arrayify(ethers.utils.hexlify(matchID)), 4))
-const subkey = ethers.Wallet.createRandom()
-const message = `Sign to play! This won't cost anything.\n\nGame: ${game}\nMatch: ${matchIDHex}\nPlayer: ${subkey.getAddress().toLowerCase()}`
-const metamask = new ethers.providers.Web3Provider((global as any).web3.currentProvider)
+  state = await state.nextState(new dgame.Move(1, `0x04`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-metamask.listAccounts().then((accounts) => {
-  metamask.getSigner(accounts[0]).signMessage(message).then((signature) => {
-    const signatureBytes = ethers.utils.arrayify(signature)
+  state = await state.nextState(new dgame.Move(0, `0x08`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-    const dMatch = {
-      game: game,
-      matchID: matchID,
-      players: [
-        {
-          account: accounts[0],
-          subkey: subkey.getAddress(),
-          subkeySignature: {
-            v: signatureBytes[64],
-            r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
-            s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))
-          },
-          publicSeed: '0x'
-        },
-        {
-          account: accounts[0],
-          subkey: subkey.getAddress(),
-          subkeySignature: {
-            v: signatureBytes[64],
-            r: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 0, 32)),
-            s: ethers.utils.hexlify(new Uint8Array(signatureBytes.buffer, 32, 32))
-          },
-          publicSeed: '0x'
-        }
-      ],
-      signature: {
-        v: 0,
-        r: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        s: '0x0000000000000000000000000000000000000000000000000000000000000000'
-      }
-    }
+  state = await state.nextState(new dgame.Move(1, `0x02`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-    dMatch['[object Object]'] = dMatch.players // XXX
+  state = await state.nextState(new dgame.Move(0, `0x06`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
 
-    ttt.isSubkeySigned(dMatch, 0).then((signed) => {
-      console.log(`ttt.isSubkeySigned: ${signed}`)
-    })
-  })
-})
+  state = await state.nextState(new dgame.Move(1, `0x03`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
+
+  state = await state.nextState(new dgame.Move(0, `0x07`))
+  winner = await state.winner
+  players = await state.nextPlayers
+  console.log(state)
+  console.log(`winner: ${winner}`)
+  console.log(`next player(s): ${players}`)
+}

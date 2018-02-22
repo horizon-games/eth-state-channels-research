@@ -32,7 +32,13 @@
     ],
     
     "plugins": [
-    ]
+    ],
+
+    "paths": {
+      "dgame": [
+        "client/dgame"
+      ]
+    }
   },
 
   "include": [

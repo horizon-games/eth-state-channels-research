@@ -69,6 +69,7 @@ const buildConfig = (name, app) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       alias: {
+        dgame: path.join(process.cwd(), 'client', 'dgame'),
         src: path.join(process.cwd(), 'client')
       }
     },

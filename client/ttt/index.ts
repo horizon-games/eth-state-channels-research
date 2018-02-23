@@ -20,43 +20,53 @@ async function main(): Promise<void> {
     console.log(`subkey 1 not signed`)
   }
 
+  const topRightMove = [new dgame.Move(0, `0x02`), new dgame.Move(1, `0x02`)]
+
   let state = await match.initialState
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[0])}`)
 
   state = await state.nextState(new dgame.Move(0, `0x00`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[1])}`)
 
   state = await state.nextState(new dgame.Move(1, `0x04`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[0])}`)
 
   state = await state.nextState(new dgame.Move(0, `0x08`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[1])}`)
 
   state = await state.nextState(new dgame.Move(1, `0x02`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[0])}`)
 
   state = await state.nextState(new dgame.Move(0, `0x06`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[1])}`)
 
   state = await state.nextState(new dgame.Move(1, `0x03`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[0])}`)
 
   state = await state.nextState(new dgame.Move(0, `0x07`))
   console.log(state)
   console.log(`winner: ${await state.winner}`)
   console.log(`next player(s): ${await state.nextPlayers}`)
+  console.log(`is top-right corner move ok: ${await state.isMoveLegal(topRightMove[1])}`)
 }

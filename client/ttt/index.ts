@@ -21,58 +21,42 @@ async function main(): Promise<void> {
   }
 
   let state = await match.initialState
-  let winner = await state.winner
-  let players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(0, `0x00`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(1, `0x04`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(0, `0x08`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(1, `0x02`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(0, `0x06`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(1, `0x03`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 
   state = await state.nextState(new dgame.Move(0, `0x07`))
-  winner = await state.winner
-  players = await state.nextPlayers
   console.log(state)
-  console.log(`winner: ${winner}`)
-  console.log(`next player(s): ${players}`)
+  console.log(`winner: ${await state.winner}`)
+  console.log(`next player(s): ${await state.nextPlayers}`)
 }

@@ -20,8 +20,9 @@ contract Arcadeum {
     uint8 playerID;
     Player[2] players;
     Signature matchSignature;
-    Signature opponentSubkeySignature;
-    Signature opponentTimestampSignature;
+    // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+    SubkeySignature opponentSubkeySignature;
+    TimestampSignature opponentTimestampSignature;
   }
 
   struct Player {
@@ -35,6 +36,20 @@ contract Arcadeum {
   }
 
   struct Signature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  struct SubkeySignature {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  struct TimestampSignature {
     uint8 v;
     bytes32 r;
     bytes32 s;
@@ -93,7 +108,8 @@ contract Arcadeum {
     balanceChanged(msg.sender);
   }
 
-  function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, Signature, Signature) public view returns (bool) {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature, SubkeySignature) public view returns (bool) {
     uint expiryTime;
     bytes24 gameMatchID;
 
@@ -112,7 +128,8 @@ contract Arcadeum {
     return true;
   }
 
-  function canStopWithdrawal(DGame game, uint32 matchID, uint timestamp, Signature timestampSignature, Signature subkeySignature) public view returns (bool) {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function canStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
     address account;
 
     account = playerAccount(game, matchID, timestamp, timestampSignature, subkeySignature);
@@ -120,7 +137,8 @@ contract Arcadeum {
     return isWithdrawing(account) && couldStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature);
   }
 
-  function stopWithdrawal(DGame game, uint32 matchID, uint timestamp, Signature timestampSignature, Signature subkeySignature) external {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function stopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) external {
     address account;
     uint value;
 
@@ -357,7 +375,8 @@ contract Arcadeum {
     return string(message);
   }
 
-  function subkeyParent(address subkey, Signature subkeySignature) public pure returns (address) {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function subkeyParent(address subkey, SubkeySignature subkeySignature) public pure returns (address) {
     bytes20 subkeyBytes;
     bytes memory subkeyHex;
     uint i;
@@ -397,7 +416,8 @@ contract Arcadeum {
     return ecrecover(hash, subkeySignature.v, subkeySignature.r, subkeySignature.s);
   }
 
-  function playerAccount(DGame game, uint32 matchID, uint timestamp, Signature timestampSignature, Signature subkeySignature) public pure returns (address) {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function playerAccount(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
     bytes32 hash;
     address subkey;
 
@@ -432,7 +452,8 @@ contract Arcadeum {
     return keccak256(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data);
   }
 
-  function moveMaker(DGame.MetaState metaState, Move move, Signature subkeySignature) public pure returns (address) {
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function moveMaker(DGame.MetaState metaState, Move move, SubkeySignature subkeySignature) public pure returns (address) {
     bytes32 hash;
 
     hash = keccak256(stateHash(metaState), move.move.playerID, move.move.data);

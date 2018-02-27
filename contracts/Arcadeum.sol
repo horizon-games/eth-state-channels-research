@@ -144,8 +144,9 @@ contract Arcadeum {
     return isWithdrawing(account) && couldStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature);
   }
 
+  // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function stopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) external {
+  function stopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public {
     address account;
     uint value;
 
@@ -262,7 +263,8 @@ contract Arcadeum {
     return true;
   }
 
-  function claimReward(Match aMatch, DGame.MetaState metaState, Move loserMove, DGame.Move[] winnerMoves) external {
+  // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
+  function claimReward(Match aMatch, DGame.MetaState metaState, Move loserMove, DGame.Move[] winnerMoves) public {
     bytes24 gameMatchID;
     uint32 winnerSeedRating;
     uint32 opponentSeedRating;
@@ -309,7 +311,8 @@ contract Arcadeum {
     return true;
   }
 
-  function reportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) external {
+  // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
+  function reportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) public {
     bytes24 gameMatchID;
     address opponent;
     uint value;

@@ -13,6 +13,12 @@ contract Arcadeum {
   string private constant MESSAGE_PREFIX = 'Sign to play! This won\'t cost anything.\n';
   string private constant PLAYER_PREFIX = '\nPlayer: 0x';
 
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  // *** THIS MUST MATCH DGame.sol ***
+  uint private constant PUBLIC_SEED_LENGTH = 1;
+  uint private constant META_STATE_DATA_LENGTH = 3;
+  uint private constant STATE_DATA_LENGTH = 1;
+
   struct Match {
     DGame game;
     uint32 matchID;
@@ -27,7 +33,8 @@ contract Arcadeum {
 
   struct Player {
     uint32 seedRating;
-    bytes publicSeed;
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    bytes32[PUBLIC_SEED_LENGTH] publicSeed;
   }
 
   struct Move {
@@ -427,14 +434,16 @@ contract Arcadeum {
     return subkeyParent(subkey, subkeySignature);
   }
 
-  function matchHash(DGame game, uint32 matchID, uint timestamp, address[2] accounts, uint32[2] seedRatings, bytes[2] publicSeeds) public pure returns (bytes32) {
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  function matchHash(DGame game, uint32 matchID, uint timestamp, address[2] accounts, uint32[2] seedRatings, bytes32[PUBLIC_SEED_LENGTH][2] publicSeeds) public pure returns (bytes32) {
     return keccak256(game, matchID, timestamp, accounts[0], accounts[1], seedRatings[0], seedRatings[1], publicSeeds[0], publicSeeds[1]);
   }
 
   function matchMaker(Match aMatch, address sender) private pure returns (address) {
     address[2] memory accounts;
     uint32[2] memory seedRatings;
-    bytes[2] memory publicSeeds;
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    bytes32[PUBLIC_SEED_LENGTH][2] memory publicSeeds;
     bytes32 hash;
 
     accounts[aMatch.playerID] = sender;

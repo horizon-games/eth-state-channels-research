@@ -56,11 +56,11 @@ export class DGame {
         players: [
           {
             seedRating: 0,
-            publicSeed: new Uint8Array(0)
+            publicSeed: [ethers.utils.bigNumberify(0)]
           },
           {
             seedRating: 0,
-            publicSeed: new Uint8Array(0)
+            publicSeed: [ethers.utils.bigNumberify(0)]
           }
         ],
         matchSignature: new Signature(),
@@ -280,11 +280,13 @@ export class State {
   }
 
   private tag: number
-  private data: Uint8Array
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  private data: [ethers.utils.BigNumber]
   private metadata: {
     nonce: number
     tag: number
-    data: Uint8Array
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
   }
 }
 
@@ -343,16 +345,19 @@ interface MatchInterface {
 
 interface PlayerInterface {
   readonly seedRating: number
-  readonly publicSeed: Uint8Array
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly publicSeed: [ethers.utils.BigNumber]
 }
 
 interface StateInterface {
   readonly nonce: number
   readonly tag: number
-  readonly data: Uint8Array
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
   readonly state: {
     readonly tag: number
-    readonly data: Uint8Array
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    readonly data: [ethers.utils.BigNumber]
   }
 }
 

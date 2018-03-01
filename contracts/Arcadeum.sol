@@ -191,7 +191,8 @@ contract Arcadeum {
       return false;
     }
 
-    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    // XXX: https://github.com/ethereum/solidity/issues/267
+    opponent = playerAccountXXX(aMatch, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, loserMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -424,6 +425,11 @@ contract Arcadeum {
     hash = keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, MESSAGE_PREFIX, PLAYER_PREFIX, subkeyHex);
 
     return ecrecover(hash, subkeySignature.v, subkeySignature.r, subkeySignature.s);
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/267
+  function playerAccountXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
+    return playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, timestampSignature, subkeySignature);
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323

@@ -182,6 +182,15 @@ contract DGame {
     }
   }
 
+  // XXX: https://github.com/ethereum/solidity/issues/3516
+  function nextStateXXX(MetaState metaState, Move move) public pure returns (uint32, MetaTag, bytes32[META_STATE_DATA_LENGTH], uint32, bytes32[STATE_DATA_LENGTH]) {
+    MetaState memory next;
+
+    next = nextState(metaState, move);
+
+    return (next.nonce, next.tag, next.data, next.state.tag, next.state.data);
+  }
+
   function nextState(MetaState metaState, Move move) public pure returns (MetaState) {
     MetaState memory next;
 
@@ -204,6 +213,15 @@ contract DGame {
     next.nonce = metaState.nonce + 1;
 
     return next;
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/3516
+  function nextStateXXX(MetaState metaState, Move aMove, Move anotherMove) public pure returns (uint32, MetaTag, bytes32[META_STATE_DATA_LENGTH], uint32, bytes32[STATE_DATA_LENGTH]) {
+    MetaState memory next;
+
+    next = nextState(metaState, aMove, anotherMove);
+
+    return (next.nonce, next.tag, next.data, next.state.tag, next.state.data);
   }
 
   function nextState(MetaState metaState, Move aMove, Move anotherMove) public pure returns (MetaState) {

@@ -30,16 +30,16 @@ export class DGame {
   }
 
   get matchDuration(): Promise<number> {
-    return this.gameContract.matchDuration().then(response => response[0].toNumber())
+    return this.gameContract.matchDuration().then(response => response.toNumber())
   }
 
   async isSecretSeedValid(address: string, secretSeed: Uint8Array): Promise<boolean> {
-    return (await this.gameContract.isSecretSeedValid(address, secretSeed))[0]
+    return this.gameContract.isSecretSeedValid(address, secretSeed)
   }
 
   async createMatch(secretSeed: Uint8Array): Promise<{ match: Match, XXX: { subkeySignature: Signature, timestampSignature: Signature } }> {
     const subkey = ethers.Wallet.createRandom()
-    const subkeyMessage = (await this.arcadeumContract.subkeyMessage(subkey.getAddress()))[0]
+    const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
     const timestamp = await this.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
     const timestampSignature = sign(subkey, [`address`, `uint32`, `uint`], [this.address, timestamp.matchID, timestamp.timestamp])
@@ -108,7 +108,7 @@ export class Match {
   get state(): Promise<State> {
     if (this.currentState === undefined) {
       return this.gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
-        this.agreedState = new State(this.arcadeumContract, this.gameContract, response[0])
+        this.agreedState = new State(this.arcadeumContract, this.gameContract, response)
         this.currentState = this.agreedState
         return this.currentState
       })
@@ -134,8 +134,8 @@ export class Match {
       await move.sign(this.subkey, state)
 
     } else {
-      const opponent = (await this.arcadeumContract.playerAccount(this.game, this.matchID, this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature))[0]
-      const moveMaker = (await this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature))[0]
+      const opponent = await this.arcadeumContract.playerAccount(this.game, this.matchID, this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature)
+      const moveMaker = await this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature)
 
       if (moveMaker !== opponent) {
         throw Error(`move not signed by opponent`)
@@ -144,7 +144,7 @@ export class Match {
       const response = await state.isMoveLegal(move)
 
       if (!response.isLegal) {
-        if ((await this.arcadeumContract.canReportCheater(this, state.encoding, move))[0]) {
+        if (await this.arcadeumContract.canReportCheater(this, state.encoding, move)) {
           await this.arcadeumContract.reportCheater(this, state.encoding, move)
         }
 
@@ -183,7 +183,7 @@ export class Match {
     const winner = await this.currentState.winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      if ((await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves))[0]) {
+      if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)) {
         await this.arcadeumContract.claimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)
       }
     }
@@ -217,11 +217,11 @@ export class State {
   }
 
   get winner(): Promise<Winner> {
-    return this.gameContract.winner(this.encoding).then(response => response[0])
+    return this.gameContract.winner(this.encoding)
   }
 
   get nextPlayers(): Promise<NextPlayers> {
-    return this.gameContract.nextPlayers(this.encoding).then(response => response[0])
+    return this.gameContract.nextPlayers(this.encoding)
   }
 
   async isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }> {
@@ -246,21 +246,21 @@ export class State {
       switch (aMove.length) {
       case 1:
         // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, (await this.gameContract.nextState1XXX(this.encoding, aMove[0]))[0])
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState1XXX(this.encoding, aMove[0]))
 
       case 2:
         // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, (await this.gameContract.nextState2XXX(this.encoding, aMove[0], aMove[1]))[0])
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState2XXX(this.encoding, aMove[0], aMove[1]))
       }
 
     } else {
       if (anotherMove === undefined) {
         // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, (await this.gameContract.nextState1XXX(this.encoding, aMove))[0])
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState1XXX(this.encoding, aMove))
 
       } else {
         // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, (await this.gameContract.nextState2XXX(this.encoding, aMove, anotherMove))[0])
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState2XXX(this.encoding, aMove, anotherMove))
       }
     }
 
@@ -280,7 +280,7 @@ export class State {
   }
 
   get hash(): Promise<ethers.utils.BigNumber> {
-    return this.arcadeumContract.stateHash(this.encoding).then(response => response[0])
+    return this.arcadeumContract.stateHash(this.encoding)
   }
 
   private tag: number

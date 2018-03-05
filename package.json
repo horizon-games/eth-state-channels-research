@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "core-js": "^2.5.3",
-    "ethers": "^2.2.5",
+    "ethers": "^3.0.1",
     "global": "^4.3.2"
   },
   "devDependencies": {

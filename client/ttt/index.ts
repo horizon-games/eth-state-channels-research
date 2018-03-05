@@ -38,7 +38,7 @@ async function main(): Promise<void> {
   const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
   const arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, provider)
   const matchKey = new ethers.Wallet(`0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3`, provider)
-  const matchHash = (await arcadeumContract.matchHash(match0.game, match0.matchID, match0.timestamp, [accounts[0], accounts[0]], [0, 0], [[`0x0000000000000000000000000000000000000000000000000000000000000000`], [`0x0000000000000000000000000000000000000000000000000000000000000000`]]))[0]
+  const matchHash = await arcadeumContract.matchHash(match0.game, match0.matchID, match0.timestamp, [accounts[0], accounts[0]], [0, 0], [[`0x0000000000000000000000000000000000000000000000000000000000000000`], [`0x0000000000000000000000000000000000000000000000000000000000000000`]])
   const matchSignatureValues = new ethers.SigningKey(matchKey.privateKey).signDigest(matchHash)
   const matchSignature = {
     v: 27 + matchSignatureValues.recoveryParam,

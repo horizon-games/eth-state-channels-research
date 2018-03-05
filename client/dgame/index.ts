@@ -245,22 +245,18 @@ export class State {
 
       switch (aMove.length) {
       case 1:
-        // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState1XXX(this.encoding, aMove[0]))
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]))
 
       case 2:
-        // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState2XXX(this.encoding, aMove[0], aMove[1]))
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]))
       }
 
     } else {
       if (anotherMove === undefined) {
-        // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState1XXX(this.encoding, aMove))
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove))
 
       } else {
-        // XXX: https://github.com/ethers-io/ethers.js/issues/119
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract.nextState2XXX(this.encoding, aMove, anotherMove))
+        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove))
       }
     }
 

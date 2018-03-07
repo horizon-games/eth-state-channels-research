@@ -7,7 +7,7 @@ contracts:
 	yarn run truffle compile
 
 typescript:
-	tsc
+	yarn run tsc
 
 ganache:
 	yarn run ganache-cli -d -e 1000000000 -l 1000000000 -v

@@ -43,7 +43,9 @@
 
   "include": [
     "client/**/*.ts",
-    "client/**/*.tsx"
+    "client/**/*.tsx",
+    "examples/**/*.ts",
+    "examples/**/*.tsx"
   ],
 
   "exclude": [

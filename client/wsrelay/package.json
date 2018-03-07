@@ -1,0 +1,65 @@
+{
+  "name": "wsrelay",
+  "version": "0.1.0",
+  "description": "A JS client to the DGame Relay Server",
+  "repository": "https://github.com/horizon-games/dgame.js",
+  "license": "(c) 2018-present Horizon Blockchain Games Inc.",
+  "keywords": [
+    "wsrelay.js",
+    "horizongames",
+    "horizon"
+  ],
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "scripts": {
+    "dev": "echo noop",
+    "build": "yarn build:lib && yarn build:umd",
+    "build:lib": "rm -rf ./dist/lib && tsc -p tsconfig.json",
+    "build:umd": "rm -rf ./dist/umd && NODE_ENV=production webpack",
+    "build:clean": "rm -rf ./dist",
+    "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx",
+    "test:watch": "jest --watchAll",
+    "test": "jest --ci --runInBand"
+  },
+  "dependencies": {
+    "rxjs": "^5.4.2",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.1.1",
+    "@types/uuid": "^3.4.2",
+    "fork-ts-checker-webpack-plugin": "^0.3.0",
+    "jest": "^22.1.4",
+    "json-loader": "^0.5.4",
+    "mock-socket": "^7.1.0",
+    "node-fetch": "^1.7.2",
+    "sinon": "^4.2.2",
+    "ts-loader": "^3.4.0",
+    "ts-jest": "^22.0.2",
+    "tslint": "5.9.1",
+    "typescript": "2.7.1",
+    "webpack": "^3.10.0"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "skipBabel": true
+      }
+    },
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test))\\.(tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testEnvironment": "node"
+  }
+}

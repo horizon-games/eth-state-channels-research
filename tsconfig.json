@@ -37,6 +37,9 @@
     "paths": {
       "dgame": [
         "client/dgame"
+      ],
+      "wsrelay": [
+        "client/wsrelay"
       ]
     }
   },

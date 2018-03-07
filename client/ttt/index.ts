@@ -1,10 +1,48 @@
 import * as dgame from 'dgame'
 import * as ethers from 'ethers'
 
-main()
+class Matcher {
+  constructor(private game: string) {
+  }
+
+  private readonly matchID = 1
+  private readonly timestamp = ethers.utils.bigNumberify(1500000000)
+
+  async sendSecretSeed(subkeyAddress: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array) {
+    return {
+      matchID: this.matchID,
+      timestamp: this.timestamp
+    }
+  }
+
+  async sendTimestampSignature(timestampSignature: dgame.Signature) {
+    const players: [{ seedRating: number, publicSeed: [ethers.utils.BigNumber] }, { seedRating: number, publicSeed: [ethers.utils.BigNumber] }] = [
+      {
+        seedRating: 0,
+        publicSeed: [ethers.utils.bigNumberify(0)]
+      },
+      {
+        seedRating: 0,
+        publicSeed: [ethers.utils.bigNumberify(0)]
+      }
+    ]
+
+    return {
+      game: this.game,
+      matchID: this.matchID,
+      timestamp: this.timestamp,
+      playerID: 0,
+      players: players,
+      matchSignature: new dgame.Signature(),
+      opponentSubkeySignature: new dgame.Signature(),
+      opponentTimestampSignature: new dgame.Signature()
+    }
+  }
+}
 
 async function main(): Promise<void> {
-  const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
+  const gameAddress = `0xc89ce4735882c9f0f0fe26686c53074e09b0d550`
+  const ttt = new dgame.DGame(gameAddress, new Matcher(gameAddress))
 
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
@@ -78,3 +116,5 @@ async function main(): Promise<void> {
   await p1(3)
   await p0(7)
 }
+
+main()

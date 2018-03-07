@@ -14,7 +14,7 @@ export enum NextPlayers {
 }
 
 export class DGame {
-  constructor(gameAddress: string) {
+  constructor(gameAddress: string, private server: Server) {
     const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
     const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
     const gameMetadata = require(`../../build/contracts/DGame.json`)
@@ -41,36 +41,11 @@ export class DGame {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
-    const timestamp = await this.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
+    const timestamp = await this.server.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
     const timestampSignature = sign(subkey, [`address`, `uint32`, `uint`], [this.address, timestamp.matchID, timestamp.timestamp])
 
-    // XXX: private method
-    const game = this.address
-    async function sendTimestampSignature(timestampSignature: Signature): Promise<MatchInterface> {
-      // XXX: call server
-      return {
-        game: game,
-        matchID: timestamp.matchID,
-        timestamp: timestamp.timestamp,
-        playerID: 0,
-        players: [
-          {
-            seedRating: 0,
-            publicSeed: [ethers.utils.bigNumberify(0)]
-          },
-          {
-            seedRating: 0,
-            publicSeed: [ethers.utils.bigNumberify(0)]
-          }
-        ],
-        matchSignature: new Signature(),
-        opponentSubkeySignature: new Signature(),
-        opponentTimestampSignature: new Signature()
-      }
-    }
-
     return {
-      match: new Match(this.arcadeumContract, this.gameContract, subkey, await sendTimestampSignature(timestampSignature)),
+      match: new Match(this.arcadeumContract, this.gameContract, subkey, await this.server.sendTimestampSignature(timestampSignature)),
       XXX: {
         subkeySignature: subkeySignature,
         timestampSignature: timestampSignature
@@ -78,17 +53,14 @@ export class DGame {
     }
   }
 
-  private async sendSecretSeed(subkeyAddress: string, subkeySignature: Signature, secretSeed: Uint8Array): Promise<TimestampInterface> {
-    // XXX: call server
-    return {
-      matchID: 1,
-      timestamp: ethers.utils.bigNumberify(1500000000)
-    }
-  }
-
   private signer: ethers.providers.Web3Signer
   private arcadeumContract: ethers.Contract
   private gameContract: ethers.Contract
+}
+
+export interface Server {
+  sendSecretSeed(subkeyAddress: string, subkeySignature: Signature, secretSeed: Uint8Array): Promise<TimestampInterface>
+  sendTimestampSignature(timestampSignature: Signature): Promise<MatchInterface>
 }
 
 export class Match {

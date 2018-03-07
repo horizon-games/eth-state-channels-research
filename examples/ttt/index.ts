@@ -1,5 +1,6 @@
 import * as dgame from 'dgame'
 import * as ethers from 'ethers'
+import * as wsrelay from 'wsrelay'
 
 class Matcher {
   constructor(private game: string) {
@@ -15,7 +16,7 @@ class Matcher {
     }
   }
 
-  async sendTimestampSignature(timestampSignature: dgame.Signature) {
+  async sendTimestampSignature(timestampSignature: dgame.Signature): Promise<dgame.MatchInterface> {
     const players: [{ seedRating: number, publicSeed: [ethers.utils.BigNumber] }, { seedRating: number, publicSeed: [ethers.utils.BigNumber] }] = [
       {
         seedRating: 0,

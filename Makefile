@@ -1,4 +1,4 @@
-.PHONY: all contracts typescript clean
+.PHONY: all contracts typescript ganache truffle clean
 
 all: contracts typescript
 
@@ -8,6 +8,12 @@ contracts:
 
 typescript:
 	tsc
+
+ganache:
+	yarn run ganache-cli -d -e 1000000000 -l 1000000000 -v
+
+truffle:
+	yarn run truffle migrate --network ganache
 
 clean:
 	-rm -r build client/*/*.js{,.map}

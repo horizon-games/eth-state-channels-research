@@ -4,7 +4,7 @@ import * as ethers from 'ethers'
 main()
 
 async function main(): Promise<void> {
-  const ttt = new dgame.DGame(`0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f`)
+  const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
 
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
@@ -34,10 +34,10 @@ async function main(): Promise<void> {
 
   const provider = new ethers.providers.Web3Provider((window as any).web3.currentProvider)
   const accounts = await provider.listAccounts()
-  const arcadeumAddress = `0x345ca3e014aaf5dca488057592ee47305d9b3e10`
+  const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
   const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
   const arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, provider)
-  const matchKey = new ethers.Wallet(`0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3`, provider)
+  const matchKey = new ethers.Wallet(`0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d`, provider)
   const matchHash = await arcadeumContract.matchHash(match0.game, match0.matchID, match0.timestamp, [accounts[0], accounts[0]], [0, 0], [[`0x0000000000000000000000000000000000000000000000000000000000000000`], [`0x0000000000000000000000000000000000000000000000000000000000000000`]])
   const matchSignatureValues = new ethers.SigningKey(matchKey.privateKey).signDigest(matchHash)
   const matchSignature = {

@@ -15,7 +15,7 @@ export enum NextPlayers {
 
 export class DGame {
   constructor(gameAddress: string) {
-    const arcadeumAddress = `0x345ca3e014aaf5dca488057592ee47305d9b3e10`
+    const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
     const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
     const gameMetadata = require(`../../build/contracts/DGame.json`)
     const provider = new ethers.providers.Web3Provider((window as any).web3.currentProvider)

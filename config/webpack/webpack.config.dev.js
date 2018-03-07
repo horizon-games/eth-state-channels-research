@@ -11,8 +11,8 @@ const apps = {
   //   template: './src/index.html'
   // },
   'ttt': {
-    src:      './client/ttt/index.ts',
-    template: './client/ttt/index.html'
+    src:      './examples/ttt/index.ts',
+    template: './examples/ttt/index.html'
   }
 }
 
@@ -63,7 +63,10 @@ const buildConfig = (name, app) => {
           loader: 'ts-loader', options: { transpileOnly: true }
         }],
         exclude: path.resolve(process.cwd(), 'node_modules'),
-        include: path.resolve(process.cwd(), 'client'),
+        include: [
+          path.resolve(process.cwd(), 'client'),
+          path.resolve(process.cwd(), 'examples')
+        ]
       }]
     },
     resolve: {

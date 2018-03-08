@@ -1,8 +1,8 @@
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
-  contracts_directory: "ethereum",
-  migrations_directory: "ethereum",
+  contracts_directory: "ethereum/contracts",
+  migrations_directory: "ethereum/migrations",
   networks: {
     ganache: {
       host: "127.0.0.1",

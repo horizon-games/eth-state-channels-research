@@ -95,7 +95,9 @@ export class Relay {
     return new Promise((resolve, reject) => {
       this.setStream(callbacks)
       this.stream.pipe(first()).subscribe(msg => {
-        resolve.apply(msg)
+        resolve(msg)
+      }, err => {
+        reject(err)
       })
     })
   }
@@ -104,7 +106,9 @@ export class Relay {
     return new Promise((resolve, reject) => {
       this.setStream(callbacks)
       this.stream.skip(1).take(1).subscribe(msg => {
-        resolve.apply(msg)
+        resolve(msg)
+      }, err => {
+        reject(err)
       })
     })
   }

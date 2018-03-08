@@ -1,0 +1,160 @@
+# DGAME-SERVER
+---
+version: 0.5
+
+env:
+  IMAGE: davatar/dgame-server
+  CONFIG: /data/etc/wsrelay.conf
+  HOST_PORT: 8000
+  CONTAINER_PORT: 8000
+  GITTAG: $(git describe --exact-match --tags HEAD 2>/dev/null || :)
+  GITBRANCH: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || :)
+  LONGVERSION: $(git describe --tags --long --abbrev=8 --always HEAD)$(echo -$GITBRANCH | tr / - | grep -v '\-master' || :)
+  VERSION: ${GITTAG:-$LONGVERSION}
+
+
+networks:
+  local:
+    hosts:
+      - localhost
+  production:
+    env:
+      VIRTUAL_HOST: relay.arcadeum.com
+    hosts:
+      - ubuntu@server.arcadeum.com
+
+
+commands:
+
+  ping:
+    desc: Print uname and current date/time.
+    run: uname -a; date
+
+  version:
+    desc: Print $VERSION variable or die
+    local: |
+      if [ -n "$VERSION" ]; then
+        echo -e "\$VERSION: $VERSION\n"
+      else
+        exit 1
+      fi
+
+  init-network:
+    desc: Create docker local network bridge
+    once: true
+    run: sudo docker network create -d bridge --subnet 172.18.0.0/16 localnet || exit 0
+
+  docker-build:
+    desc: Build Docker image
+    script: ./scripts/docker-build.sh
+    once: true
+
+  pull:
+    desc: Pull latest Docker dgame-server image
+    run: >
+      sudo docker pull $IMAGE:$VERSION || (echo && echo "--" && \
+        echo "Whoops, did you forget to build the docker image?" && \
+        echo "First run: sup $SUP_NETWORK docker-build" && echo "--" && echo && exit 1)
+
+  ps:
+    desc: List running dgame-server containers
+    run: sudo docker ps | grep dgame-server
+
+  health:
+    desc: Application health check
+    run: for i in {1..3}; do curl localhost:$HOST_PORT/ping && break || sleep 1; done
+
+  start:
+    desc: Start a stopped Docker container
+    run: sudo docker start dgame-server || exit 0
+
+  stop:
+    desc: Stop Docker container
+    run: sudo docker stop dgame-server || exit 0
+
+  restart:
+    desc: Restart Docker container
+    run: sudo docker restart dgame-server || exit 0
+
+  rm:
+    desc: Remove Docker container
+    run: sudo docker rm dgame-server || exit 0
+
+  run:
+    desc: Rolling update (stop & remove old Docker container, run new one)
+    run: >
+      sudo docker stop dgame-server || :; \
+        sudo docker rm dgame-server || :; \
+          sudo docker run -d \
+          -p $HOST_PORT:$CONTAINER_PORT \
+          -v $CONFIG:/etc/wsrelay.conf \
+          -v /data/certs/relay.arcadeum.com:/data/certs/relay.arcadeum.com \
+          --network=localnet \
+          --restart=always \
+          --memory-swappiness=0 \
+          --log-driver json-file \
+          --log-opt max-size=100m \
+          --log-opt max-file=5 \
+          -e "VIRTUAL_HOST=$VIRTUAL_HOST" \
+          -e "LETSENCRYPT_HOST=$VIRTUAL_HOST" \
+          -e "LETSENCRYPT_EMAIL=peter.kieltyka@gmail.com" \
+          --name dgame-server $IMAGE:$VERSION wsrelay -config=/etc/wsrelay.conf
+
+  images:
+    desc: List Docker images
+    run: sudo docker images davatar/dgame-server
+
+  config:
+    desc: Upload/test config file.
+    upload:
+      - src: etc/wsrelay.$SUP_NETWORK.conf
+        dst: /tmp/
+    run: >
+      test -f /tmp/etc/wsrelay.$SUP_NETWORK.conf || exit 1 && \
+        sudo mv /tmp/etc/wsrelay.$SUP_NETWORK.conf $CONFIG
+
+  logs:
+    desc: Docker logs
+    run: sudo docker logs dgame-server
+
+  tail-logs:
+    desc: Tail API service logs
+    run: sudo docker logs --tail=20 -f dgame-server 2>&1
+
+  docker-clean-images:
+    desc: Remove all unused / dangling images to restore diskspace
+    run: >
+      sudo docker rmi $(sudo docker images -f dangling=true -q)
+
+
+targets:
+  build:
+    - version
+    - docker-build
+
+  deploy:
+    - pull
+    - config
+    - run
+    - ps
+    - logs
+    - health
+
+
+# start up nginx and letsencrypt on prod:
+#
+# sudo docker run -d -p 80:80 -p 443:443 \
+#   --name nginx-proxy --network=localnet --restart=always \
+#   -v /data/certs:/etc/nginx/certs:ro \
+#   -v etc/nginx/vhost.d \
+#   -v /usr/share/nginx/html \
+#   -v /var/run/docker.sock:/tmp/docker.sock:ro \
+#   --label com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy \
+#   jwilder/nginx-proxy
+
+# sudo docker run -d \
+#   --name=letsencrypt --network=localnet --restart=always \
+#   -v /data/certs:/etc/nginx/certs:rw \
+#   -v /var/run/docker.sock:/var/run/docker.sock:ro \
+#   --volumes-from nginx-proxy \
+#   jrcs/letsencrypt-nginx-proxy-companion

@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs/Rx'
 import { Subscriber } from 'rxjs/Subscriber'
+import { first, publishReplay, refCount } from 'rxjs/operators'
 
 export class Meta {
   constructor(public matchID: number, public index: number, public code: number) { }
@@ -17,15 +18,15 @@ export class Signature {
   constructor(
     public v: number = 0, // uint8 
     public r: string = '', // base64 []byte value
-    public s: string = '') {} // base64 []byte value
+    public s: string = '') { } // base64 []byte value
 }
 
 export class Token {
   // subkey, seed, signature of seed, game ID
   constructor(
-    public gameID: number, 
+    public gameID: number,
     public subkey: string, // public address of subkey, e.g., "0x" 
-    public signature: Signature, 
+    public signature: Signature,
     public seed: string) { } // game "deck" as base64 []byte value
 }
 
@@ -46,6 +47,7 @@ export class Relay {
   private matchID: number
   private index: number // player ID
   private ssl: boolean
+  private stream: Observable<Message>
 
   constructor(
     host: string,
@@ -72,9 +74,38 @@ export class Relay {
   connect(callbacks?: ConnectHandler): Observable<Message> {
     this.ws = new WebSocket(`${this.ssl ? 'wss' : 'ws'}://${this.host}${this.port === 80 ? '' : `:${this.port}`}/ws?token=${this.token()}`)
     return Observable.create((obv: Subscriber<Message>) => {
-      this.ws.onopen    = callbacks && callbacks.onOpen != null ? callbacks.onOpen(obv) : this.onOpen(obv)
+      this.ws.onopen = callbacks && callbacks.onOpen != null ? callbacks.onOpen(obv) : this.onOpen(obv)
       this.ws.onmessage = callbacks && callbacks.onMessage != null ? callbacks.onMessage(obv) : this.onMessage(obv)
-      this.ws.onerror   = callbacks && callbacks.onError != null ? callbacks.onError(obv) : this.onError(obv)
+      this.ws.onerror = callbacks && callbacks.onError != null ? callbacks.onError(obv) : this.onError(obv)
+    })
+  }
+
+  setStream(callbacks?: ConnectHandler) {
+    if (!this.isInitialized()) {
+      this.ws = new WebSocket(`${this.ssl ? 'wss' : 'ws'}://${this.host}${this.port === 80 ? '' : `:${this.port}`}/ws?token=${this.token()}`)
+      this.stream = Observable.create((obv: Subscriber<Message>) => {
+        this.ws.onopen = callbacks && callbacks.onOpen != null ? callbacks.onOpen(obv) : this.onOpen(obv)
+        this.ws.onmessage = callbacks && callbacks.onMessage != null ? callbacks.onMessage(obv) : this.onMessage(obv)
+        this.ws.onerror = callbacks && callbacks.onError != null ? callbacks.onError(obv) : this.onError(obv)
+      }).publishReplay(1).refCount()
+    }
+  }
+
+  connectForTimestamp(callbacks?: ConnectHandler): Promise<Message> {
+    return new Promise((resolve, reject) => {
+      this.setStream(callbacks)
+      this.stream.pipe(first()).subscribe(msg => {
+        resolve.apply(msg)
+      })
+    })
+  }
+
+  connectForMatchVerified(callbacks?: ConnectHandler): Promise<Message> {
+    return new Promise((resolve, reject) => {
+      this.setStream(callbacks)
+      this.stream.skip(1).take(1).subscribe(msg => {
+        resolve.apply(msg)
+      })
     })
   }
 

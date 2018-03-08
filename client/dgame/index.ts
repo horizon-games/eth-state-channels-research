@@ -308,7 +308,7 @@ interface TimestampInterface {
   readonly timestamp: ethers.utils.BigNumber
 }
 
-interface MatchInterface {
+export interface MatchInterface {
   readonly game: string
   readonly matchID: number
   readonly timestamp: ethers.utils.BigNumber

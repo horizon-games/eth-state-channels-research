@@ -6,39 +6,39 @@ class Matcher {
   constructor(private game: string) {
   }
 
-  private readonly matchID = 1
-  private readonly timestamp = ethers.utils.bigNumberify(1500000000)
-
   async sendSecretSeed(subkeyAddress: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array) {
-    return {
-      matchID: this.matchID,
-      timestamp: this.timestamp
-    }
+    const seed64 = base64(secretSeed)
+    const r64 = base64(subkeySignature.r)
+    const s64 = base64(subkeySignature.s)
+
+    this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkeyAddress, 1)
+
+    const response = JSON.parse((await this.relay.connectForTimestamp()).payload)
+
+    this.matchID = response.matchID
+    this.timestamp = response.timestamp
+
+    return response
   }
 
   async sendTimestampSignature(timestampSignature: dgame.Signature): Promise<dgame.MatchInterface> {
-    const players: [{ seedRating: number, publicSeed: [ethers.utils.BigNumber] }, { seedRating: number, publicSeed: [ethers.utils.BigNumber] }] = [
-      {
-        seedRating: 0,
-        publicSeed: [ethers.utils.bigNumberify(0)]
-      },
-      {
-        seedRating: 0,
-        publicSeed: [ethers.utils.bigNumberify(0)]
-      }
-    ]
-
-    return {
-      game: this.game,
+    this.relay.send(JSON.stringify({
+      gameID: 1,
       matchID: this.matchID,
       timestamp: this.timestamp,
-      playerID: 0,
-      players: players,
-      matchSignature: new dgame.Signature(),
-      opponentSubkeySignature: new dgame.Signature(),
-      opponentTimestampSignature: new dgame.Signature()
-    }
+      signature: {
+        v: timestampSignature.v,
+        r: base64(timestampSignature.r),
+        s: base64(timestampSignature.s)
+      }
+    }), 2)
+
+    return JSON.parse((await this.relay.connectForMatchVerified()).payload)
   }
+
+  private relay: wsrelay.Relay
+  private matchID: number
+  private timestamp: number
 }
 
 async function main(): Promise<void> {
@@ -116,6 +116,10 @@ async function main(): Promise<void> {
   await p0(6)
   await p1(3)
   await p0(7)
+}
+
+function base64(data: Uint8Array): string {
+  return new Buffer(ethers.utils.hexlify(data)).toString(`base64`)
 }
 
 main()

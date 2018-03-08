@@ -73,7 +73,7 @@ const buildConfig = (name, app) => {
       extensions: ['.tsx', '.ts', '.js'],
       alias: {
         dgame: path.join(process.cwd(), 'client', 'dgame'),
-        src: path.join(process.cwd(), 'client')
+        wsrelay: path.join(process.cwd(), 'client', 'wsrelay')
       }
     },
     devtool: 'inline-source-map',

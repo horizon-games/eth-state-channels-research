@@ -1,6 +1,6 @@
-# dgame
+# Arcadeum
 
-dgame is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
+Arcadeum is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
 
 ## Usage
 

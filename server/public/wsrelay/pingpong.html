@@ -1,0 +1,28 @@
+<html>
+
+<body>
+  <div>JSON payload</div>
+  <textarea id='payload' rows="20" cols="50"></textarea>
+  <input type='button' onclick='send();' value='Send'></input>
+  <script>
+    var socket = new WebSocket('ws://localhost:8000/ws');
+    socket.onopen = function (event) {
+      console.log('Server connection opened.');
+    }
+    socket.onmessage = function (message) {
+      try {
+        console.log('Message received: ' + message.data);
+      } catch (e) {
+        console.log('Invalid JSON ' + message.data);
+      }
+    };
+
+    function send() {
+      var payload = document.getElementById('payload').value;
+      console.log('Sending: ' + payload);
+      socket.send(payload);
+    }
+  </script>
+</body>
+
+</html>

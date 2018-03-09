@@ -115,6 +115,11 @@ contract Arcadeum {
     balanceChanged(msg.sender);
   }
 
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
+  function couldStopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool) {
+    return couldStopWithdrawal(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+  }
+
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
   function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature, SubkeySignature) public view returns (bool) {
     uint expiryTime;
@@ -135,6 +140,11 @@ contract Arcadeum {
     return true;
   }
 
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
+  function canStopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool) {
+    return canStopWithdrawal(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+  }
+
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
   function canStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
     address account;
@@ -142,6 +152,11 @@ contract Arcadeum {
     account = playerAccount(game, matchID, timestamp, timestampSignature, subkeySignature);
 
     return isWithdrawing(account) && couldStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature);
+  }
+
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
+  function stopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public {
+    stopWithdrawal(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
@@ -389,6 +404,11 @@ contract Arcadeum {
     return string(message);
   }
 
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
+  function subkeyParentXXX(address subkey, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address) {
+    return subkeyParent(subkey, SubkeySignature(subkeyV, subkeyR, subkeyS));
+  }
+
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
   function subkeyParent(address subkey, SubkeySignature subkeySignature) public pure returns (address) {
     bytes20 subkeyBytes;
@@ -433,6 +453,11 @@ contract Arcadeum {
   // XXX: https://github.com/ethereum/solidity/issues/267
   function playerAccountXXXXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
     return playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, timestampSignature, subkeySignature);
+  }
+
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
+  function playerAccountXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address) {
+    return playerAccount(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323

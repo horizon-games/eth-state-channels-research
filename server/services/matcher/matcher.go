@@ -226,7 +226,7 @@ func (s *Session) ContainsAccount(addr common.Address) bool {
 }
 
 func (s *Service) VerifyTimestamp(gameID uint32, matchID uint32, req *arcadeum.VerifyTimestampRequest, player *PlayerInfo) (bool, error) {
-	account, err := s.ArcClient.VerifySignedTimestamp(gameID, matchID, req, player.TimestampSig)
+	account, err := s.ArcClient.VerifySignedTimestamp(gameID, matchID, req, player.SubKeySignature)
 	if err != nil {
 		return false, errors.New("Could not deserialize signed timestamp payload.")
 	}
@@ -253,7 +253,7 @@ func (s *Service) FindMatch(req *MatchRequest) {
 }
 
 func (s *Service) Authenticate(req *MatchRequest) (*MatchResponse, error) {
-	address, err := s.ArcClient.SubKeyParent(req.SubKey, req.Signature)
+	address, err := s.ArcClient.SubKeyParent(req.SubKey, req.SubKeySignature)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error validating subkey account address. %s", err.Error()))
 	}
@@ -295,8 +295,10 @@ func (s *Service) HandleMatchResponses() {
 func (s *Service) Match(rp *MatchResponse) {
 	opponent := s.FindMatchByRank(rp.Request.GameID, rp.Rank)
 	if opponent != nil {
+		log.Printf("Match found!")
 		s.InitializeGame(rp, opponent)
 	} else {
+		log.Println("Match not found, adding to match pool")
 		s.AddToMatchPool(rp)
 	}
 }
@@ -348,7 +350,7 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 	if err != nil {
 		return err
 	}
-	s.Signature = msg.SignatureMatchHashPair
+	s.Signature = msg.SignatureMatchHash
 	relaymsg := &Message{
 		Meta: Meta{
 			MatchID: s.MatchID,
@@ -374,12 +376,20 @@ func (s *Service) NewKeyedTransactor() *bind.TransactOpts {
 
 func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeum.MatchVerifiedMessage, error) {
 	msg := &arcadeum.MatchVerifiedMessage{
-		GameID:     s.GameID,
-		MatchID:    s.MatchID,
-		Timestamp:  s.Timestamp,
-		Accounts:   [2]common.Address{s.Player1.Account, s.Player2.Account},
-		Seeds:      [2][]byte{s.Player1.Seed, s.Player2.Seed},
-		SeedHashes: [2][]byte{s.Player1.SeedHash, s.Player2.SeedHash},
+		Accounts:    [2]common.Address{s.Player1.Account, s.Player2.Account},
+		GameAddress: srv.ArcClient.GameAddress[s.GameID],
+		MatchID:     s.MatchID,
+		Timestamp:   s.Timestamp,
+		Players: [2]*arcadeum.MatchVerifiedPlayerInfo{
+			{
+				SeedRating: s.Player1.Rank,
+				PublicSeed: s.Player1.SeedHash,
+			},
+			{
+				SeedRating: s.Player2.Rank,
+				PublicSeed: s.Player2.SeedHash,
+			},
+		},
 	}
 	hash, err := srv.ArcClient.MatchHash(msg)
 	if err != nil {
@@ -392,16 +402,12 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 	if err != nil {
 		return nil, err
 	}
-	signature, err := sig.ECDSA()
-	if err != nil {
-		return nil, err
-	}
-	msg.SignatureMatchHash = signature
-	msg.SignatureMatchHashPair = sig
+	msg.SignatureMatchHash = sig
 	return msg, nil
 }
 
 func (srv *Service) RequestTimestampProof(s *Session) error {
+	log.Println("Requesting timestamp proof from both players")
 	err := WriteInitMessage(s.MatchID, s.Timestamp, s.Player1)
 	if err != nil {
 		return err

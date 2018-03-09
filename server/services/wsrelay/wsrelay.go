@@ -43,7 +43,7 @@ func (s *Server) HandleMessages() {
 		// Grab game and player session info
 		session := s.Matcher.FindSession(msg.MatchID)
 		player := session.FindPlayer(msg.PlayerConn)
-		if session != nil || player != nil {
+		if session == nil || player == nil {
 			msg.PlayerConn.WriteJSON(matcher.NewError(fmt.Sprintf("Unknown match ID %d", msg.MatchID)))
 			continue
 		}

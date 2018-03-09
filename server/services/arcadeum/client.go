@@ -1,7 +1,6 @@
 package arcadeum
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,13 +9,15 @@ import (
 	"net/http"
 	"time"
 
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/horizon-games/arcadeum/server/config"
 	"github.com/horizon-games/arcadeum/server/services/crypto"
-	"math/big"
+	"github.com/horizon-games/arcadeum/server/services/util"
 )
 
 const (
@@ -57,17 +58,21 @@ type Client struct {
 }
 
 type MatchVerifiedMessage struct {
-	GameID      uint32            `json:"gameID"`
-	MatchID     uint32            `json:"matchID"`
-	Accounts    [2]common.Address `json:"accounts"`
-	Timestamp   int64             `json:"timestamp"`
-	Seeds       [2][]byte         `json:"seeds"`
-	SeedHashes  [2][]byte         `json:"seedhashes"`
-	SeedRatings [2]uint32         `json:"seedRatings"`
-	MatchHash   [32]byte          `json:"matchHash"` // signature of all fields above
+	Accounts [2]common.Address
 
-	SignatureMatchHash     []byte            `json:"signature"`
-	SignatureMatchHashPair *crypto.Signature `json:"signature_pair"`
+	GameAddress common.Address              `json:"game"`
+	MatchID     uint32                      `json:"matchID"`
+	Timestamp   int64                       `json:"timestamp"`
+	PlayerIndex uint8                       `json:"playerID"`
+	Players     [2]*MatchVerifiedPlayerInfo `json:"players"`
+
+	MatchHash          [32]byte
+	SignatureMatchHash *crypto.Signature `json:"matchSignature"`
+}
+
+type MatchVerifiedPlayerInfo struct {
+	SeedRating uint32 `json:"seedRating"`
+	PublicSeed []byte `json:"publicSeed,string"`
 }
 
 type StakedStatus int
@@ -113,16 +118,28 @@ func (c *Client) VerifySignedTimestamp(
 	req *VerifyTimestampRequest,
 	subkeySig crypto.Signature) (common.Address, error) {
 	gameaddr := c.GameAddress[gameID]
-	contract, err := NewArcadeum(c.ArcadeumContractAddress, c.Conn)
+	contract := c.ArcadeumContract
+	sigR, err := util.DecodeHexString(string(req.Signature.R))
 	if err != nil {
 		return common.Address{}, err
 	}
-
+	sigS, err := util.DecodeHexString(string(req.Signature.S))
+	if err != nil {
+		return common.Address{}, err
+	}
+	subkeyR, err := util.DecodeHexString(string(subkeySig.R))
+	if err != nil {
+		return common.Address{}, err
+	}
+	subkeyS, err := util.DecodeHexString(string(subkeySig.S))
+	if err != nil {
+		return common.Address{}, err
+	}
 	var r1, s1, r2, s2 [32]byte
-	copy(r1[:], req.Signature.R)
-	copy(s1[:], req.Signature.S)
-	copy(r2[:], subkeySig.R)
-	copy(s2[:], subkeySig.S)
+	copy(r1[:], sigR)
+	copy(s1[:], sigS)
+	copy(r2[:], subkeyR)
+	copy(s2[:], subkeyS)
 	return contract.ArcadeumCaller.PlayerAccountXXX(
 		&bind.CallOpts{},
 		gameaddr,
@@ -229,22 +246,11 @@ func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error)
 func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (common.Address, error) {
 	contract := c.ArcadeumContract
 
-	r := sig.R
-	if r[0] == '0' && (r[1] == 'x' || r[1] == 'X') {
-		r = r[2:]
-	}
-
-	s := sig.S
-	if s[0] == '0' && (s[1] == 'x' || s[1] == 'X') {
-		s = s[2:]
-	}
-
-	r, err := hex.DecodeString(string(r))
+	r, err := util.DecodeHexString(string(sig.R))
 	if err != nil {
 		return common.BytesToAddress(make([]byte, 20)), err
 	}
-
-	s, err = hex.DecodeString(string(s))
+	s, err := util.DecodeHexString(string(sig.S))
 	if err != nil {
 		return common.BytesToAddress(make([]byte, 20)), err
 	}
@@ -269,10 +275,14 @@ func (c *Client) IsSecretSeedValid(gameID uint32, account common.Address, secret
 	if err != nil {
 		return false, err
 	}
+	ss, err := util.DecodeHexString(string(secretSeed))
+	if err != nil {
+		return false, err
+	}
 	return contract.DGameCaller.IsSecretSeedValid(
 		&bind.CallOpts{},
 		account,
-		secretSeed,
+		ss,
 	)
 }
 
@@ -327,17 +337,16 @@ func (c *Client) MatchHash(msg *MatchVerifiedMessage) ([32]byte, error) {
 	// produces something remotely workable. Hence the awful datatype [2][1][32]byte
 	var publicSeeds [2][1][32]byte
 	var seed1, seed2 [32]byte
-	copy(seed1[:], msg.SeedHashes[0])
-	copy(seed2[:], msg.SeedHashes[1])
+	copy(seed1[:], msg.Players[0].PublicSeed)
+	copy(seed2[:], msg.Players[1].PublicSeed)
 	publicSeeds = [2][1][32]byte{{seed1}, {seed2}}
-	gameaddr := c.GameAddress[msg.GameID]
 	return contract.MatchHash(
 		&bind.CallOpts{},
-		gameaddr,
+		msg.GameAddress,
 		msg.MatchID,
 		big.NewInt(msg.Timestamp),
 		msg.Accounts,
-		msg.SeedRatings,
+		[2]uint32{msg.Players[0].SeedRating, msg.Players[1].SeedRating},
 		publicSeeds,
 	)
 

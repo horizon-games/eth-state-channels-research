@@ -29,6 +29,10 @@ export class DGame {
     return this.gameContract.address
   }
 
+  async deposit(value: ethers.utils.BigNumber): Promise<void> {
+    return this.arcadeumContract.deposit({ value: value })
+  }
+
   get matchDuration(): Promise<number> {
     return this.gameContract.matchDuration().then(response => response.toNumber())
   }

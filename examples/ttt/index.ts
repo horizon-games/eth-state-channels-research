@@ -45,6 +45,8 @@ async function main(): Promise<void> {
   const gameAddress = `0xc89ce4735882c9f0f0fe26686c53074e09b0d550`
   const ttt = new dgame.DGame(gameAddress, new Matcher(gameAddress))
 
+  await ttt.deposit(ethers.utils.parseEther(`1`))
+
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 

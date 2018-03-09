@@ -1,6 +1,7 @@
 package arcadeum
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -227,15 +228,38 @@ func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error)
 // Return the address of the signer of the subkey
 func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (common.Address, error) {
 	contract := c.ArcadeumContract
-	var r, s [32]byte
-	copy(r[:], sig.R)
-	copy(s[:], sig.S)
+
+	r := sig.R
+	if r[0] == '0' && (r[1] == 'x' || r[1] == 'X') {
+		r = r[2:]
+	}
+
+	s := sig.S
+	if s[0] == '0' && (s[1] == 'x' || s[1] == 'X') {
+		s = s[2:]
+	}
+
+	r, err := hex.DecodeString(string(r))
+	if err != nil {
+		return common.BytesToAddress(make([]byte, 20)), err
+	}
+
+	s, err = hex.DecodeString(string(s))
+	if err != nil {
+		return common.BytesToAddress(make([]byte, 20)), err
+	}
+
+	var r32 [32]byte
+	var s32 [32]byte
+	copy(r32[:], r)
+	copy(s32[:], s)
+
 	return contract.ArcadeumCaller.SubkeyParentXXX(
 		&bind.CallOpts{},
 		subkey,
 		sig.V,
-		r,
-		s,
+		r32,
+		s32,
 	)
 }
 

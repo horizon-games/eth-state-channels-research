@@ -476,6 +476,19 @@ contract Arcadeum {
     return keccak256(game, matchID, timestamp, accounts[0], accounts[1], seedRatings[0], seedRatings[1], publicSeeds[0], publicSeeds[1]);
   }
 
+  function stateHash(DGame.MetaState metaState) public pure returns (bytes32) {
+    return keccak256(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data);
+  }
+
+  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+  function moveMaker(DGame.MetaState metaState, Move move, SubkeySignature subkeySignature) public pure returns (address) {
+    bytes32 hash;
+
+    hash = keccak256(stateHash(metaState), move.move.playerID, move.move.data);
+
+    return subkeyParent(ecrecover(hash, move.signature.v, move.signature.r, move.signature.s), subkeySignature);
+  }
+
   function matchMaker(Match aMatch, address sender) private pure returns (address) {
     address[2] memory accounts;
     uint32[2] memory seedRatings;
@@ -492,19 +505,6 @@ contract Arcadeum {
     hash = matchHash(aMatch.game, aMatch.matchID, aMatch.timestamp, accounts, seedRatings, publicSeeds);
 
     return ecrecover(hash, aMatch.matchSignature.v, aMatch.matchSignature.r, aMatch.matchSignature.s);
-  }
-
-  function stateHash(DGame.MetaState metaState) public pure returns (bytes32) {
-    return keccak256(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data);
-  }
-
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function moveMaker(DGame.MetaState metaState, Move move, SubkeySignature subkeySignature) public pure returns (address) {
-    bytes32 hash;
-
-    hash = keccak256(stateHash(metaState), move.move.playerID, move.move.data);
-
-    return subkeyParent(ecrecover(hash, move.signature.v, move.signature.r, move.signature.s), subkeySignature);
   }
 
   address private owner;

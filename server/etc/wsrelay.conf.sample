@@ -17,11 +17,11 @@ pub_key_file   = "etc/matcher/ec-secp256k1-pub.key"
 node_url = "http://localhost:8545"
 
 [arcadeum]
-contract_address = "0x345ca3e014aaf5dca488057592ee47305d9b3e10"
+contract_address = "0xcfeb869f69431e42cdb54a4f4f105c19c080a601"
 min_stake_usd = 20.00
 etherscan_price_url = "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=FWI7VM1XS26DR69JZIAFSPQQGCEXMS14FA"
 [[arcadeum.games]]
 id = 1
 name = "skyweaver"
-contract_address = "0x8f0483125fcb9aaaefa9209d8e9d7b9c8b9fb90f"
+contract_address = "0xc89ce4735882c9f0f0fe26686c53074e09b0d550"
 

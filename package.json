@@ -21,7 +21,8 @@
     "core-js": "^2.5.3",
     "ethers": "^3.0.1",
     "ganache-cli": "^6.1.0",
-    "global": "^4.3.2"
+    "global": "^4.3.2",
+    "mock-socket": "^7.1.0"
   },
   "devDependencies": {
     "@types/jest": "^22.1.1",

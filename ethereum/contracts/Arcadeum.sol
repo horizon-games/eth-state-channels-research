@@ -192,7 +192,7 @@ contract Arcadeum {
     }
 
     // XXX: https://github.com/ethereum/solidity/issues/267
-    opponent = playerAccountXXX(aMatch, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccountXXXXXX(aMatch, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, loserMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -431,7 +431,7 @@ contract Arcadeum {
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/267
-  function playerAccountXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
+  function playerAccountXXXXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
     return playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, timestampSignature, subkeySignature);
   }
 

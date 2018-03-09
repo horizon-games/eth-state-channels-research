@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	"encoding/json"
+
 	"github.com/gorilla/websocket"
-	"github.com/horizon-games/arcadeum/server/services/eth/arcadeum"
+	"github.com/horizon-games/arcadeum/server/services/arcadeum"
 	"github.com/horizon-games/arcadeum/server/services/matcher"
 	"github.com/horizon-games/arcadeum/server/services/wsrelay/config"
 )

@@ -18,8 +18,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gorilla/websocket"
 	"github.com/horizon-games/arcadeum/server/config"
+	"github.com/horizon-games/arcadeum/server/services/arcadeum"
 	cr "github.com/horizon-games/arcadeum/server/services/crypto"
-	"github.com/horizon-games/arcadeum/server/services/eth/arcadeum"
 	"github.com/horizon-games/arcadeum/server/services/util"
 )
 

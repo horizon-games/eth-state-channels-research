@@ -86,7 +86,7 @@ var withdrawalStartedChan = make(chan *ArcadeumWithdrawalStarted)
 var withdrawalStartedSubscription event.Subscription
 
 func (c *Client) SubscribeWithdrawalStarted() (event.Subscription, error) {
-	contract, _ := NewArcadeum(c.ArcadeumContractAddress, c.Conn)
+	contract := c.ArcadeumContract
 	sub, err := contract.ArcadeumFilterer.WatchWithdrawalStarted(
 		&bind.WatchOpts{},
 		withdrawalStartedChan,
@@ -226,10 +226,7 @@ func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error)
 
 // Return the address of the signer of the subkey
 func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (common.Address, error) {
-	contract, err := NewArcadeum(c.ArcadeumContractAddress, c.Conn)
-	if err != nil {
-		return common.Address{}, err
-	}
+	contract := c.ArcadeumContract
 	var r, s [32]byte
 	copy(r[:], sig.R)
 	copy(s[:], sig.S)
@@ -257,10 +254,7 @@ func (c *Client) IsSecretSeedValid(gameID uint32, account common.Address, secret
 
 // Calculate the balance of a given address on the Arcadeum staking contract.
 func (c *Client) StakeBalanceInEth(address common.Address) (*big.Int, error) {
-	contract, err := NewArcadeum(c.ArcadeumContractAddress, c.Conn)
-	if err != nil {
-		return nil, err
-	}
+	contract := c.ArcadeumContract
 	return contract.ArcadeumCaller.Balance(&bind.CallOpts{}, address)
 }
 

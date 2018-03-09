@@ -13,15 +13,15 @@ import (
 	b64 "encoding/base64"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/horizon-games/dgame-server/config"
-	"github.com/horizon-games/dgame-server/services/matcher"
+	"github.com/horizon-games/arcadeum/server/config"
+	"github.com/horizon-games/arcadeum/server/services/matcher"
 )
 
 func buildService() *matcher.Service {
 	gopath := os.Getenv("GOPATH")
 	service := matcher.NewService(
 		&config.ENVConfig{
-			WorkingDir: fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/dgame-server/"),
+			WorkingDir: fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/arcadeum/server/"),
 		},
 		&config.MatcherConfig{
 			PrivKeyFile: "etc/matcher/ec-secp256k1-priv.key",

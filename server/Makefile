@@ -95,7 +95,7 @@ define build
 	go install -v \
 		-tags='$(BUILDTAGS)' \
 		-gcflags='-e' \
-		-ldflags='-X "github.com/horizon-games/dgame-server.VERSION=$(VERSION)" -X "github.com/horizon-games/dgame-server.GITBRANCH=$(GITBRANCH)" -X "github.com/horizon-games/davatar.GITCOMMIT=$(GITCOMMIT)" -X "github.com/horizon-games/dgame-server.GITCOMMITDATE=$(GITCOMMITDATE)" -X "github.com/horizon-games/dgame-server.GITCOMMITAUTHOR=$(GITCOMMITAUTHOR)"' \
+		-ldflags='-X "github.com/horizon-games/arcadeum/server.VERSION=$(VERSION)" -X "github.com/horizon-games/arcadeum/server.GITBRANCH=$(GITBRANCH)" -X "github.com/horizon-games/davatar.GITCOMMIT=$(GITCOMMIT)" -X "github.com/horizon-games/arcadeum/server.GITCOMMITDATE=$(GITCOMMITDATE)" -X "github.com/horizon-games/arcadeum/server.GITCOMMITAUTHOR=$(GITCOMMITAUTHOR)"' \
 		$(1)
 endef
 
@@ -105,7 +105,7 @@ build-wsrelay:
 	$(call build, ./cmd/wsrelay)
 
 clean:
-	rm -rf $$GOPATH/pkg/*/github.com/horizon-games/dgame-server{,.*}
+	rm -rf $$GOPATH/pkg/*/github.com/horizon-games/arcadeum/server{,.*}
 	rm -rf ./bin/*
 
 dist: BUILDTAGS += production

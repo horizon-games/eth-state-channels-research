@@ -7,9 +7,9 @@ import (
 
 	"encoding/json"
 	"github.com/gorilla/websocket"
-	"github.com/horizon-games/dgame-server/services/eth/arcadeum"
-	"github.com/horizon-games/dgame-server/services/matcher"
-	"github.com/horizon-games/dgame-server/services/wsrelay/config"
+	"github.com/horizon-games/arcadeum/server/services/eth/arcadeum"
+	"github.com/horizon-games/arcadeum/server/services/matcher"
+	"github.com/horizon-games/arcadeum/server/services/wsrelay/config"
 )
 
 type Server struct {

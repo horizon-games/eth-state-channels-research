@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/event"
-	"github.com/horizon-games/dgame-server/config"
-	"github.com/horizon-games/dgame-server/services/crypto"
+	"github.com/horizon-games/arcadeum/server/config"
+	"github.com/horizon-games/arcadeum/server/services/crypto"
 	"math/big"
 )
 

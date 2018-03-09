@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/horizon-games/dgame-server/services/eth"
+	"github.com/horizon-games/arcadeum/server/services/eth"
 )
 
 func TestPubFromHashAndSignature(t *testing.T) {

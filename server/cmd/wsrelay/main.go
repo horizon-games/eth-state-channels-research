@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/horizon-games/dgame-server/config"
-	"github.com/horizon-games/dgame-server/services/matcher"
-	"github.com/horizon-games/dgame-server/services/wsrelay"
-	serviceConfig "github.com/horizon-games/dgame-server/services/wsrelay/config"
+	"github.com/horizon-games/arcadeum/server/config"
+	"github.com/horizon-games/arcadeum/server/services/matcher"
+	"github.com/horizon-games/arcadeum/server/services/wsrelay"
+	serviceConfig "github.com/horizon-games/arcadeum/server/services/wsrelay/config"
 )
 
 var (
@@ -34,7 +34,7 @@ func main() {
 		if gopath == "" {
 			gopath = fmt.Sprintf("%s/go", os.Getenv("HOME")) // make best guess
 		}
-		cfg.ENV.WorkingDir = fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/dgame-server")
+		cfg.ENV.WorkingDir = fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/arcadeum/server")
 	}
 	server := wsrelay.NewServer(cfg)
 

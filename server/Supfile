@@ -3,7 +3,7 @@
 version: 0.5
 
 env:
-  IMAGE: davatar/dgame-server
+  IMAGE: davatar/arcadeum/server
   CONFIG: /data/etc/wsrelay.conf
   HOST_PORT: 8000
   CONTAINER_PORT: 8000
@@ -102,7 +102,7 @@ commands:
 
   images:
     desc: List Docker images
-    run: sudo docker images davatar/dgame-server
+    run: sudo docker images davatar/arcadeum/server
 
   config:
     desc: Upload/test config file.

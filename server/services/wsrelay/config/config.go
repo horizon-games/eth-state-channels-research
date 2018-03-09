@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/horizon-games/dgame-server/config"
+	"github.com/horizon-games/arcadeum/server/config"
 )
 
 type Config struct {

@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/horizon-games/dgame-server/services/crypto"
+	"github.com/horizon-games/arcadeum/server/services/crypto"
 )
 
 // Request token.
@@ -38,7 +38,7 @@ func AddTokenContext(next http.Handler) http.Handler {
 		token := &Token{}
 		er := json.Unmarshal(decoded, &token)
 		if er != nil {
-			log.Printf("parse error: %s", err.Error())
+			log.Printf("parse error: %s", er.Error())
 			writeUnauthorized(w)
 			return
 		}

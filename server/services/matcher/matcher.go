@@ -17,10 +17,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gorilla/websocket"
-	"github.com/horizon-games/dgame-server/config"
-	cr "github.com/horizon-games/dgame-server/services/crypto"
-	"github.com/horizon-games/dgame-server/services/eth/arcadeum"
-	"github.com/horizon-games/dgame-server/services/util"
+	"github.com/horizon-games/arcadeum/server/config"
+	cr "github.com/horizon-games/arcadeum/server/services/crypto"
+	"github.com/horizon-games/arcadeum/server/services/eth/arcadeum"
+	"github.com/horizon-games/arcadeum/server/services/util"
 )
 
 type Code int

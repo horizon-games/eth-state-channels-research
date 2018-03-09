@@ -16,7 +16,7 @@ import (
 )
 
 // ArcadeumABI is the input ABI used to generate the binding from.
-const ArcadeumABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"playerAccount\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"}],\"name\":\"subkeyMessage\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"stopWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"canFinishWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"couldStopWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"canStopWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"startWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finishWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"accounts\",\"type\":\"address[2]\"},{\"name\":\"seedRatings\",\"type\":\"uint32[2]\"},{\"name\":\"publicSeeds\",\"type\":\"bytes32[1][2]\"}],\"name\":\"matchHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isWithdrawing\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"subkeyParent\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStopped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"game\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"matchID\",\"type\":\"uint32\"},{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"rewardClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"game\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"matchID\",\"type\":\"uint32\"},{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"cheaterReported\",\"type\":\"event\"}]"
+const ArcadeumABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"canStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"couldStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"subkeyParentXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"stopWithdrawalXXX\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"canFinishWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"playerAccountXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"startWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finishWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"matchID\",\"type\":\"uint32\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"accounts\",\"type\":\"address[2]\"},{\"name\":\"seedRatings\",\"type\":\"uint32[2]\"},{\"name\":\"publicSeeds\",\"type\":\"bytes32[1][2]\"}],\"name\":\"matchHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isWithdrawing\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStopped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"game\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"matchID\",\"type\":\"uint32\"},{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"rewardClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"game\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"matchID\",\"type\":\"uint32\"},{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"cheaterReported\",\"type\":\"event\"}]"
 
 // ArcadeumBin is the compiled bytecode used for deploying new contracts.
 const ArcadeumBin = `0x`
@@ -228,56 +228,56 @@ func (_Arcadeum *ArcadeumCallerSession) CanFinishWithdrawal(account common.Addre
 	return _Arcadeum.Contract.CanFinishWithdrawal(&_Arcadeum.CallOpts, account)
 }
 
-// CanStopWithdrawal is a free data retrieval call binding the contract method 0xbb062f9e.
+// CanStopWithdrawalXXX is a free data retrieval call binding the contract method 0x0fad2462.
 //
-// Solidity: function canStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumCaller) CanStopWithdrawal(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+// Solidity: function canStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumCaller) CanStopWithdrawalXXX(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
 	var (
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Arcadeum.contract.Call(opts, out, "canStopWithdrawal", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+	err := _Arcadeum.contract.Call(opts, out, "canStopWithdrawalXXX", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 	return *ret0, err
 }
 
-// CanStopWithdrawal is a free data retrieval call binding the contract method 0xbb062f9e.
+// CanStopWithdrawalXXX is a free data retrieval call binding the contract method 0x0fad2462.
 //
-// Solidity: function canStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumSession) CanStopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
-	return _Arcadeum.Contract.CanStopWithdrawal(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function canStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumSession) CanStopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+	return _Arcadeum.Contract.CanStopWithdrawalXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// CanStopWithdrawal is a free data retrieval call binding the contract method 0xbb062f9e.
+// CanStopWithdrawalXXX is a free data retrieval call binding the contract method 0x0fad2462.
 //
-// Solidity: function canStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumCallerSession) CanStopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
-	return _Arcadeum.Contract.CanStopWithdrawal(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function canStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumCallerSession) CanStopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+	return _Arcadeum.Contract.CanStopWithdrawalXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// CouldStopWithdrawal is a free data retrieval call binding the contract method 0xb7a07b81.
+// CouldStopWithdrawalXXX is a free data retrieval call binding the contract method 0x4898b506.
 //
-// Solidity: function couldStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumCaller) CouldStopWithdrawal(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+// Solidity: function couldStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumCaller) CouldStopWithdrawalXXX(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
 	var (
 		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Arcadeum.contract.Call(opts, out, "couldStopWithdrawal", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+	err := _Arcadeum.contract.Call(opts, out, "couldStopWithdrawalXXX", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 	return *ret0, err
 }
 
-// CouldStopWithdrawal is a free data retrieval call binding the contract method 0xb7a07b81.
+// CouldStopWithdrawalXXX is a free data retrieval call binding the contract method 0x4898b506.
 //
-// Solidity: function couldStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumSession) CouldStopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
-	return _Arcadeum.Contract.CouldStopWithdrawal(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function couldStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumSession) CouldStopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+	return _Arcadeum.Contract.CouldStopWithdrawalXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// CouldStopWithdrawal is a free data retrieval call binding the contract method 0xb7a07b81.
+// CouldStopWithdrawalXXX is a free data retrieval call binding the contract method 0x4898b506.
 //
-// Solidity: function couldStopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
-func (_Arcadeum *ArcadeumCallerSession) CouldStopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
-	return _Arcadeum.Contract.CouldStopWithdrawal(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function couldStopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(bool)
+func (_Arcadeum *ArcadeumCallerSession) CouldStopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (bool, error) {
+	return _Arcadeum.Contract.CouldStopWithdrawalXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
 // IsWithdrawing is a free data retrieval call binding the contract method 0xed095b84.
@@ -332,82 +332,56 @@ func (_Arcadeum *ArcadeumCallerSession) MatchHash(game common.Address, matchID u
 	return _Arcadeum.Contract.MatchHash(&_Arcadeum.CallOpts, game, matchID, timestamp, accounts, seedRatings, publicSeeds)
 }
 
-// PlayerAccount is a free data retrieval call binding the contract method 0x0c37ae3c.
+// PlayerAccountXXX is a free data retrieval call binding the contract method 0xa8f2de36.
 //
-// Solidity: function playerAccount(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumCaller) PlayerAccount(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+// Solidity: function playerAccountXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumCaller) PlayerAccountXXX(opts *bind.CallOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
 	var (
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Arcadeum.contract.Call(opts, out, "playerAccount", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+	err := _Arcadeum.contract.Call(opts, out, "playerAccountXXX", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 	return *ret0, err
 }
 
-// PlayerAccount is a free data retrieval call binding the contract method 0x0c37ae3c.
+// PlayerAccountXXX is a free data retrieval call binding the contract method 0xa8f2de36.
 //
-// Solidity: function playerAccount(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumSession) PlayerAccount(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
-	return _Arcadeum.Contract.PlayerAccount(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function playerAccountXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumSession) PlayerAccountXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+	return _Arcadeum.Contract.PlayerAccountXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// PlayerAccount is a free data retrieval call binding the contract method 0x0c37ae3c.
+// PlayerAccountXXX is a free data retrieval call binding the contract method 0xa8f2de36.
 //
-// Solidity: function playerAccount(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumCallerSession) PlayerAccount(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
-	return _Arcadeum.Contract.PlayerAccount(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function playerAccountXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumCallerSession) PlayerAccountXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+	return _Arcadeum.Contract.PlayerAccountXXX(&_Arcadeum.CallOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// SubkeyMessage is a free data retrieval call binding the contract method 0x41b677db.
+// SubkeyParentXXX is a free data retrieval call binding the contract method 0x5e15d8a8.
 //
-// Solidity: function subkeyMessage(subkey address) constant returns(string)
-func (_Arcadeum *ArcadeumCaller) SubkeyMessage(opts *bind.CallOpts, subkey common.Address) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _Arcadeum.contract.Call(opts, out, "subkeyMessage", subkey)
-	return *ret0, err
-}
-
-// SubkeyMessage is a free data retrieval call binding the contract method 0x41b677db.
-//
-// Solidity: function subkeyMessage(subkey address) constant returns(string)
-func (_Arcadeum *ArcadeumSession) SubkeyMessage(subkey common.Address) (string, error) {
-	return _Arcadeum.Contract.SubkeyMessage(&_Arcadeum.CallOpts, subkey)
-}
-
-// SubkeyMessage is a free data retrieval call binding the contract method 0x41b677db.
-//
-// Solidity: function subkeyMessage(subkey address) constant returns(string)
-func (_Arcadeum *ArcadeumCallerSession) SubkeyMessage(subkey common.Address) (string, error) {
-	return _Arcadeum.Contract.SubkeyMessage(&_Arcadeum.CallOpts, subkey)
-}
-
-// SubkeyParent is a free data retrieval call binding the contract method 0xf2ec771f.
-//
-// Solidity: function subkeyParent(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumCaller) SubkeyParent(opts *bind.CallOpts, subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+// Solidity: function subkeyParentXXX(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumCaller) SubkeyParentXXX(opts *bind.CallOpts, subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
 	var (
 		ret0 = new(common.Address)
 	)
 	out := ret0
-	err := _Arcadeum.contract.Call(opts, out, "subkeyParent", subkey, subkeyV, subkeyR, subkeyS)
+	err := _Arcadeum.contract.Call(opts, out, "subkeyParentXXX", subkey, subkeyV, subkeyR, subkeyS)
 	return *ret0, err
 }
 
-// SubkeyParent is a free data retrieval call binding the contract method 0xf2ec771f.
+// SubkeyParentXXX is a free data retrieval call binding the contract method 0x5e15d8a8.
 //
-// Solidity: function subkeyParent(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumSession) SubkeyParent(subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
-	return _Arcadeum.Contract.SubkeyParent(&_Arcadeum.CallOpts, subkey, subkeyV, subkeyR, subkeyS)
+// Solidity: function subkeyParentXXX(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumSession) SubkeyParentXXX(subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+	return _Arcadeum.Contract.SubkeyParentXXX(&_Arcadeum.CallOpts, subkey, subkeyV, subkeyR, subkeyS)
 }
 
-// SubkeyParent is a free data retrieval call binding the contract method 0xf2ec771f.
+// SubkeyParentXXX is a free data retrieval call binding the contract method 0x5e15d8a8.
 //
-// Solidity: function subkeyParent(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
-func (_Arcadeum *ArcadeumCallerSession) SubkeyParent(subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
-	return _Arcadeum.Contract.SubkeyParent(&_Arcadeum.CallOpts, subkey, subkeyV, subkeyR, subkeyS)
+// Solidity: function subkeyParentXXX(subkey address, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) constant returns(address)
+func (_Arcadeum *ArcadeumCallerSession) SubkeyParentXXX(subkey common.Address, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (common.Address, error) {
+	return _Arcadeum.Contract.SubkeyParentXXX(&_Arcadeum.CallOpts, subkey, subkeyV, subkeyR, subkeyS)
 }
 
 // Deposit is a paid mutator transaction binding the contract method 0xd0e30db0.
@@ -473,25 +447,25 @@ func (_Arcadeum *ArcadeumTransactorSession) StartWithdrawal() (*types.Transactio
 	return _Arcadeum.Contract.StartWithdrawal(&_Arcadeum.TransactOpts)
 }
 
-// StopWithdrawal is a paid mutator transaction binding the contract method 0x6f09e99a.
+// StopWithdrawalXXX is a paid mutator transaction binding the contract method 0x927e0d56.
 //
-// Solidity: function stopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
-func (_Arcadeum *ArcadeumTransactor) StopWithdrawal(opts *bind.TransactOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
-	return _Arcadeum.contract.Transact(opts, "stopWithdrawal", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function stopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
+func (_Arcadeum *ArcadeumTransactor) StopWithdrawalXXX(opts *bind.TransactOpts, game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
+	return _Arcadeum.contract.Transact(opts, "stopWithdrawalXXX", game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// StopWithdrawal is a paid mutator transaction binding the contract method 0x6f09e99a.
+// StopWithdrawalXXX is a paid mutator transaction binding the contract method 0x927e0d56.
 //
-// Solidity: function stopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
-func (_Arcadeum *ArcadeumSession) StopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
-	return _Arcadeum.Contract.StopWithdrawal(&_Arcadeum.TransactOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function stopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
+func (_Arcadeum *ArcadeumSession) StopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
+	return _Arcadeum.Contract.StopWithdrawalXXX(&_Arcadeum.TransactOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
-// StopWithdrawal is a paid mutator transaction binding the contract method 0x6f09e99a.
+// StopWithdrawalXXX is a paid mutator transaction binding the contract method 0x927e0d56.
 //
-// Solidity: function stopWithdrawal(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
-func (_Arcadeum *ArcadeumTransactorSession) StopWithdrawal(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
-	return _Arcadeum.Contract.StopWithdrawal(&_Arcadeum.TransactOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
+// Solidity: function stopWithdrawalXXX(game address, matchID uint32, timestamp uint256, timestampV uint8, timestampR bytes32, timestampS bytes32, subkeyV uint8, subkeyR bytes32, subkeyS bytes32) returns()
+func (_Arcadeum *ArcadeumTransactorSession) StopWithdrawalXXX(game common.Address, matchID uint32, timestamp *big.Int, timestampV uint8, timestampR [32]byte, timestampS [32]byte, subkeyV uint8, subkeyR [32]byte, subkeyS [32]byte) (*types.Transaction, error) {
+	return _Arcadeum.Contract.StopWithdrawalXXX(&_Arcadeum.TransactOpts, game, matchID, timestamp, timestampV, timestampR, timestampS, subkeyV, subkeyR, subkeyS)
 }
 
 // ArcadeumBalanceChangedIterator is returned from FilterBalanceChanged and is used to iterate over the raw logs and unpacked data for BalanceChanged events raised by the Arcadeum contract.

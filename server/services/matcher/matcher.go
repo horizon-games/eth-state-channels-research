@@ -151,7 +151,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 	copy(playerS[:], player.TimestampSig.S)
 	copy(sessR[:], sess.Signature.R)
 	copy(sessS[:], sess.Signature.S)
-	canWithdraw, err := contract.CanStopWithdrawal(
+	canWithdraw, err := contract.CanStopWithdrawalXXX(
 		&bind.CallOpts{},
 		gameaddr,
 		sess.MatchID,
@@ -172,7 +172,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 		opts.Value = nil    // no funds
 		opts.GasLimit = 0   // estimate
 		opts.GasPrice = nil // use price oracle
-		_, err := contract.StopWithdrawal(
+		_, err := contract.StopWithdrawalXXX(
 			opts,
 			gameaddr,
 			sess.MatchID,

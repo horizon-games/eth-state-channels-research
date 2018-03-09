@@ -122,7 +122,7 @@ func (c *Client) VerifySignedTimestamp(
 	copy(s1[:], req.Signature.S)
 	copy(r2[:], subkeySig.R)
 	copy(s2[:], subkeySig.S)
-	return contract.ArcadeumCaller.PlayerAccount(
+	return contract.ArcadeumCaller.PlayerAccountXXX(
 		&bind.CallOpts{},
 		gameaddr,
 		matchID,
@@ -230,7 +230,7 @@ func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (comm
 	var r, s [32]byte
 	copy(r[:], sig.R)
 	copy(s[:], sig.S)
-	return contract.ArcadeumCaller.SubkeyParent(
+	return contract.ArcadeumCaller.SubkeyParentXXX(
 		&bind.CallOpts{},
 		subkey,
 		sig.V,

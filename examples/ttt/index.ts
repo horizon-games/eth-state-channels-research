@@ -50,7 +50,7 @@ async function main(): Promise<void> {
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 
-  const match = (await ttt.createMatch(new Uint8Array(0))).match
+  const match = await ttt.createMatch(new Uint8Array(0))
 
   console.log(match)
 }

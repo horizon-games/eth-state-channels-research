@@ -41,20 +41,15 @@ export class DGame {
     return this.gameContract.isSecretSeedValid(address, secretSeed)
   }
 
-  async createMatch(secretSeed: Uint8Array): Promise<{ match: Match, XXX: { subkeySignature: Signature, timestampSignature: Signature } }> {
+  async createMatch(secretSeed: Uint8Array): Promise<Match> {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
     const timestamp = await this.server.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
     const timestampSignature = sign(subkey, [`address`, `uint32`, `uint`], [this.address, timestamp.matchID, timestamp.timestamp])
+    const match = await this.server.sendTimestampSignature(timestampSignature)
 
-    return {
-      match: new Match(this.arcadeumContract, this.gameContract, subkey, await this.server.sendTimestampSignature(timestampSignature)),
-      XXX: {
-        subkeySignature: subkeySignature,
-        timestampSignature: timestampSignature
-      }
-    }
+    return new Match(this.arcadeumContract, this.gameContract, subkey, match)
   }
 
   private signer: ethers.providers.Web3Signer

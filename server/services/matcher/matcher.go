@@ -362,6 +362,14 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 	if err2 != nil {
 		return err2
 	}
+	msg.PlayerIndex = 1
+	relaymsg = &Message{
+		Meta: Meta{
+			MatchID: s.MatchID,
+			Code:    MATCH_VERIFIED,
+		},
+		Payload: util.Jsonify(msg),
+	}
 	err3 := s.Player2.Conn.WriteJSON(relaymsg)
 	if err3 != nil {
 		return err3

@@ -82,12 +82,7 @@ export class Relay {
 
   setStream(callbacks?: ConnectHandler) {
     if (!this.isInitialized()) {
-      this.ws = new WebSocket(`${this.ssl ? 'wss' : 'ws'}://${this.host}${this.port === 80 ? '' : `:${this.port}`}/ws?token=${this.token()}`)
-      this.stream = Observable.create((obv: Subscriber<Message>) => {
-        this.ws.onopen = callbacks && callbacks.onOpen != null ? callbacks.onOpen(obv) : this.onOpen(obv)
-        this.ws.onmessage = callbacks && callbacks.onMessage != null ? callbacks.onMessage(obv) : this.onMessage(obv)
-        this.ws.onerror = callbacks && callbacks.onError != null ? callbacks.onError(obv) : this.onError(obv)
-      }).publishReplay(1).refCount()
+      this.stream = this.connect(callbacks).publishReplay(1).refCount()
     }
   }
 

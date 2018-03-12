@@ -282,7 +282,7 @@ export class Move {
 }
 
 export class Signature {
-  constructor(signature?: string) {
+  constructor(signature?: string | Signature) {
     if (typeof signature === `string`) {
       const signatureBytes = ethers.utils.arrayify(signature)
 
@@ -291,9 +291,23 @@ export class Signature {
       this.s = new Uint8Array(signatureBytes.buffer, 32, 32)
 
     } else {
-      this.v = 0
-      this.r = new Uint8Array(32)
-      this.s = new Uint8Array(32)
+      if (signature !== undefined && signature.hasOwnProperty('v')) {
+        this.v = signature.v
+      } else {
+        this.v = 0
+      }
+
+      if (signature !== undefined && signature.hasOwnProperty('r')) {
+        this.r = signature.r
+      } else {
+        this.r = new Uint8Array(32)
+      }
+
+      if (signature !== undefined && signature.hasOwnProperty('s')) {
+        this.s = signature.s
+      } else {
+        this.s = new Uint8Array(32)
+      }
     }
   }
 

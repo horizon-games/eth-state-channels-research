@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/Rx'
+import { Observable, Observer } from 'rxjs/Rx'
 import { Subscriber } from 'rxjs/Subscriber'
 import { first, publishReplay, refCount } from 'rxjs/operators'
 
@@ -106,6 +106,11 @@ export class Relay {
         reject(err)
       })
     })
+  }
+
+  subscribe(observer: Observer<Message>): void {
+    this.setStream()
+    this.stream.skip(2).subscribe(observer)
   }
 
   isInitialized(): boolean {

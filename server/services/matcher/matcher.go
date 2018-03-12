@@ -350,6 +350,8 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 	if err != nil {
 		return err
 	}
+	msg.SignatureOpponentTimestamp = &s.Player2.TimestampSig
+	msg.SignatureOpponentSubkey = &s.Player2.Token.SubKeySignature
 	s.Signature = msg.SignatureMatchHash
 	relaymsg := &Message{
 		Meta: Meta{
@@ -363,6 +365,8 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 		return err2
 	}
 	msg.PlayerIndex = 1
+	msg.SignatureOpponentTimestamp = &s.Player1.TimestampSig
+	msg.SignatureOpponentSubkey = &s.Player1.Token.SubKeySignature
 	relaymsg = &Message{
 		Meta: Meta{
 			MatchID: s.MatchID,

@@ -66,8 +66,10 @@ type MatchVerifiedMessage struct {
 	PlayerIndex uint8                       `json:"playerID"`
 	Players     [2]*MatchVerifiedPlayerInfo `json:"players"`
 
-	MatchHash          [32]byte
-	SignatureMatchHash *crypto.Signature `json:"matchSignature"`
+	MatchHash                  [32]byte
+	SignatureMatchHash         *crypto.Signature `json:"matchSignature"`
+	SignatureOpponentTimestamp *crypto.Signature `json:"opponentTimestampSignature"`
+	SignatureOpponentSubkey    *crypto.Signature `json:"opponentSubkeySignature"`
 }
 
 type MatchVerifiedPlayerInfo struct {

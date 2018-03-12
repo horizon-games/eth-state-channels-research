@@ -1,4 +1,4 @@
-.PHONY: all contracts typescript ganache truffle clean
+.PHONY: all contracts typescript ganache truffle clean server
 
 all: contracts typescript
 
@@ -16,4 +16,7 @@ truffle:
 	yarn run truffle migrate --network ganache
 
 clean:
-	-rm -r build client/*/*.js{,.map}
+	-rm -r build client/*/*.js{,.map} server/bin
+
+server:
+	yarn run server

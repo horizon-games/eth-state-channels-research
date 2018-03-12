@@ -15,7 +15,8 @@
     "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
     "lint": "tslint -c tslint.json client/**/*.ts client/**/*.tsx",
     "test:watch": "jest --watchAll",
-    "test": "jest --ci --runInBand"
+    "test": "jest --ci --runInBand",
+    "server": "cd server && make run"
   },
   "dependencies": {
     "core-js": "^2.5.3",

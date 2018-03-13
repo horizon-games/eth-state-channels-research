@@ -4,19 +4,21 @@
   "private": true,
   "license": "none",
   "scripts": {
-    "start": "yarn dev",
+    "build": "rm -rf ./build && truffle compile && tsc",
     "dev": "webpack-dev-server --progress --color --disable-host-check --config config/webpack/webpack.config.dev.js",
-    "build": "yarn dist:build",
     "dist": "yarn dist:build",
+    "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
     "dist:build": "yarn dist:clean && webpack --color --config config/webpack/webpack.config.dist.js",
     "dist:clean": "rm -rf ./dist",
     "dist:client": "serve --silent --port 3000 ./dist",
     "dist:server": "node dist/server",
-    "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
     "lint": "tslint -c tslint.json client/**/*.ts client/**/*.tsx",
-    "test:watch": "jest --watchAll",
+    "migrate": "truffle migrate --network ganache",
+    "server": "cd server && make copy-sample-config && make run",
+    "start": "yarn dev",
     "test": "jest --ci --runInBand",
-    "server": "cd server && make run"
+    "test:watch": "jest --watchAll",
+    "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v"
   },
   "dependencies": {
     "core-js": "^2.5.3",

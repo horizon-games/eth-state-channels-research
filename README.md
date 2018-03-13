@@ -6,11 +6,13 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 
 ```yarn```
 
-```make```
+```yarn build```
 
-```make ganache```
+```yarn testrpc```
 
-```make truffle```
+```yarn migrate```
+
+```yarn server```
 
 ```yarn dev```
 

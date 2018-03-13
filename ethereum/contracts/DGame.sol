@@ -303,10 +303,18 @@ contract DGame {
 
   modifier restricted { require(msg.sender == owner); _; }
 
-  function registerWin(address /* winner */, uint32 /* winnerSeedRating */, uint32 /* loserSeedRating */, State /* state */, uint8 /* winnerID */) public restricted {
+  function registerWin(address winnerAccount, uint32 winnerSeedRating, uint32 loserSeedRating, State state, uint8 winnerID) public restricted {
+    registerWinImplementation(winnerAccount, winnerSeedRating, loserSeedRating, state, winnerID);
   }
 
-  function registerCheat(address /* cheater */) public restricted {
+  function registerCheat(address cheaterAccount) public restricted {
+    registerCheatImplementation(cheaterAccount);
+  }
+
+  function registerWinImplementation(address /* winnerAccount */, uint32 /* winnerSeedRating */, uint32 /* loserSeedRating */, State /* state */, uint8 /* winnerID */) internal {
+  }
+
+  function registerCheatImplementation(address /* cheaterAccount */) internal {
   }
 
   function winnerImplementation(State state) internal pure returns (Winner);

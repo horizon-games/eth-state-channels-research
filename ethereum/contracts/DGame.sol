@@ -4,9 +4,9 @@ pragma experimental ABIEncoderV2;
 contract DGame {
   // XXX: https://github.com/ethereum/solidity/issues/3270
   // *** THIS MUST MATCH Arcadeum.sol ***
-  uint private constant PUBLIC_SEED_LENGTH = 1;
-  uint private constant META_STATE_DATA_LENGTH = 3;
-  uint private constant STATE_DATA_LENGTH = 1;
+  uint internal constant PUBLIC_SEED_LENGTH = 1;
+  uint internal constant META_STATE_DATA_LENGTH = 3;
+  uint internal constant STATE_DATA_LENGTH = 1;
 
   enum Winner {
     NONE,

@@ -410,11 +410,16 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 	msg.MatchHash = hash
 
 	// Have the matcher sign
-	sig, err := srv.SignECDSAToSig(msg.MatchHash[:])
+	sig, err := crypto.Sign(hash[:], srv.PrivKey())
 	if err != nil {
 		return nil, err
 	}
-	msg.SignatureMatchHash = sig
+	msg.SignatureMatchHash = &cr.Signature{
+		V: 27 + sig[64],
+		R: sig[0:32],
+		S: sig[32:64],
+	}
+
 	return msg, nil
 }
 
@@ -480,40 +485,6 @@ func (srv *Service) SignElliptic(inputs ...interface{}) (r, s *big.Int, err erro
 	privkey := srv.PrivKey()
 	r, s, err = ecdsa.Sign(rand.Reader, privkey, hash)
 	return
-}
-
-func (srv *Service) SignECDSA(message []byte) ([]byte, error) {
-	r, s, err := srv.SignECDSAPair(message)
-	if err != nil {
-		return nil, err
-	}
-	return asn1.Marshal(cr.EcdsaSignature{r, s})
-}
-
-func RecoveryID(r *big.Int, s *big.Int) (uint8, error) {
-	sig, err := asn1.Marshal(cr.EcdsaSignature{r, s})
-	if err != nil {
-		return 0, err
-	}
-	return sig[64] - 27, nil
-}
-
-func (srv *Service) SignECDSAPair(message []byte) (r, s *big.Int, err error) {
-	privkey := srv.PrivKey()
-	r, s, err = ecdsa.Sign(rand.Reader, privkey, message)
-	return
-}
-
-func (srv *Service) SignECDSAToSig(message []byte) (*cr.Signature, error) {
-	r, s, err := srv.SignECDSAPair(message)
-	if err != nil {
-		return nil, err
-	}
-	v, err := RecoveryID(r, s)
-	if err != nil {
-		return nil, err
-	}
-	return &cr.Signature{V: v, R: r.Bytes(), S: s.Bytes()}, nil
 }
 
 func (srv *Service) PrivKey() *ecdsa.PrivateKey {

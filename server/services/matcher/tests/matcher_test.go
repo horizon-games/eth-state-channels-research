@@ -138,55 +138,6 @@ type Test struct {
 	Signature Sig `json:"signature"`
 }
 
-func TestUnmarshalSignature(t *testing.T) {
-	message := "0x5409ed021d9299bf6814279a6a1411a7e866a631"
-	test := &Test{}
-	service := buildService()
-	sig, _ := service.SignECDSAToSig([]byte(message))
-	r := b64.StdEncoding.EncodeToString(sig.R[:])
-	s := b64.StdEncoding.EncodeToString(sig.S[:])
-	str := fmt.Sprintf("{\"signature\": { \"v\": %d, \"r\": \"%s\", \"s\": \"%s\" }}", sig.V, r, s)
-	log.Println(str)
-	err := json.Unmarshal([]byte(str), test)
-	if err != nil {
-		t.Errorf("Error %v", err)
-	}
-	if string(test.Signature.R[:]) != string(sig.R[:]) {
-		t.Errorf("Error %d %d", test.Signature.R, sig.R)
-	}
-	if string(test.Signature.S[:]) != string(sig.S[:]) {
-		t.Errorf("Error %d %d", test.Signature.S, sig.S)
-	}
-	if test.Signature.V != sig.V {
-		t.Errorf("Error %d %d", test.Signature.V, sig.V)
-	}
-}
-func TestMarshalSignature(t *testing.T) {
-	message := "Sign this message!"
-	test := &Sig{}
-	service := buildService()
-	sig, _ := service.SignECDSAToSig([]byte(message))
-	signature := &Sig{
-		V: sig.V,
-		R: sig.R[:],
-		S: sig.S[:],
-	}
-	marshalled, _ := json.Marshal(signature)
-	err := json.Unmarshal(marshalled, test)
-	if err != nil {
-		t.Errorf("Error %v", err)
-	}
-	if string(test.R) != string(signature.R) {
-		t.Errorf("Error %d %d", test.R, signature.R)
-	}
-	if string(test.S) != string(signature.S) {
-		t.Errorf("Error %d %d", test.S, signature.S)
-	}
-	if test.V != signature.V {
-		t.Errorf("Error %d %d", test.V, signature.V)
-	}
-}
-
 func read_int32(data []byte) (ret int32) {
 	buf := bytes.NewBuffer(data)
 	binary.Read(buf, binary.BigEndian, &ret)

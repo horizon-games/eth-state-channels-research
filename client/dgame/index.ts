@@ -74,6 +74,7 @@ export class Match {
     this.opponentTimestampSignature = match.opponentTimestampSignature
     this.playerMoves = []
     this.pendingMoves = [undefined, undefined]
+    this[`[object Object]`] = this.players // XXX
   }
 
   get state(): Promise<State> {
@@ -115,8 +116,6 @@ export class Match {
       const response = await state.isMoveLegal(move)
 
       if (!response.isLegal) {
-        this[`[object Object]`] = this.players // XXX
-
         if (await this.arcadeumContract.canReportCheater(this, state.encoding, move)) {
           await this.arcadeumContract.reportCheater(this, state.encoding, move)
         }
@@ -156,8 +155,6 @@ export class Match {
     const winner = await this.currentState.winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      this[`[object Object]`] = this.players // XXX
-
       if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)) {
         await this.arcadeumContract.claimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)
       }

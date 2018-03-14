@@ -447,6 +447,18 @@ contract Arcadeum {
     return ecrecover(hash, subkeySignature.v, subkeySignature.r, subkeySignature.s);
   }
 
+  function timestampSubkeyXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS) public pure returns (address) {
+    return timestampSubkey(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS));
+  }
+
+  function timestampSubkey(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature) public pure returns (address) {
+    bytes32 hash;
+
+    hash = keccak256(game, matchID, timestamp);
+
+    return ecrecover(hash, timestampSignature.v, timestampSignature.r, timestampSignature.s);
+  }
+
   // XXX: https://github.com/ethereum/solidity/issues/267
   function playerAccountXXXXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
     return playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, timestampSignature, subkeySignature);
@@ -459,13 +471,7 @@ contract Arcadeum {
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
   function playerAccount(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
-    bytes32 hash;
-    address subkey;
-
-    hash = keccak256(game, matchID, timestamp);
-    subkey = ecrecover(hash, timestampSignature.v, timestampSignature.r, timestampSignature.s);
-
-    return subkeyParent(subkey, subkeySignature);
+    return subkeyParent(timestampSubkey(game, matchID, timestamp, timestampSignature), subkeySignature);
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3270

@@ -283,6 +283,33 @@ func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (comm
 	)
 }
 
+// Return the subkey that signed a given timestamp
+func (c *Client) TimestampSubkey(timestamp int64, sig crypto.Signature) (common.Address, error) {
+	contract := c.ArcadeumContract
+
+	r, err := util.DecodeHexString(string(sig.R))
+	if err != nil {
+		return common.BytesToAddress(make([]byte, 20)), err
+	}
+	s, err := util.DecodeHexString(string(sig.S))
+	if err != nil {
+		return common.BytesToAddress(make([]byte, 20)), err
+	}
+
+	var r32 [32]byte
+	var s32 [32]byte
+	copy(r32[:], r)
+	copy(s32[:], s)
+
+	return contract.ArcadeumCaller.TimestampSubkeyXXX(
+		&bind.CallOpts{},
+		big.NewInt(timestamp),
+		sig.V,
+		r32,
+		s32,
+	)
+}
+
 // Check if the account owns the secret seed "deck"
 func (c *Client) IsSecretSeedValid(gameID uint32, account common.Address, secretSeed []byte) (bool, error) {
 	contract, err := c.DGameContract(gameID)

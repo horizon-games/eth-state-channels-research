@@ -81,20 +81,20 @@ contract Arcadeum {
   function startWithdrawal() external {
     require(balance[msg.sender] > 0);
 
-    withdrawalTime[msg.sender] = now;
+    withdrawalTime[msg.sender] = now + WITHDRAWAL_TIME;
 
     withdrawalStarted(msg.sender);
   }
 
   function canFinishWithdrawal(address account) public view returns (bool) {
-    uint startTime;
+    uint time;
 
-    startTime = withdrawalTime[account];
+    time = withdrawalTime[account];
 
-    if (startTime == 0) {
+    if (time == 0) {
       return false;
 
-    } else if (now < startTime + WITHDRAWAL_TIME) {
+    } else if (now < time) {
       return false;
     }
 

@@ -122,12 +122,9 @@ contract Arcadeum {
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
   function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature, SubkeySignature) public view returns (bool) {
-    uint expiryTime;
     bytes24 gameMatchID;
 
-    expiryTime = timestamp + game.matchDuration();
-
-    if (now >= expiryTime) {
+    if (now >= timestamp) {
       return false;
     }
 

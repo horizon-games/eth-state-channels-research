@@ -231,6 +231,18 @@ func NewArcadeumClient(ethcfg *config.ETHConfig, arccfg *config.ArcadeumConfig) 
 	return client
 }
 
+func (c *Client) MatchDuration(gameID uint32) (time.Duration, error) {
+	contract, err := c.DGameContract(gameID)
+	if err != nil {
+		return 0, err
+	}
+	duration, err := contract.MatchDuration(&bind.CallOpts{})
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(duration.Int64()) * time.Second, nil
+}
+
 // Call constant function ETH contract, passing in the payload, address of requester.
 // Use gameID to map to correct game contract.
 func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error) {

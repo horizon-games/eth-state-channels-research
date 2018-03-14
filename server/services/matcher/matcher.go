@@ -462,12 +462,16 @@ func (s *Service) CreateSession(p1 *MatchResponse, p2 *MatchResponse) (*Session,
 		return nil, err
 	}
 	gameID := p1.Request.GameID // arbitrarily choose first player to get game ID
+	duration, err := s.ArcClient.MatchDuration(gameID)
+	if err != nil {
+		return nil, err
+	}
 	return &Session{
 		GameID:    gameID,
 		MatchID:   s.MatchID,
 		Player1:   player1,
 		Player2:   player2,
-		Timestamp: time.Now().Unix(),
+		Timestamp: time.Now().Add(duration).Unix(),
 	}, nil
 }
 

@@ -337,11 +337,11 @@ contract Arcadeum {
     balanceChanged(opponent);
     balanceChanged(msg.sender);
     balanceChanged(owner);
-    cheaterReported(aMatch.game, aMatch.matchID, opponent);
+    cheaterReported(opponent, timestampSubkey(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature), aMatch.timestamp);
   }
 
   event rewardClaimed(address indexed account, address indexed subkey, uint indexed timestamp);
-  event cheaterReported(address indexed game, uint32 indexed matchID, address indexed account);
+  event cheaterReported(address indexed account, address indexed subkey, uint indexed timestamp);
 
   function subkeyMessage(address subkey) public pure returns (string) {
     bytes memory message;

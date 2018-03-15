@@ -16,7 +16,7 @@ import (
 )
 
 // ArcadeumABI is the input ABI used to generate the binding from.
-const ArcadeumABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"}],\"name\":\"subkeyMessage\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"}],\"name\":\"timestampSubkeyXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"subkeyParentXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"canStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"canFinishWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"couldStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"startWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finishWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"playerAccountXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"accounts\",\"type\":\"address[2]\"},{\"name\":\"subkeys\",\"type\":\"address[2]\"},{\"name\":\"seedRatings\",\"type\":\"uint32[2]\"},{\"name\":\"publicSeeds\",\"type\":\"bytes32[1][2]\"}],\"name\":\"matchHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isWithdrawing\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"stopWithdrawalXXX\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStopped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"subkey\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"rewardClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"game\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"matchID\",\"type\":\"uint32\"},{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"cheaterReported\",\"type\":\"event\"}]"
+const ArcadeumABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"}],\"name\":\"subkeyMessage\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"}],\"name\":\"timestampSubkeyXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"subkey\",\"type\":\"address\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"subkeyParentXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"canStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"canFinishWithdrawal\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"couldStopWithdrawalXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"startWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finishWithdrawal\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"payable\":true,\"stateMutability\":\"payable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"playerAccountXXX\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"balance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"game\",\"type\":\"address\"},{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"accounts\",\"type\":\"address[2]\"},{\"name\":\"subkeys\",\"type\":\"address[2]\"},{\"name\":\"seedRatings\",\"type\":\"uint32[2]\"},{\"name\":\"publicSeeds\",\"type\":\"bytes32[1][2]\"}],\"name\":\"matchHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isWithdrawing\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"},{\"name\":\"timestampV\",\"type\":\"uint8\"},{\"name\":\"timestampR\",\"type\":\"bytes32\"},{\"name\":\"timestampS\",\"type\":\"bytes32\"},{\"name\":\"subkeyV\",\"type\":\"uint8\"},{\"name\":\"subkeyR\",\"type\":\"bytes32\"},{\"name\":\"subkeyS\",\"type\":\"bytes32\"}],\"name\":\"stopWithdrawalXXX\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"}],\"name\":\"withdrawalStopped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"subkey\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"rewardClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"subkey\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"cheaterReported\",\"type\":\"event\"}]"
 
 // ArcadeumBin is the compiled bytecode used for deploying new contracts.
 const ArcadeumBin = `0x`
@@ -721,56 +721,56 @@ func (it *ArcadeumCheaterReportedIterator) Close() error {
 
 // ArcadeumCheaterReported represents a CheaterReported event raised by the Arcadeum contract.
 type ArcadeumCheaterReported struct {
-	Game    common.Address
-	MatchID uint32
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
+	Account   common.Address
+	Subkey    common.Address
+	Timestamp *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterCheaterReported is a free log retrieval operation binding the contract event 0xdfa829d13be375f4a0aefc98a25c8a11d716616e5210e6a69d6a8f342d4dbd38.
+// FilterCheaterReported is a free log retrieval operation binding the contract event 0x423574c10f85c584a34398d1162a81db5d7f6c1482f7e9788a562d5f9368aebb.
 //
-// Solidity: event cheaterReported(game indexed address, matchID indexed uint32, account indexed address)
-func (_Arcadeum *ArcadeumFilterer) FilterCheaterReported(opts *bind.FilterOpts, game []common.Address, matchID []uint32, account []common.Address) (*ArcadeumCheaterReportedIterator, error) {
+// Solidity: event cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
+func (_Arcadeum *ArcadeumFilterer) FilterCheaterReported(opts *bind.FilterOpts, account []common.Address, subkey []common.Address, timestamp []*big.Int) (*ArcadeumCheaterReportedIterator, error) {
 
-	var gameRule []interface{}
-	for _, gameItem := range game {
-		gameRule = append(gameRule, gameItem)
-	}
-	var matchIDRule []interface{}
-	for _, matchIDItem := range matchID {
-		matchIDRule = append(matchIDRule, matchIDItem)
-	}
 	var accountRule []interface{}
 	for _, accountItem := range account {
 		accountRule = append(accountRule, accountItem)
 	}
+	var subkeyRule []interface{}
+	for _, subkeyItem := range subkey {
+		subkeyRule = append(subkeyRule, subkeyItem)
+	}
+	var timestampRule []interface{}
+	for _, timestampItem := range timestamp {
+		timestampRule = append(timestampRule, timestampItem)
+	}
 
-	logs, sub, err := _Arcadeum.contract.FilterLogs(opts, "cheaterReported", gameRule, matchIDRule, accountRule)
+	logs, sub, err := _Arcadeum.contract.FilterLogs(opts, "cheaterReported", accountRule, subkeyRule, timestampRule)
 	if err != nil {
 		return nil, err
 	}
 	return &ArcadeumCheaterReportedIterator{contract: _Arcadeum.contract, event: "cheaterReported", logs: logs, sub: sub}, nil
 }
 
-// WatchCheaterReported is a free log subscription operation binding the contract event 0xdfa829d13be375f4a0aefc98a25c8a11d716616e5210e6a69d6a8f342d4dbd38.
+// WatchCheaterReported is a free log subscription operation binding the contract event 0x423574c10f85c584a34398d1162a81db5d7f6c1482f7e9788a562d5f9368aebb.
 //
-// Solidity: event cheaterReported(game indexed address, matchID indexed uint32, account indexed address)
-func (_Arcadeum *ArcadeumFilterer) WatchCheaterReported(opts *bind.WatchOpts, sink chan<- *ArcadeumCheaterReported, game []common.Address, matchID []uint32, account []common.Address) (event.Subscription, error) {
+// Solidity: event cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
+func (_Arcadeum *ArcadeumFilterer) WatchCheaterReported(opts *bind.WatchOpts, sink chan<- *ArcadeumCheaterReported, account []common.Address, subkey []common.Address, timestamp []*big.Int) (event.Subscription, error) {
 
-	var gameRule []interface{}
-	for _, gameItem := range game {
-		gameRule = append(gameRule, gameItem)
-	}
-	var matchIDRule []interface{}
-	for _, matchIDItem := range matchID {
-		matchIDRule = append(matchIDRule, matchIDItem)
-	}
 	var accountRule []interface{}
 	for _, accountItem := range account {
 		accountRule = append(accountRule, accountItem)
 	}
+	var subkeyRule []interface{}
+	for _, subkeyItem := range subkey {
+		subkeyRule = append(subkeyRule, subkeyItem)
+	}
+	var timestampRule []interface{}
+	for _, timestampItem := range timestamp {
+		timestampRule = append(timestampRule, timestampItem)
+	}
 
-	logs, sub, err := _Arcadeum.contract.WatchLogs(opts, "cheaterReported", gameRule, matchIDRule, accountRule)
+	logs, sub, err := _Arcadeum.contract.WatchLogs(opts, "cheaterReported", accountRule, subkeyRule, timestampRule)
 	if err != nil {
 		return nil, err
 	}

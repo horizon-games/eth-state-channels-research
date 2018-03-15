@@ -153,8 +153,6 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 	copy(sessS[:], sess.Signature.S)
 	canWithdraw, err := contract.CanStopWithdrawalXXX(
 		&bind.CallOpts{},
-		gameaddr,
-		sess.MatchID,
 		big.NewInt(sess.Timestamp),
 		player.TimestampSig.V,
 		playerR,

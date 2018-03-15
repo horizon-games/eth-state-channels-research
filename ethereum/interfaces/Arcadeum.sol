@@ -24,7 +24,7 @@ contract Arcadeum {
   function couldStopWithdrawalXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool);
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
-  function canStopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool);
+  function canStopWithdrawalXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool);
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function stopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public;

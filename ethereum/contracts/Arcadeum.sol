@@ -483,6 +483,14 @@ contract Arcadeum {
     return subkeyParent(ecrecover(hash, move.signature.v, move.signature.r, move.signature.s), subkeySignature);
   }
 
+  function invalidateTimestamp(uint timestamp, TimestampSignature timestampSignature) private {
+    invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))] = true;
+  }
+
+  function isTimestampInvalid(uint timestamp, TimestampSignature timestampSignature) private view returns (bool) {
+    return invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))];
+  }
+
   function matchMaker(Match aMatch, address sender) private pure returns (address) {
     address[2] memory accounts;
     uint32[2] memory seedRatings;
@@ -504,4 +512,5 @@ contract Arcadeum {
   address private owner;
   mapping(address => uint) private withdrawalTime;
   mapping(bytes24 => bool) private isMatchFinal;
+  mapping(bytes32 => bool) private invalidatedTimestamps;
 }

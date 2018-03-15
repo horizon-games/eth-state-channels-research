@@ -128,7 +128,6 @@ func NewService(
 func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted) {
 	account := event.Account
 	sess := s.FindSessionByAccount(account)
-	gameaddr := s.ArcClient.GameAddress[sess.GameID]
 	contract := s.ArcClient.ArcadeumContract
 
 	withdrawing, err := contract.IsWithdrawing(&bind.CallOpts{}, account)
@@ -172,8 +171,6 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 		opts.GasPrice = nil // use price oracle
 		_, err := contract.StopWithdrawalXXX(
 			opts,
-			gameaddr,
-			sess.MatchID,
 			big.NewInt(sess.Timestamp),
 			player.TimestampSig.V,
 			playerR,

@@ -46,7 +46,7 @@ export class DGame {
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
     const timestamp = await this.server.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
-    const timestampSignature = sign(subkey, [`address`, `uint32`, `uint`], [this.address, timestamp.matchID, timestamp.timestamp])
+    const timestampSignature = sign(subkey, [`uint`], [timestamp.timestamp])
     const match = await this.server.sendTimestampSignature(timestampSignature)
 
     return new Match(this.arcadeumContract, this.gameContract, subkey, match)

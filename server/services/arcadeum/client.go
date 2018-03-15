@@ -115,8 +115,6 @@ func (c *Client) HandleWithdrawalStarted(handler IWithdrawalStartedHandler) {
 }
 
 func (c *Client) VerifySignedTimestamp(
-	gameID uint32,
-	matchID uint32,
 	req *VerifyTimestampRequest,
 	subkeySig crypto.Signature) (common.Address, error) {
 	contract := c.ArcadeumContract

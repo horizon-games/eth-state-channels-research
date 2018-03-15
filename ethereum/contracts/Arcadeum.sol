@@ -136,11 +136,11 @@ contract Arcadeum {
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function canStopWithdrawalXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool) {
-    return canStopWithdrawal(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return canStopWithdrawal(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function canStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
+  function canStopWithdrawal(uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
     address account;
 
     account = playerAccount(timestamp, timestampSignature, subkeySignature);
@@ -159,7 +159,7 @@ contract Arcadeum {
     address account;
     uint value;
 
-    require(canStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature));
+    require(canStopWithdrawal(timestamp, timestampSignature, subkeySignature));
 
     account = playerAccount(timestamp, timestampSignature, subkeySignature);
     delete withdrawalTime[account];

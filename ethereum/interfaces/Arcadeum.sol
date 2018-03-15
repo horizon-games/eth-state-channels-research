@@ -32,7 +32,7 @@ contract Arcadeum {
   event balanceChanged(address indexed account);
   event withdrawalStarted(address indexed account);
   event withdrawalStopped(address indexed account);
-  event rewardClaimed(address indexed game, uint32 indexed matchID, address indexed account);
+  event rewardClaimed(address indexed account, address indexed subkey, uint indexed timestamp);
   event cheaterReported(address indexed game, uint32 indexed matchID, address indexed account);
 
   function subkeyMessage(address subkey) public pure returns (string);

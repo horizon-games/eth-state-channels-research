@@ -286,7 +286,7 @@ contract Arcadeum {
     opponentSeedRating = aMatch.players[1 - aMatch.playerID].seedRating;
     aMatch.game.registerWin(msg.sender, winnerSeedRating, opponentSeedRating, metaState.state, aMatch.playerID);
 
-    rewardClaimed(aMatch.game, aMatch.matchID, msg.sender);
+    rewardClaimed(msg.sender, timestampSubkey(aMatch.timestamp, aMatch.players[aMatch.playerID].timestampSignature), aMatch.timestamp);
   }
 
   function canReportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) public view returns (bool) {
@@ -340,7 +340,7 @@ contract Arcadeum {
     cheaterReported(aMatch.game, aMatch.matchID, opponent);
   }
 
-  event rewardClaimed(address indexed game, uint32 indexed matchID, address indexed account);
+  event rewardClaimed(address indexed account, address indexed subkey, uint indexed timestamp);
   event cheaterReported(address indexed game, uint32 indexed matchID, address indexed account);
 
   function subkeyMessage(address subkey) public pure returns (string) {

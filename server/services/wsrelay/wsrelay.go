@@ -55,7 +55,7 @@ func (s *Server) HandleMessages() {
 				msg.PlayerConn.WriteJSON(matcher.NewError(err.Error()))
 				continue
 			}
-			verified, err := s.Matcher.VerifyTimestamp(session.GameID, session.MatchID, req, player)
+			verified, err := s.Matcher.VerifyTimestamp(req, player)
 			if err != nil {
 				msg.PlayerConn.WriteJSON(matcher.NewError(err.Error()))
 				continue

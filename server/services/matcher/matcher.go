@@ -225,7 +225,7 @@ func (s *Session) ContainsAccount(addr common.Address) bool {
 	return s.Player1.Account == addr || s.Player2.Account == addr
 }
 
-func (s *Service) VerifyTimestamp(gameID uint32, matchID uint32, req *arcadeum.VerifyTimestampRequest, player *PlayerInfo) (bool, error) {
+func (s *Service) VerifyTimestamp(req *arcadeum.VerifyTimestampRequest, player *PlayerInfo) (bool, error) {
 	account, err := s.ArcClient.VerifySignedTimestamp(req, player.SubKeySignature)
 	if err != nil {
 		return false, errors.New("Could not deserialize signed timestamp payload.")

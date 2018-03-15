@@ -122,16 +122,12 @@ contract Arcadeum {
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature, SubkeySignature) public view returns (bool) {
-    bytes24 gameMatchID;
-
+  function couldStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature) public view returns (bool) {
     if (now >= timestamp) {
       return false;
     }
 
-    gameMatchID = (bytes24(address(game)) << 32) | bytes24(matchID);
-
-    if (isMatchFinal[gameMatchID]) {
+    if (isTimestampInvalid(timestamp, timestampSignature)) {
       return false;
     }
 
@@ -186,7 +182,6 @@ contract Arcadeum {
   event withdrawalStopped(address indexed account);
 
   function canClaimReward(Match aMatch, DGame.MetaState metaState, Move loserMove, DGame.Move[] winnerMoves) public view returns (bool) {
-    bytes24 gameMatchID;
     address opponent;
     bool isLegal;
     DGame.Winner winner;
@@ -194,9 +189,7 @@ contract Arcadeum {
     DGame.MetaState memory nextState;
     uint i;
 
-    gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
-
-    if (isMatchFinal[gameMatchID]) {
+    if (isTimestampInvalid(aMatch.timestamp, aMatch.players[aMatch.playerID].timestampSignature)) {
       return false;
     }
 
@@ -281,14 +274,13 @@ contract Arcadeum {
 
   // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
   function claimReward(Match aMatch, DGame.MetaState metaState, Move loserMove, DGame.Move[] winnerMoves) public {
-    bytes24 gameMatchID;
     uint32 winnerSeedRating;
     uint32 opponentSeedRating;
 
     require(canClaimReward(aMatch, metaState, loserMove, winnerMoves));
 
-    gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
-    isMatchFinal[gameMatchID] = true;
+    invalidateTimestamp(aMatch.timestamp, aMatch.players[0].timestampSignature);
+    invalidateTimestamp(aMatch.timestamp, aMatch.players[1].timestampSignature);
 
     winnerSeedRating = aMatch.players[aMatch.playerID].seedRating;
     opponentSeedRating = aMatch.players[1 - aMatch.playerID].seedRating;
@@ -298,13 +290,10 @@ contract Arcadeum {
   }
 
   function canReportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) public view returns (bool) {
-    bytes24 gameMatchID;
     address opponent;
     bool isLegal;
 
-    gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
-
-    if (isMatchFinal[gameMatchID]) {
+    if (isTimestampInvalid(aMatch.timestamp, aMatch.players[aMatch.playerID].timestampSignature)) {
       return false;
     }
 
@@ -329,14 +318,13 @@ contract Arcadeum {
 
   // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
   function reportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) public {
-    bytes24 gameMatchID;
     address opponent;
     uint value;
 
     require(canReportCheater(aMatch, metaState, cheaterMove));
 
-    gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
-    isMatchFinal[gameMatchID] = true;
+    invalidateTimestamp(aMatch.timestamp, aMatch.players[0].timestampSignature);
+    invalidateTimestamp(aMatch.timestamp, aMatch.players[1].timestampSignature);
 
     opponent = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
     value = balance[opponent];
@@ -511,6 +499,5 @@ contract Arcadeum {
 
   address private owner;
   mapping(address => uint) private withdrawalTime;
-  mapping(bytes24 => bool) private isMatchFinal;
   mapping(bytes32 => bool) private invalidatedTimestamps;
 }

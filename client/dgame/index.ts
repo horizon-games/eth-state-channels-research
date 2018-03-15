@@ -105,7 +105,7 @@ export class Match {
       await move.sign(this.subkey, state)
 
     } else {
-      const opponent = await this.arcadeumContract.playerAccount(this.game, this.matchID, this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature)
+      const opponent = await this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature)
       const moveMaker = await this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature)
 
       if (moveMaker !== opponent) {

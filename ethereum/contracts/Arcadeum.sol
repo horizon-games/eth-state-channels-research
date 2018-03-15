@@ -147,7 +147,7 @@ contract Arcadeum {
   function canStopWithdrawal(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
     address account;
 
-    account = playerAccount(game, matchID, timestamp, timestampSignature, subkeySignature);
+    account = playerAccount(timestamp, timestampSignature, subkeySignature);
 
     return isWithdrawing(account) && couldStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature);
   }
@@ -165,7 +165,7 @@ contract Arcadeum {
 
     require(canStopWithdrawal(game, matchID, timestamp, timestampSignature, subkeySignature));
 
-    account = playerAccount(game, matchID, timestamp, timestampSignature, subkeySignature);
+    account = playerAccount(timestamp, timestampSignature, subkeySignature);
     delete withdrawalTime[account];
     value = STOP_WITHDRAWAL_GAS * tx.gasprice;
 
@@ -313,7 +313,7 @@ contract Arcadeum {
       return false;
     }
 
-    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, cheaterMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -339,7 +339,7 @@ contract Arcadeum {
     gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
     isMatchFinal[gameMatchID] = true;
 
-    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
     value = balance[opponent];
     delete balance[opponent];
     balance[msg.sender] += value / 2;
@@ -458,16 +458,16 @@ contract Arcadeum {
 
   // XXX: https://github.com/ethereum/solidity/issues/267
   function playerAccountXXXXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
-    return playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, timestampSignature, subkeySignature);
+    return playerAccount(aMatch.timestamp, timestampSignature, subkeySignature);
   }
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function playerAccountXXX(DGame game, uint32 matchID, uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address) {
-    return playerAccount(game, matchID, timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return playerAccount(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function playerAccount(DGame game, uint32 matchID, uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
+  function playerAccount(uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
     return subkeyParent(timestampSubkey(timestamp, timestampSignature), subkeySignature);
   }
 
@@ -497,7 +497,7 @@ contract Arcadeum {
     bytes32 hash;
 
     accounts[aMatch.playerID] = sender;
-    accounts[1 - aMatch.playerID] = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
+    accounts[1 - aMatch.playerID] = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
     seedRatings[0] = aMatch.players[0].seedRating;
     seedRatings[1] = aMatch.players[1].seedRating;
     publicSeeds[0] = aMatch.players[0].publicSeed;

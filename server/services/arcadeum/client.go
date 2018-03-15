@@ -119,7 +119,6 @@ func (c *Client) VerifySignedTimestamp(
 	matchID uint32,
 	req *VerifyTimestampRequest,
 	subkeySig crypto.Signature) (common.Address, error) {
-	gameaddr := c.GameAddress[gameID]
 	contract := c.ArcadeumContract
 	sigR, err := util.DecodeHexString(string(req.Signature.R))
 	if err != nil {
@@ -144,8 +143,6 @@ func (c *Client) VerifySignedTimestamp(
 	copy(s2[:], subkeyS)
 	return contract.ArcadeumCaller.PlayerAccountXXX(
 		&bind.CallOpts{},
-		gameaddr,
-		matchID,
 		big.NewInt(req.Timestamp),
 		req.Signature.V,
 		r1,

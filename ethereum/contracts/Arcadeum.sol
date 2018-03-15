@@ -454,8 +454,8 @@ contract Arcadeum {
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  function matchHash(DGame game, uint32 matchID, uint timestamp, address[2] accounts, uint32[2] seedRatings, bytes32[PUBLIC_SEED_LENGTH][2] publicSeeds) public pure returns (bytes32) {
-    return keccak256(game, matchID, timestamp, accounts[0], accounts[1], seedRatings[0], seedRatings[1], publicSeeds[0], publicSeeds[1]);
+  function matchHash(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings, bytes32[PUBLIC_SEED_LENGTH][2] publicSeeds) public pure returns (bytes32) {
+    return keccak256(game, timestamp, accounts[0], accounts[1], subkeys[0], subkeys[1], seedRatings[0], seedRatings[1], publicSeeds[0], publicSeeds[1]);
   }
 
   function stateHash(DGame.MetaState metaState) public pure returns (bytes32) {
@@ -481,6 +481,7 @@ contract Arcadeum {
 
   function matchMaker(Match aMatch, address sender) private pure returns (address) {
     address[2] memory accounts;
+    address[2] memory subkeys;
     uint32[2] memory seedRatings;
     // XXX: https://github.com/ethereum/solidity/issues/3270
     bytes32[PUBLIC_SEED_LENGTH][2] memory publicSeeds;
@@ -488,11 +489,13 @@ contract Arcadeum {
 
     accounts[aMatch.playerID] = sender;
     accounts[1 - aMatch.playerID] = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
+    subkeys[0] = timestampSubkey(aMatch.timestamp, aMatch.players[0].timestampSignature);
+    subkeys[1] = timestampSubkey(aMatch.timestamp, aMatch.players[1].timestampSignature);
     seedRatings[0] = aMatch.players[0].seedRating;
     seedRatings[1] = aMatch.players[1].seedRating;
     publicSeeds[0] = aMatch.players[0].publicSeed;
     publicSeeds[1] = aMatch.players[1].publicSeed;
-    hash = matchHash(aMatch.game, aMatch.matchID, aMatch.timestamp, accounts, seedRatings, publicSeeds);
+    hash = matchHash(aMatch.game, aMatch.timestamp, accounts, subkeys, seedRatings, publicSeeds);
 
     return ecrecover(hash, aMatch.matchSignature.v, aMatch.matchSignature.r, aMatch.matchSignature.s);
   }

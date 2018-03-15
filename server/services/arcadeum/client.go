@@ -59,6 +59,7 @@ type Client struct {
 
 type MatchVerifiedMessage struct {
 	Accounts [2]common.Address
+	Subkeys  [2]common.Address
 
 	GameAddress common.Address              `json:"game"`
 	MatchID     uint32                      `json:"matchID"`
@@ -379,9 +380,9 @@ func (c *Client) MatchHash(msg *MatchVerifiedMessage) ([32]byte, error) {
 	return contract.MatchHash(
 		&bind.CallOpts{},
 		msg.GameAddress,
-		msg.MatchID,
 		big.NewInt(msg.Timestamp),
 		msg.Accounts,
+		msg.Subkeys,
 		[2]uint32{msg.Players[0].SeedRating, msg.Players[1].SeedRating},
 		publicSeeds,
 	)

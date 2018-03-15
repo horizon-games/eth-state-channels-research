@@ -46,5 +46,5 @@ contract Arcadeum {
   function playerAccountXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address);
 
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  function matchHash(DGame game, uint32 matchID, uint timestamp, address[2] accounts, uint32[2] seedRatings, bytes32[PUBLIC_SEED_LENGTH][2] publicSeeds) public pure returns (bytes32);
+  function matchHash(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings, bytes32[PUBLIC_SEED_LENGTH][2] publicSeeds) public pure returns (bytes32);
 }

@@ -50,6 +50,7 @@ type MatchRequest struct {
 
 type MatchResponse struct {
 	Account common.Address // Owner of seed deck; this value is derived
+	Subkey  common.Address // Subkey signed by the owner; this value is derived
 	Rank    uint32         // calculated rank of player based on seed "deck"
 	Request *MatchRequest
 }
@@ -62,6 +63,7 @@ type PlayerInfo struct {
 
 	SeedHash     []byte         // Hash of seed as returned from Solidity pure function
 	Account      common.Address // owner account of signed subkey (derived from Token); See Token
+	Subkey       common.Address // signed subkey (derived from Token); See Token
 	TimestampSig cr.Signature   // TimestampSig of session timestamp by this player
 	Verified     bool           // true if the player has proven their TimestampSig
 }
@@ -270,6 +272,7 @@ func (s *Service) Authenticate(req *MatchRequest) (*MatchResponse, error) {
 		}
 		return &MatchResponse{
 			Account: address,
+			Subkey:  req.SubKey,
 			Rank:    rank,
 			Request: req,
 		}, nil
@@ -384,6 +387,7 @@ func (s *Service) NewKeyedTransactor() *bind.TransactOpts {
 func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeum.MatchVerifiedMessage, error) {
 	msg := &arcadeum.MatchVerifiedMessage{
 		Accounts:    [2]common.Address{s.Player1.Account, s.Player2.Account},
+		Subkeys:     [2]common.Address{s.Player1.Subkey, s.Player2.Subkey},
 		GameAddress: srv.ArcClient.GameAddress[s.GameID],
 		MatchID:     s.MatchID,
 		Timestamp:   s.Timestamp,
@@ -544,6 +548,7 @@ func (s *Service) BuildPlayerInfo(p *MatchResponse) (*PlayerInfo, error) {
 		Token:    p.Request.Token,
 		SeedHash: seedHash,
 		Account:  p.Account,
+		Subkey:   p.Subkey,
 	}, nil
 }
 

@@ -28,13 +28,14 @@ contract Arcadeum {
     Signature matchSignature;
     // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
     SubkeySignature opponentSubkeySignature;
-    TimestampSignature opponentTimestampSignature;
   }
 
   struct Player {
     uint32 seedRating;
     // XXX: https://github.com/ethereum/solidity/issues/3270
     bytes32[PUBLIC_SEED_LENGTH] publicSeed;
+    // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
+    TimestampSignature timestampSignature;
   }
 
   struct Move {
@@ -204,7 +205,7 @@ contract Arcadeum {
     }
 
     // XXX: https://github.com/ethereum/solidity/issues/267
-    opponent = playerAccountXXXXXX(aMatch, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccountXXXXXX(aMatch, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, loserMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -312,7 +313,7 @@ contract Arcadeum {
       return false;
     }
 
-    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, cheaterMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -338,7 +339,7 @@ contract Arcadeum {
     gameMatchID = (bytes24(address(aMatch.game)) << 32) | bytes24(aMatch.matchID);
     isMatchFinal[gameMatchID] = true;
 
-    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
     value = balance[opponent];
     delete balance[opponent];
     balance[msg.sender] += value / 2;
@@ -500,7 +501,7 @@ contract Arcadeum {
     bytes32 hash;
 
     accounts[aMatch.playerID] = sender;
-    accounts[1 - aMatch.playerID] = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.opponentTimestampSignature, aMatch.opponentSubkeySignature);
+    accounts[1 - aMatch.playerID] = playerAccount(aMatch.game, aMatch.matchID, aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
     seedRatings[0] = aMatch.players[0].seedRating;
     seedRatings[1] = aMatch.players[1].seedRating;
     publicSeeds[0] = aMatch.players[0].publicSeed;

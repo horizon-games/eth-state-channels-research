@@ -71,7 +71,6 @@ export class Match {
     this.players = match.players
     this.matchSignature = match.matchSignature
     this.opponentSubkeySignature = match.opponentSubkeySignature
-    this.opponentTimestampSignature = match.opponentTimestampSignature
     this.playerMoves = []
     this.pendingMoves = [undefined, undefined]
     this[`[object Object]`] = this.players // XXX
@@ -168,7 +167,14 @@ export class Match {
   readonly players: [PlayerInterface, PlayerInterface]
   readonly matchSignature: Signature
   readonly opponentSubkeySignature: Signature
-  readonly opponentTimestampSignature: Signature
+
+  private get opponentID(): number {
+    return 1 - this.playerID
+  }
+
+  private get opponentTimestampSignature(): Signature {
+    return this.players[this.opponentID].timestampSignature
+  }
 
   private agreedState?: State
   private opponentMove?: Move
@@ -326,13 +332,13 @@ export interface MatchInterface {
   readonly players: [PlayerInterface, PlayerInterface]
   readonly matchSignature: Signature
   readonly opponentSubkeySignature: Signature
-  readonly opponentTimestampSignature: Signature
 }
 
 interface PlayerInterface {
   readonly seedRating: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
   readonly publicSeed: [ethers.utils.BigNumber]
+  readonly timestampSignature: Signature
 }
 
 interface StateInterface {

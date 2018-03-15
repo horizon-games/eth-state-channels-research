@@ -204,8 +204,7 @@ contract Arcadeum {
       return false;
     }
 
-    // XXX: https://github.com/ethereum/solidity/issues/267
-    opponent = playerAccountXXXXXX(aMatch, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
+    opponent = playerAccount(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature, aMatch.opponentSubkeySignature);
 
     if (moveMaker(metaState, loserMove, aMatch.opponentSubkeySignature) != opponent) {
       return false;
@@ -454,11 +453,6 @@ contract Arcadeum {
 
   function timestampSubkey(uint timestamp, TimestampSignature timestampSignature) public pure returns (address) {
     return ecrecover(keccak256(timestamp), timestampSignature.v, timestampSignature.r, timestampSignature.s);
-  }
-
-  // XXX: https://github.com/ethereum/solidity/issues/267
-  function playerAccountXXXXXX(Match aMatch, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
-    return playerAccount(aMatch.timestamp, timestampSignature, subkeySignature);
   }
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple

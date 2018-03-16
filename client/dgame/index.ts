@@ -46,7 +46,7 @@ export class DGame {
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
     const timestamp = await this.server.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
-    const timestampSignature = sign(subkey, [`uint`], [timestamp.timestamp])
+    const timestampSignature = sign(subkey, [`uint`], [timestamp])
     const match = await this.server.sendTimestampSignature(timestampSignature)
 
     return new Match(this.arcadeumContract, this.gameContract, subkey, match)
@@ -58,7 +58,7 @@ export class DGame {
 }
 
 export interface Server {
-  sendSecretSeed(subkeyAddress: string, subkeySignature: Signature, secretSeed: Uint8Array): Promise<TimestampInterface>
+  sendSecretSeed(subkeyAddress: string, subkeySignature: Signature, secretSeed: Uint8Array): Promise<number>
   sendTimestampSignature(timestampSignature: Signature): Promise<MatchInterface>
 }
 
@@ -317,11 +317,6 @@ export class Signature {
   readonly v: number
   readonly r: Uint8Array
   readonly s: Uint8Array
-}
-
-interface TimestampInterface {
-  readonly matchID: number
-  readonly timestamp: ethers.utils.BigNumber
 }
 
 export interface MatchInterface {

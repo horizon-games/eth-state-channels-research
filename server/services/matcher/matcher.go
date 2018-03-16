@@ -78,11 +78,6 @@ type Session struct {
 	Signature *cr.Signature // Matcher's session signature
 }
 
-type InitMessage struct {
-	MatchID   uint32 `json:"matchID"`
-	Timestamp int64  `json:"timestamp"`
-}
-
 type Meta struct {
 	MatchID uint32 `json:"matchID"` // uuid
 	Index   uint8  `json:"index"`   // index of player in game, i.e., player ID
@@ -436,14 +431,10 @@ func (srv *Service) RequestTimestampProof(s *Session) error {
 }
 
 func WriteInitMessage(matchID uint32, timestamp int64, p *PlayerInfo) error {
-	payload := &InitMessage{
-		MatchID:   matchID,
-		Timestamp: timestamp,
-	}
 	return p.Conn.WriteJSON(
 		Message{
 			Meta:    Meta{MatchID: matchID, Code: INIT, Index: p.Index},
-			Payload: util.Jsonify(payload)})
+			Payload: util.Jsonify(timestamp)})
 }
 
 func (s *Service) CreateSession(p1 *MatchResponse, p2 *MatchResponse) (*Session, error) {

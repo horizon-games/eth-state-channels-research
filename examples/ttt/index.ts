@@ -6,7 +6,7 @@ class Matcher {
   constructor(private game: string) {
   }
 
-  async sendSecretSeed(subkeyAddress: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array) {
+  async sendSecretSeed(subkeyAddress: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array): Promise<number> {
     const seed64 = base64(secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
@@ -14,12 +14,12 @@ class Matcher {
     this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkeyAddress, 1)
     this.relay.subscribe(this)
 
-    const response = JSON.parse((await this.relay.connectForTimestamp()).payload)
+    const message = await this.relay.connectForTimestamp()
 
-    this.matchID = response.matchID
-    this.timestamp = response.timestamp
+    this.matchID = message.meta.matchID
+    this.timestamp = JSON.parse(message.payload)
 
-    return response
+    return this.timestamp
   }
 
   async sendTimestampSignature(timestampSignature: dgame.Signature): Promise<dgame.MatchInterface> {

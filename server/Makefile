@@ -43,6 +43,8 @@ tools:
 	go get -u github.com/pkieltyka/tools/cmd/goimports
 	go get -u github.com/VojtechVitek/rerun/cmd/rerun
 	go get -u github.com/pressly/sup/cmd/sup
+	go get -u github.com/go-redis/redis
+	go get -u github.com/satori/go.uuid
 
 
 ##

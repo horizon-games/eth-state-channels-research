@@ -14,10 +14,10 @@ import (
 // Request token.
 // This token is returned as a base64 string by a client requesting to play a game.
 type Token struct {
-	GameID          uint32           `json:"gameID"`        // globally unique game ID
-	SubKey          common.Address   `json:"subkey,string"` // public address of account owner of subkey
-	SubKeySignature crypto.Signature `json:"signature"`     // Signed signature of SubKey to prove SubKey ownership
-	Seed            []byte           `json:"seed,string"`   // game "deck"; unmarshalled base64; never share with opponents!
+	GameID          uint32            `json:"gameID"`        // globally unique game ID
+	SubKey          *common.Address   `json:"subkey,string"` // public address of account owner of subkey; effectively the Match ID
+	SubKeySignature *crypto.Signature `json:"signature"`     // Signed signature of SubKey to prove SubKey ownership
+	Seed            []byte            `json:"seed,string"`   // game "deck"; unmarshalled base64; never share with opponents!
 }
 
 // Unmarshal token from query parameter and put it in request context for later retrieval and authentication logic.

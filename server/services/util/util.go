@@ -1,16 +1,16 @@
 package util
 
 import (
-	"encoding/json"
 	"encoding/hex"
+	"encoding/json"
 )
 
-func Jsonify(o interface{}) string {
+func Jsonify(o interface{}) (string, error) {
 	byteArray, err := json.Marshal(o)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(byteArray)
+	return string(byteArray), nil
 }
 
 func DecodeHexString(s string) ([]byte, error) {

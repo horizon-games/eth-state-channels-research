@@ -57,10 +57,7 @@ func main() {
 	// Configure websocket route
 	r.With(matcher.AddTokenContext).HandleFunc("/ws", server.HandleConnections)
 
-	// Start listening for incoming relay messages
-	go server.HandleMessages()
-	// Start listening for player match responses
-	go server.Matcher.HandleMatchResponses()
+	server.Start()
 
 	// Start the server on localhost
 	log.Printf("DGAME WSRELAY Server started :%d; connect at /ws", cfg.ENV.Port)

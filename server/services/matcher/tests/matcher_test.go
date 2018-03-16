@@ -4,13 +4,9 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"testing"
-
-	b64 "encoding/base64"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/horizon-games/arcadeum/server/config"
@@ -31,7 +27,8 @@ func buildService() *matcher.Service {
 		},
 		&config.ArcadeumConfig{
 			ContractAddress: "0x0230CfC895646d34538aE5b684d76Bf40a8B8B88",
-		})
+		},
+		&config.RedisConfig{})
 	return service
 }
 func TestVerifySignature(t *testing.T) {

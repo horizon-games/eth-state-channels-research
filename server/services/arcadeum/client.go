@@ -25,9 +25,9 @@ const (
 )
 
 type EtherScanPriceResponse struct {
-	Status  int         `json:"status,string"`
-	Message string      `json:"message"`
-	Result  PriceResult `json:"result"`
+	Status  int          `json:"status,string"`
+	Message string       `json:"message"`
+	Result  *PriceResult `json:"result"`
 }
 
 type PriceResult struct {
@@ -38,9 +38,9 @@ type PriceResult struct {
 }
 
 type VerifyTimestampRequest struct {
-	GameID    uint32           `json:"gameID"`
-	Timestamp int64            `json:"timestamp"` // unix time
-	Signature crypto.Signature `json:"signature"` // as signed by the players private key
+	GameID    uint32            `json:"gameID"`
+	Timestamp int64             `json:"timestamp"` // unix time
+	Signature *crypto.Signature `json:"signature"` // as signed by the players private key
 }
 
 type Client struct {
@@ -115,7 +115,7 @@ func (c *Client) HandleWithdrawalStarted(handler IWithdrawalStartedHandler) {
 
 func (c *Client) VerifySignedTimestamp(
 	req *VerifyTimestampRequest,
-	subkeySig crypto.Signature) (common.Address, error) {
+	subkeySig *crypto.Signature) (common.Address, error) {
 	contract := c.ArcadeumContract
 	sigR, err := util.DecodeHexString(string(req.Signature.R))
 	if err != nil {
@@ -251,7 +251,7 @@ func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error)
 }
 
 // Return the address of the signer of the subkey
-func (c *Client) SubKeyParent(subkey common.Address, sig crypto.Signature) (common.Address, error) {
+func (c *Client) SubKeyParent(subkey common.Address, sig *crypto.Signature) (common.Address, error) {
 	contract := c.ArcadeumContract
 
 	r, err := util.DecodeHexString(string(sig.R))

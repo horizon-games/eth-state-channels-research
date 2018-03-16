@@ -1,15 +1,10 @@
 package wsrelay
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	"encoding/json"
-
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/gorilla/websocket"
-	"github.com/horizon-games/arcadeum/server/services/arcadeum"
 	"github.com/horizon-games/arcadeum/server/services/matcher"
 	"github.com/horizon-games/arcadeum/server/services/wsrelay/config"
 )
@@ -32,60 +27,31 @@ var upgrader = websocket.Upgrader{
 
 func NewServer(cfg *config.Config) *Server {
 	return &Server{
-		Matcher: matcher.NewService(&cfg.ENV, &cfg.MatcherConfig, &cfg.ETHConfig, &cfg.ArcadeumConfig),
+		Matcher: matcher.NewService(
+			&cfg.ENV,
+			&cfg.MatcherConfig,
+			&cfg.ETHConfig,
+			&cfg.ArcadeumConfig,
+			&cfg.RedisConfig),
 	}
+}
+
+func (s *Server) Start() {
+	go s.HandleMessages()
+	go s.Matcher.HandleMatchResponses()
 }
 
 func (s *Server) HandleMessages() {
 	for {
-		// Grab the next message from the relay channel
 		msg := <-relay
-
-		// Grab game and player session info
-		session := s.Matcher.FindSessionBySubkey(common.HexToAddress(msg.Subkey))
-		player := session.FindPlayer(msg.PlayerConn)
-		if session == nil || player == nil {
-			msg.PlayerConn.WriteJSON(matcher.NewError(fmt.Sprintf("Unknown subkey %v", msg.Subkey)))
-			continue
+		err := s.Matcher.OnMessage(msg.Message)
+		if err != nil {
+			msg.PlayerConn.WriteJSON(matcher.NewError(err.Error()))
 		}
-
-		if msg.Code == matcher.SIGNED_TIMESTAMP { // Verified signed timestamp
-			req := &arcadeum.VerifyTimestampRequest{}
-			err := json.Unmarshal([]byte(msg.Payload), req)
-			if err != nil {
-				msg.PlayerConn.WriteJSON(matcher.NewError(err.Error()))
-				continue
-			}
-			verified, err := s.Matcher.VerifyTimestamp(req, player)
-			if err != nil {
-				msg.PlayerConn.WriteJSON(matcher.NewError(err.Error()))
-				continue
-			}
-			if !verified {
-				msg.PlayerConn.WriteJSON(matcher.NewError("Timestamp signature not verified."))
-				continue
-			}
-			player.Verified = verified
-			player.TimestampSig = req.Signature // set the verified signature
-			err2 := s.Matcher.BeginVerifiedMatch(session)
-			if err2 != nil {
-				msg.PlayerConn.WriteJSON(matcher.NewError(fmt.Sprintf("Error sending begin match payload. %s", err2.Error())))
-				continue
-			}
-		} else if !session.IsVerified() { // don't relay messages unless both players have proved their timestamp signature
-			msg.PlayerConn.WriteJSON(matcher.NewError("Match session not verified."))
-		} else { // verified
-			opponent := session.GetOpponent(msg.PlayerConn)
-			if opponent != nil {
-				opponent.Conn.WriteJSON(msg.Message) // relay the message to the opponent
-			}
-		}
-
 	}
 }
 
 func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
-	// Upgrade initial GET request to a websocket
 	log.Println("Opening WS connection")
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -93,11 +59,7 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	request := &matcher.MatchRequest{
-		Conn:  ws,
-		Token: matcher.Context(r),
-	}
-	go s.Matcher.FindMatch(request)
+	s.FindMatch(matcher.Context(r), ws)
 
 	for {
 		var msg matcher.Message
@@ -106,8 +68,25 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
 			log.Printf("error: %v", err)
 			ws.WriteJSON(matcher.NewError("Unrecognized message format."))
 		} else {
-			// relay the newly received message to the opponent
 			relay <- &MessageRequest{PlayerConn: ws, Message: &msg}
+		}
+	}
+}
+
+func (s *Server) FindMatch(token *matcher.Token, conn *websocket.Conn) {
+	channel := make(chan *matcher.Message)
+	s.Matcher.Subscribe(token.SubKey.String(), channel)
+	go OnMessage(conn, channel)
+	go s.Matcher.FindMatch(token)
+}
+
+func OnMessage(ws *websocket.Conn, messages chan *matcher.Message) {
+	defer ws.Close()
+	for {
+		msg := <-messages
+		ws.WriteJSON(msg)
+		if msg.Code == matcher.TERMINATE {
+			break
 		}
 	}
 }

@@ -9,4 +9,5 @@ type Config struct {
 	MatcherConfig  config.MatcherConfig  `toml:"matcher"`
 	ETHConfig      config.ETHConfig      `toml:"eth"`
 	ArcadeumConfig config.ArcadeumConfig `toml:"arcadeum"`
+	RedisConfig    config.RedisConfig    `toml:"redis"`
 }

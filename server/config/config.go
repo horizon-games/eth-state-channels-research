@@ -42,6 +42,11 @@ type GameInfo struct {
 	ContractAddress string `toml:"contract_address"`
 }
 
+type RedisConfig struct {
+	Address  string `toml:"address"`
+	Password string `toml:"password"`
+}
+
 func NewFromFile(file string, env string, config interface{}) error {
 	if file == "" {
 		file = env

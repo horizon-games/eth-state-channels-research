@@ -7,6 +7,7 @@ import (
 
 	"encoding/json"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/gorilla/websocket"
 	"github.com/horizon-games/arcadeum/server/services/arcadeum"
 	"github.com/horizon-games/arcadeum/server/services/matcher"
@@ -41,10 +42,10 @@ func (s *Server) HandleMessages() {
 		msg := <-relay
 
 		// Grab game and player session info
-		session := s.Matcher.FindSession(msg.MatchID)
+		session := s.Matcher.FindSessionBySubkey(common.HexToAddress(msg.Subkey))
 		player := session.FindPlayer(msg.PlayerConn)
 		if session == nil || player == nil {
-			msg.PlayerConn.WriteJSON(matcher.NewError(fmt.Sprintf("Unknown match ID %d", msg.MatchID)))
+			msg.PlayerConn.WriteJSON(matcher.NewError(fmt.Sprintf("Unknown subkey %v", msg.Subkey)))
 			continue
 		}
 

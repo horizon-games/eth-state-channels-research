@@ -71,7 +71,6 @@ type PlayerInfo struct {
 // Represents a matched game session
 type Session struct {
 	GameID    uint32
-	MatchID   uint32
 	Player1   *PlayerInfo
 	Player2   *PlayerInfo
 	Timestamp int64         // Game start in Unix time
@@ -79,9 +78,9 @@ type Session struct {
 }
 
 type Meta struct {
-	MatchID uint32 `json:"matchID"` // uuid
-	Index   uint8  `json:"index"`   // index of player in game, i.e., player ID
-	Code    Code   `json:"code"`    // message type
+	Subkey string `json:"subkey"` // player subkey
+	Index  uint8  `json:"index"`  // index of player in game, i.e., player ID
+	Code   Code   `json:"code"`   // message type
 }
 
 // Message send over the wire between players
@@ -91,12 +90,11 @@ type Message struct {
 }
 
 type Service struct {
-	MatchID   uint32 // auto-incrementing match count
 	ArcClient *arcadeum.Client
 
 	// gameID -> map rank -> account -> player
 	WaitPool    map[uint32]map[uint32]map[common.Address]*MatchResponse
-	SessionPool map[uint32]*Session // map matchID -> in-game session; matchIDs are globally unique
+	SessionPool map[common.Address]*Session // subkey -> session
 
 	ENV    *config.ENVConfig
 	Config *config.MatcherConfig
@@ -110,9 +108,8 @@ func NewService(
 	ethcfg *config.ETHConfig,
 	arcconfig *config.ArcadeumConfig) *Service {
 	service := &Service{
-		MatchID:     0,
 		WaitPool:    make(map[uint32]map[uint32]map[common.Address]*MatchResponse),
-		SessionPool: make(map[uint32]*Session),
+		SessionPool: make(map[common.Address]*Session),
 		ENV:         env,
 		Config:      cfg,
 		ArcClient:   arcadeum.NewArcadeumClient(ethcfg, arcconfig),
@@ -176,7 +173,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 			sessR,
 			sessS)
 		if err != nil {
-			log.Printf("ERROR: failure to slash withdrawal matchID %d account %s", sess.MatchID, player.Account)
+			log.Printf("ERROR: failure to slash withdrawal account %s", player.Account)
 			return
 		}
 	}
@@ -343,13 +340,11 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 	if err != nil {
 		return err
 	}
-	msg.SignatureOpponentTimestamp = &s.Player2.TimestampSig
 	msg.SignatureOpponentSubkey = &s.Player2.Token.SubKeySignature
 	s.Signature = msg.SignatureMatchHash
 	relaymsg := &Message{
 		Meta: Meta{
-			MatchID: s.MatchID,
-			Code:    MATCH_VERIFIED,
+			Code: MATCH_VERIFIED,
 		},
 		Payload: util.Jsonify(msg),
 	}
@@ -358,12 +353,10 @@ func (srv *Service) BeginVerifiedMatch(s *Session) error {
 		return err2
 	}
 	msg.PlayerIndex = 1
-	msg.SignatureOpponentTimestamp = &s.Player1.TimestampSig
 	msg.SignatureOpponentSubkey = &s.Player1.Token.SubKeySignature
 	relaymsg = &Message{
 		Meta: Meta{
-			MatchID: s.MatchID,
-			Code:    MATCH_VERIFIED,
+			Code: MATCH_VERIFIED,
 		},
 		Payload: util.Jsonify(msg),
 	}
@@ -384,16 +377,17 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 		Accounts:    [2]common.Address{s.Player1.Account, s.Player2.Account},
 		Subkeys:     [2]common.Address{s.Player1.Subkey, s.Player2.Subkey},
 		GameAddress: srv.ArcClient.GameAddress[s.GameID],
-		MatchID:     s.MatchID,
 		Timestamp:   s.Timestamp,
 		Players: [2]*arcadeum.MatchVerifiedPlayerInfo{
 			{
-				SeedRating: s.Player1.Rank,
-				PublicSeed: s.Player1.SeedHash,
+				SeedRating:         s.Player1.Rank,
+				PublicSeed:         s.Player1.SeedHash,
+				SignatureTimestamp: &s.Player1.TimestampSig,
 			},
 			{
-				SeedRating: s.Player2.Rank,
-				PublicSeed: s.Player2.SeedHash,
+				SeedRating:         s.Player2.Rank,
+				PublicSeed:         s.Player2.SeedHash,
+				SignatureTimestamp: &s.Player2.TimestampSig,
 			},
 		},
 	}
@@ -419,26 +413,25 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 
 func (srv *Service) RequestTimestampProof(s *Session) error {
 	log.Println("Requesting timestamp proof from both players")
-	err := WriteInitMessage(s.MatchID, s.Timestamp, s.Player1)
+	err := WriteInitMessage(s.Timestamp, s.Player1)
 	if err != nil {
 		return err
 	}
-	err2 := WriteInitMessage(s.MatchID, s.Timestamp, s.Player2)
+	err2 := WriteInitMessage(s.Timestamp, s.Player2)
 	if err2 != nil {
 		return err2
 	}
 	return nil
 }
 
-func WriteInitMessage(matchID uint32, timestamp int64, p *PlayerInfo) error {
+func WriteInitMessage(timestamp int64, p *PlayerInfo) error {
 	return p.Conn.WriteJSON(
 		Message{
-			Meta:    Meta{MatchID: matchID, Code: INIT, Index: p.Index},
+			Meta:    Meta{Code: INIT, Index: p.Index},
 			Payload: util.Jsonify(timestamp)})
 }
 
 func (s *Service) CreateSession(p1 *MatchResponse, p2 *MatchResponse) (*Session, error) {
-	s.MatchID += 1 //! make atomic
 	player1, err := s.BuildPlayerInfo(p1)
 	if err != nil {
 		return nil, err
@@ -458,7 +451,6 @@ func (s *Service) CreateSession(p1 *MatchResponse, p2 *MatchResponse) (*Session,
 	}
 	return &Session{
 		GameID:    gameID,
-		MatchID:   s.MatchID,
 		Player1:   player1,
 		Player2:   player2,
 		Timestamp: time.Now().Add(duration).Unix(),
@@ -543,8 +535,8 @@ func (s *Service) BuildPlayerInfo(p *MatchResponse) (*PlayerInfo, error) {
 	}, nil
 }
 
-func (s *Service) FindSession(matchID uint32) *Session {
-	return s.SessionPool[matchID]
+func (s *Service) FindSessionBySubkey(subkey common.Address) *Session {
+	return s.SessionPool[subkey]
 }
 
 func (s *Service) FindSessionByAccount(account common.Address) *Session {
@@ -579,5 +571,6 @@ func (s *Service) AddToSessionPool(session *Session) { //! make atomic
 	waiting := s.WaitPool[session.GameID][session.Rank()]
 	delete(waiting, session.Player1.Account)
 	delete(waiting, session.Player2.Account)
-	s.SessionPool[session.MatchID] = session
+	s.SessionPool[session.Player1.Subkey] = session
+	s.SessionPool[session.Player2.Subkey] = session
 }

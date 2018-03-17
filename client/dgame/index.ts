@@ -65,7 +65,6 @@ export interface Server {
 export class Match {
   constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface) {
     this.game = match.game
-    this.matchID = match.matchID
     this.timestamp = match.timestamp
     this.playerID = match.playerID
     this.players = match.players
@@ -161,7 +160,6 @@ export class Match {
   }
 
   readonly game: string
-  readonly matchID: number
   readonly timestamp: ethers.utils.BigNumber
   readonly playerID: number
   readonly players: [PlayerInterface, PlayerInterface]
@@ -321,7 +319,6 @@ export class Signature {
 
 export interface MatchInterface {
   readonly game: string
-  readonly matchID: number
   readonly timestamp: ethers.utils.BigNumber
   readonly playerID: number
   readonly players: [PlayerInterface, PlayerInterface]

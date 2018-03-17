@@ -21,7 +21,6 @@ contract Arcadeum {
 
   struct Match {
     DGame game;
-    uint32 matchID;
     uint timestamp;
     uint8 playerID;
     Player[2] players;

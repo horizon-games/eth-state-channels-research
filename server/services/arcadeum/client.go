@@ -38,7 +38,6 @@ type PriceResult struct {
 }
 
 type VerifyTimestampRequest struct {
-	MatchID   uint32           `json:"matchID"`
 	GameID    uint32           `json:"gameID"`
 	Timestamp int64            `json:"timestamp"` // unix time
 	Signature crypto.Signature `json:"signature"` // as signed by the players private key
@@ -62,20 +61,19 @@ type MatchVerifiedMessage struct {
 	Subkeys  [2]common.Address
 
 	GameAddress common.Address              `json:"game"`
-	MatchID     uint32                      `json:"matchID"`
 	Timestamp   int64                       `json:"timestamp"`
 	PlayerIndex uint8                       `json:"playerID"`
 	Players     [2]*MatchVerifiedPlayerInfo `json:"players"`
 
-	MatchHash                  [32]byte
-	SignatureMatchHash         *crypto.Signature `json:"matchSignature"`
-	SignatureOpponentTimestamp *crypto.Signature `json:"opponentTimestampSignature"`
-	SignatureOpponentSubkey    *crypto.Signature `json:"opponentSubkeySignature"`
+	MatchHash               [32]byte
+	SignatureMatchHash      *crypto.Signature `json:"matchSignature"`
+	SignatureOpponentSubkey *crypto.Signature `json:"opponentSubkeySignature"`
 }
 
 type MatchVerifiedPlayerInfo struct {
-	SeedRating uint32 `json:"seedRating"`
-	PublicSeed []byte `json:"publicSeed,string"`
+	SeedRating         uint32            `json:"seedRating"`
+	PublicSeed         []byte            `json:"publicSeed,string"`
+	SignatureTimestamp *crypto.Signature `json:"timestampSignature"`
 }
 
 type StakedStatus int

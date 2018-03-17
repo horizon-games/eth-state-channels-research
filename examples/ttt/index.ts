@@ -6,18 +6,15 @@ class Matcher {
   constructor(private game: string) {
   }
 
-  async sendSecretSeed(subkeyAddress: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array): Promise<number> {
+  async sendSecretSeed(subkey: string, subkeySignature: dgame.Signature, secretSeed: Uint8Array): Promise<number> {
     const seed64 = base64(secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
 
-    this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkeyAddress, 1)
+    this.subkey = subkey
+    this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey, 1)
     this.relay.subscribe(this)
-
-    const message = await this.relay.connectForTimestamp()
-
-    this.matchID = message.meta.matchID
-    this.timestamp = JSON.parse(message.payload)
+    this.timestamp = JSON.parse((await this.relay.connectForTimestamp()).payload)
 
     return this.timestamp
   }
@@ -25,7 +22,7 @@ class Matcher {
   async sendTimestampSignature(timestampSignature: dgame.Signature): Promise<dgame.MatchInterface> {
     this.relay.send(JSON.stringify({
       gameID: 1,
-      matchID: this.matchID,
+      subkey: this.subkey,
       timestamp: this.timestamp,
       signature: {
         v: timestampSignature.v,
@@ -38,12 +35,14 @@ class Matcher {
 
     response.players[0].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[0].publicSeed))]
     response.players[1].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[1].publicSeed))]
+    response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
+    response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
+    response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
+    response.players[1].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.s)))
     response.matchSignature.r = unbase64(response.matchSignature.r)
     response.matchSignature.s = unbase64(response.matchSignature.s)
     response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
     response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
-    response.opponentTimestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentTimestampSignature.r)))
-    response.opponentTimestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentTimestampSignature.s)))
 
     return response
   }
@@ -120,7 +119,7 @@ class Matcher {
   match: dgame.Match
 
   private relay: wsrelay.Relay
-  private matchID: number
+  private subkey: string
   private timestamp: number
 }
 

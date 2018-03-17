@@ -3,7 +3,7 @@ import { Subscriber } from 'rxjs/Subscriber'
 import { first, publishReplay, refCount } from 'rxjs/operators'
 
 export class Meta {
-  constructor(public matchID: number, public index: number, public code: number) { }
+  constructor(public subkey: string, public index: number, public code: number) { }
 }
 
 export class SessionInitMessage {
@@ -44,7 +44,6 @@ export class Relay {
   private subkey: string
   private gameID: number
   private ws: WebSocket
-  private matchID: number
   private index: number // player ID
   private ssl: boolean
   private stream: Observable<Message>
@@ -120,13 +119,13 @@ export class Relay {
   send(json: string, code = 0) {
     console.log(`wsrelay: sending ${json}`)
     if (this.isInitialized()) {
-      const message = new Message(new Meta(this.matchID, this.index, code), json)
+      const message = new Message(new Meta(this.subkey, this.index, code), json)
       this.ws.send(JSON.stringify(message))
     }
   }
 
   private newError(msg: string) {
-    return new Message(new Meta(this.matchID, this.index, -1), msg)
+    return new Message(new Meta(this.subkey, this.index, -1), msg)
   }
 
   private onError(obv: Subscriber<Message>) {
@@ -153,7 +152,6 @@ export class Relay {
         }
         console.log(`Relay message received: ${JSON.stringify(data)}`)
         if (data.meta.code === 1) { // cache session info
-          this.matchID = data.meta.matchID
           this.index = data.meta.index
         }
         obv.next(data)

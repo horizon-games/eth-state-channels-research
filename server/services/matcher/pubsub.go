@@ -2,6 +2,7 @@ package matcher
 
 import (
 	"encoding/json"
+	"github.com/horizon-games/arcadeum/server/services/util"
 	"log"
 )
 
@@ -22,8 +23,15 @@ func NewPubSubManager(smgr *SessionManager) *PubSubManager {
 }
 
 func (mgr *PubSubManager) Publish(channel string, msg Message) error {
-	count, err := mgr.RedisClient.Publish(channel, msg).Result()
+	log.Printf("Attempting to send message %s to channel %s", msg, channel)
+	msgJson, err := util.Jsonify(msg)
 	if err != nil {
+		log.Printf("Error jsonifying message %s", err.Error())
+		return err
+	}
+	count, err := mgr.RedisClient.Publish(channel, msgJson).Result()
+	if err != nil {
+		log.Printf("Error sending message to channel %s, %s", channel, err.Error())
 		return err
 	}
 	log.Printf("%d messages broadcast to channel %s", count, channel)
@@ -36,10 +44,13 @@ func (mgr *PubSubManager) Subscribe(key string, channel chan *Message) {
 	}
 	mgr.Channels[key] = channel
 	go func() {
+		log.Printf("Subscribing to channel %s", key)
 		ps := mgr.RedisClient.Subscribe(key)
 		defer ps.Close()
 		for {
+			log.Printf("Waiting for message on channel %s", key)
 			message, err := ps.ReceiveMessage()
+			log.Printf("Got message %s on channel %s", message, key)
 			if err != nil {
 				log.Printf("Error receiving redis message or timeout, continuing: %s", err.Error())
 				continue

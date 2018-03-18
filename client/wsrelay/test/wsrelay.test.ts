@@ -36,7 +36,6 @@ describe('Relay', () => {
     setTimeout(() => {
       expect(relay.isInitialized()).toBe(true)
       expect(result.length).toBe(1)
-      expect(result[0].meta.matchID).toBe(matchID)
       expect(result[0].meta.index).toBe(playerIdx)
       done()
     }, 100)

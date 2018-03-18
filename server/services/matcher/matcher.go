@@ -22,6 +22,7 @@ import (
 	cr "github.com/horizon-games/arcadeum/server/services/crypto"
 	"github.com/horizon-games/arcadeum/server/services/util"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 type Code int
@@ -174,16 +175,19 @@ func (s *Session) IsVerified() bool {
 }
 
 func (s *Session) FindPlayerBySubKey(subKey *common.Address) *PlayerInfo {
-	if s.Player1.SubKey == subKey {
+	if s.Player1.SubKey.String() == subKey.String() {
 		return s.Player1
+	} else if s.Player2.SubKey.String() == subKey.String() {
+		return s.Player2
+	} else {
+		return nil
 	}
-	return s.Player2
 }
 
 func (s *Session) FindOpponent(subKey *common.Address) *PlayerInfo {
-	if s.Player1 != nil && s.Player1.SubKey == subKey {
+	if s.Player1 != nil && s.Player1.SubKey.String() == subKey.String() {
 		return s.Player2
-	} else if s.Player2 != nil && s.Player2.SubKey == subKey {
+	} else if s.Player2 != nil && s.Player2.SubKey.String() == subKey.String() {
 		return s.Player1
 	}
 	return nil
@@ -289,8 +293,8 @@ func (s *Service) InitGame(uid UUID, r *MatchResponse) error {
 	if err != nil {
 		return err
 	}
-	newSess.Player2.Index = 1
-	session.Player2 = newSess.Player2
+	newSess.Player1.Index = 1
+	session.Player2 = newSess.Player1
 	session.Timestamp = time.Now().Unix()
 	err = s.UpdateSession(session)
 	if err != nil {
@@ -417,21 +421,14 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 
 func (s *Service) RequestTimestampProof(sess *Session) error {
 	log.Println("Requesting timestamp proof from both players")
-	payload := &InitMessage{
-		Timestamp: sess.Timestamp,
-	}
-	jsonStr, err := util.Jsonify(payload)
-	if err != nil {
-		return err
-	}
 	message := Message{
 		Meta: &Meta{
 			Code:   INIT,
 			SubKey: sess.Player1.SubKey,
 			Index:  sess.Player1.Index,
 		},
-		Payload: jsonStr}
-	err = s.Publish(message.SubKey.String(), message)
+		Payload: strconv.FormatInt(sess.Timestamp, 10)}
+	err := s.Publish(message.SubKey.String(), message)
 	if err != nil {
 		return err
 	}
@@ -441,7 +438,7 @@ func (s *Service) RequestTimestampProof(sess *Session) error {
 			SubKey: sess.Player2.SubKey,
 			Index:  sess.Player2.Index,
 		},
-		Payload: jsonStr}
+		Payload: strconv.FormatInt(sess.Timestamp, 10)}
 	err = s.Publish(message.SubKey.String(), message)
 	if err != nil {
 		return err
@@ -540,6 +537,9 @@ func (s *Service) OnMessage(msg *Message) error {
 	sess, err := s.GetSessionBySubKey(msg.SubKey)
 	if err != nil {
 		return err
+	}
+	if sess.IsEmpty() {
+		return errors.New(fmt.Sprintf("Unknown session for subkey %s", msg.SubKey.String()))
 	}
 	if msg.Code == SIGNED_TIMESTAMP { // Verified signed timestamp
 		player := sess.FindPlayerBySubKey(msg.SubKey)

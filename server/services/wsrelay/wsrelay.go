@@ -84,7 +84,11 @@ func OnMessage(ws *websocket.Conn, messages chan *matcher.Message) {
 	defer ws.Close()
 	for {
 		msg := <-messages
-		ws.WriteJSON(msg)
+		log.Printf("GOT PUBLISHED MESSAGE, sending to client: %s", msg)
+		err := ws.WriteJSON(msg)
+		if err != nil {
+			log.Printf("Error sending message to client over websocket %s", err.Error())
+		}
 		if msg.Code == matcher.TERMINATE {
 			break
 		}

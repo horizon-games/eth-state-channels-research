@@ -40,6 +40,7 @@ type PriceResult struct {
 type VerifyTimestampRequest struct {
 	GameID    uint32            `json:"gameID"`
 	Timestamp int64             `json:"timestamp"` // unix time
+	SubKey    *common.Address   `json:"subkey,string"`
 	Signature *crypto.Signature `json:"signature"` // as signed by the players private key
 }
 

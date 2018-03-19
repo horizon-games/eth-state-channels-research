@@ -24,11 +24,23 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/ethereum/go-ethereum*"]
+[prune]
+  go-tests = true
+  unused-packages = true
+  non-go = true
+
+  [[prune.project]]
+    name = "github.com/ethereum/go-ethereum"
+    non-go = false
+    unused-packages = false
 
 [[constraint]]
   name = "github.com/BurntSushi/toml"
   version = "0.3.0"
+
+[[constraint]]
+  name = "github.com/ethereum/go-ethereum"
+  version = "1.8.2"
 
 [[constraint]]
   name = "github.com/go-chi/chi"
@@ -49,13 +61,3 @@ ignored = ["github.com/ethereum/go-ethereum*"]
 [[constraint]]
   name = "github.com/satori/go.uuid"
   version = "1.2.0"
-
-[prune]
-  go-tests = true
-  unused-packages = true
-  non-go = true
-
-# TODO: `dep` is not respecting the non-go flag here, brutal
-# [[prune.project]]
-#   name = "github.com/ethereum/go-ethereum"
-#   non-go = false

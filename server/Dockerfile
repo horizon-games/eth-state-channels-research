@@ -22,4 +22,4 @@ COPY --from=builder /go/src/github.com/horizon-games/arcadeum/server/bin/* /usr/
 
 EXPOSE 8000
 
-CMD ["/usr/bin/wsrelay", "-config=/etc/wsrelay.conf"]
+CMD ["/usr/bin/arcadeum-server", "-config=/etc/arcadeum-server.conf"]

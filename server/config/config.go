@@ -47,6 +47,14 @@ type RedisConfig struct {
 	Password string `toml:"password"`
 }
 
+type Config struct {
+	ENV            ENVConfig      `toml:"env"`
+	MatcherConfig  MatcherConfig  `toml:"matcher"`
+	ETHConfig      ETHConfig      `toml:"eth"`
+	ArcadeumConfig ArcadeumConfig `toml:"arcadeum"`
+	RedisConfig    RedisConfig    `toml:"redis"`
+}
+
 func NewFromFile(file string, env string, config interface{}) error {
 	if file == "" {
 		file = env

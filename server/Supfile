@@ -1,10 +1,10 @@
-# DGAME-SERVER
+# ARCADEUM-SERVER
 ---
 version: 0.5
 
 env:
   IMAGE: davatar/arcadeum/server
-  CONFIG: /data/etc/wsrelay.conf
+  CONFIG: /data/etc/arcadeum-server.conf
   HOST_PORT: 8000
   CONTAINER_PORT: 8000
   GITTAG: $(git describe --exact-match --tags HEAD 2>/dev/null || :)
@@ -83,11 +83,11 @@ commands:
   run:
     desc: Rolling update (stop & remove old Docker container, run new one)
     run: >
-      sudo docker stop dgame-server || :; \
-        sudo docker rm dgame-server || :; \
+      sudo docker stop arcadeum-server || :; \
+        sudo docker rm arcadeum-server || :; \
           sudo docker run -d \
           -p $HOST_PORT:$CONTAINER_PORT \
-          -v $CONFIG:/etc/wsrelay.conf \
+          -v $CONFIG:/etc/arcadeum-server.conf \
           -v /data/certs/relay.arcadeum.com:/data/certs/relay.arcadeum.com \
           --network=localnet \
           --restart=always \
@@ -98,7 +98,7 @@ commands:
           -e "VIRTUAL_HOST=$VIRTUAL_HOST" \
           -e "LETSENCRYPT_HOST=$VIRTUAL_HOST" \
           -e "LETSENCRYPT_EMAIL=peter.kieltyka@gmail.com" \
-          --name dgame-server $IMAGE:$VERSION wsrelay -config=/etc/wsrelay.conf
+          --name arcadeum-server $IMAGE:$VERSION arcadeum-server -config=/etc/arcadeum-server.conf
 
   images:
     desc: List Docker images
@@ -107,19 +107,19 @@ commands:
   config:
     desc: Upload/test config file.
     upload:
-      - src: etc/wsrelay.$SUP_NETWORK.conf
+      - src: etc/arcadeum.$SUP_NETWORK.conf
         dst: /tmp/
     run: >
-      test -f /tmp/etc/wsrelay.$SUP_NETWORK.conf || exit 1 && \
-        sudo mv /tmp/etc/wsrelay.$SUP_NETWORK.conf $CONFIG
+      test -f /tmp/etc/arcadeum-server.$SUP_NETWORK.conf || exit 1 && \
+        sudo mv /tmp/etc/arcadeum-server.$SUP_NETWORK.conf $CONFIG
 
   logs:
     desc: Docker logs
-    run: sudo docker logs dgame-server
+    run: sudo docker logs arcadeum-server
 
   tail-logs:
     desc: Tail API service logs
-    run: sudo docker logs --tail=20 -f dgame-server 2>&1
+    run: sudo docker logs --tail=20 -f arcadeum-server 2>&1
 
   docker-clean-images:
     desc: Remove all unused / dangling images to restore diskspace

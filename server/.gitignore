@@ -4,7 +4,7 @@
 *.iml
 
 bin/*
-etc/wsrelay.conf
+etc/arcadeum-server.conf
 
 # Ignore everything in vendor/, except for *.go files,
 # LICENSE and COPYING. Ignore Go tests.

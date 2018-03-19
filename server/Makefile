@@ -14,17 +14,17 @@ all:
 	@echo "   - bootstrap"
 	@echo ""
 	@echo "   - run"
-	@echo "   - run-wsrelay"
+	@echo "   - run-arcadeum-server"
 	@echo ""
 	@echo "   - test"
-	@echo "   - test-wsrelay"
+	@echo "   - test-matcher"
 	@echo ""
 	@echo " + Builds:"
 	@echo "   - build"
 	@echo "   - clean"
 	@echo "   - generate"
 	@echo ""
-	@echo "   - build-wsrelay"
+	@echo "   - build-arcadeum-server"
 	@echo ""
 	@echo "   - dist"
 	@echo "   - docs"
@@ -43,8 +43,6 @@ tools:
 	go get -u github.com/pkieltyka/tools/cmd/goimports
 	go get -u github.com/VojtechVitek/rerun/cmd/rerun
 	go get -u github.com/pressly/sup/cmd/sup
-	go get -u github.com/go-redis/redis
-	go get -u github.com/satori/go.uuid
 
 
 ##
@@ -53,7 +51,7 @@ tools:
 bootstrap: tools copy-sample-config
 
 copy-sample-config:
-	for i in wsrelay; do \
+	for i in arcadeum-server; do \
 		test -f ./etc/$$i.conf || cp ./etc/$$i.conf{.sample,}; \
 	done
 
@@ -62,16 +60,16 @@ define run
 endef
 
 run:
-	$(call run,wsrelay)
+	$(call run,arcadeum-server)
 
-run-wsrelay:
-	$(call run,wsrelay)
+arcadeum-server:
+	$(call run,arcadeum-server)
 
 test: 
-	@$(MAKE) -j1 test-wsrelay
+	@$(MAKE) -j1 test-matcher
 
-test-wsrelay:
-	GOGC=off go test $(TEST_FLAGS) ./services/wsrelay/tests/...
+test-matcher:
+	GOGC=off go test $(TEST_FLAGS) ./matcher/tests/...
 
 test-pkgs: generate
 	GOGC=off go test $(TEST_FLAGS) $$(go list ./... | grep -v -e /vendor/ -e /tests -e /cmd/) | grep -v '\[no test files\]'
@@ -101,10 +99,10 @@ define build
 		$(1)
 endef
 
-build: build-wsrelay
+build: build-arcadeum-server
 
-build-wsrelay:
-	$(call build, ./cmd/wsrelay)
+build-arcadeum-server:
+	$(call build, ./cmd/arcadeum-server)
 
 clean:
 	rm -rf $$GOPATH/pkg/*/github.com/horizon-games/arcadeum/server{,.*}

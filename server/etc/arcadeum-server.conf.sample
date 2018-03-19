@@ -1,0 +1,29 @@
+[env]
+mode          = "development"
+environment   = "localhost"
+debug_mode    = true
+port          = 8000
+tls_enabled   = false
+tls_cert_file = "./etc/certs/localhost.crt"
+tls_key_file  = "./etc/certs/localhost.key"
+working_dir   = ""
+
+[matcher]
+priv_key_file  = "etc/keys/ec-secp256k1-priv.key"
+pub_key_file   = "etc/keys/ec-secp256k1-pub.key"
+
+[eth]
+node_url = "http://localhost:8545"
+
+[redis]
+address = "localhost:6379"
+password = ""
+
+[arcadeum]
+contract_address = "0xcfeb869f69431e42cdb54a4f4f105c19c080a601"
+min_stake_usd = 20.00
+etherscan_price_url = "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=FWI7VM1XS26DR69JZIAFSPQQGCEXMS14FA"
+[[arcadeum.games]]
+id = 1
+name = "skyweaver"
+contract_address = "0xc89ce4735882c9f0f0fe26686c53074e09b0d550"

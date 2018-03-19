@@ -184,6 +184,10 @@ func (s *Session) FindPlayerBySubKey(subKey *common.Address) *PlayerInfo {
 	}
 }
 
+func (s *Session) IsWaiting() bool {
+	return s.Player1 == nil || s.Player2 == nil
+}
+
 func (s *Session) FindOpponent(subKey *common.Address) *PlayerInfo {
 	if s.Player1 != nil && s.Player1.SubKey.String() == subKey.String() {
 		return s.Player2
@@ -213,7 +217,35 @@ func NewTerminateMessage(message string) Message {
 	return Message{Meta: &Meta{Code: TERMINATE}, Payload: message}
 }
 
+func (s *Service) Reconnect(token *Token) (bool, error) {
+	sess, err := s.GetSessionBySubKey(token.SubKey)
+	if err != nil {
+		return false, err
+	}
+	if sess.IsEmpty() {
+		return false, nil
+	}
+	if sess.IsWaiting() {
+		return true, nil
+	} else { // session has already matched
+		p := sess.FindPlayerBySubKey(token.SubKey)
+		if !p.Verified {
+			err := s.SendTimestampProof(p, sess.Timestamp) // ask again
+			return true, err
+		}
+	}
+	return true, nil
+}
+
 func (s *Service) FindMatch(token *Token) {
+	reconnection, err := s.Reconnect(token)
+	if err != nil {
+		s.Publish(token.SubKey.String(), NewTerminateMessage(fmt.Sprintf("failure finding match, disconnecting", err.Error())))
+		return
+	}
+	if reconnection {
+		return // behave as if you never disconnected
+	}
 	response, err := s.Authenticate(token)
 	if err != nil {
 		message := fmt.Sprintf("Error authenticating match request. Closing connection. %s", err.Error())
@@ -419,27 +451,31 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 	return msg, nil
 }
 
-func (s *Service) RequestTimestampProof(sess *Session) error {
-	log.Println("Requesting timestamp proof from both players")
+func (s *Service) SendTimestampProof(p *PlayerInfo, timestamp int64) error {
+	if p == nil {
+		return nil
+	}
 	message := Message{
 		Meta: &Meta{
 			Code:   INIT,
-			SubKey: sess.Player1.SubKey,
-			Index:  sess.Player1.Index,
+			SubKey: p.SubKey,
+			Index:  p.Index,
 		},
-		Payload: strconv.FormatInt(sess.Timestamp, 10)}
+		Payload: strconv.FormatInt(timestamp, 10)}
 	err := s.Publish(message.SubKey.String(), message)
 	if err != nil {
 		return err
 	}
-	message = Message{
-		Meta: &Meta{
-			Code:   INIT,
-			SubKey: sess.Player2.SubKey,
-			Index:  sess.Player2.Index,
-		},
-		Payload: strconv.FormatInt(sess.Timestamp, 10)}
-	err = s.Publish(message.SubKey.String(), message)
+	return nil
+}
+
+func (s *Service) RequestTimestampProof(sess *Session) error {
+	log.Println("Requesting timestamp proof from both players")
+	err := s.SendTimestampProof(sess.Player1, sess.Timestamp)
+	if err != nil {
+		return err
+	}
+	err = s.SendTimestampProof(sess.Player2, sess.Timestamp)
 	if err != nil {
 		return err
 	}

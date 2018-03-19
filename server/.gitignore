@@ -12,6 +12,8 @@ vendor/**/*
 !vendor/**/
 !vendor/**/*.go
 !vendor/**/*.proto
+!vendor/**/*.c
+!vendor/**/*.h
 !vendor/**/LICENSE*
 !vendor/**/COPYING*
 vendor/**/*_test.go

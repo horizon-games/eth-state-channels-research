@@ -41,7 +41,7 @@ export class DGame {
     return this.gameContract.isSecretSeedValid(address, secretSeed)
   }
 
-  async createMatch(secretSeed: Uint8Array): Promise<Match> {
+  async createMatch(secretSeed: Uint8Array, onChange?: ChangeCallback, onCommit?: CommitCallback): Promise<Match> {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
@@ -49,7 +49,7 @@ export class DGame {
     const timestampSignature = sign(subkey, [`uint`], [timestamp])
     const match = await this.server.sendTimestampSignature(timestampSignature)
 
-    return new Match(this.arcadeumContract, this.gameContract, subkey, match)
+    return new Match(this.arcadeumContract, this.gameContract, subkey, match, onChange, onCommit)
   }
 
   private signer: ethers.providers.Web3Signer
@@ -63,7 +63,7 @@ export interface Server {
 }
 
 export class Match {
-  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface) {
+  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface, public onChange?: ChangeCallback, public onCommit?: CommitCallback) {
     this.game = match.game
     this.timestamp = match.timestamp
     this.playerID = match.playerID
@@ -134,20 +134,42 @@ export class Match {
         this.playerMoves = []
       }
 
+      if (this.onCommit !== undefined) {
+        this.onCommit(this, state, move)
+      }
+
       this.currentState = await state.nextState(move)
+
+      if (this.onChange !== undefined) {
+        this.onChange(this, state, this.currentState, move)
+      }
 
     } else {
       this.pendingMoves[move.playerID] = move
 
       if (this.pendingMoves[0] === undefined || this.pendingMoves[1] === undefined) {
+        if (this.onCommit !== undefined) {
+          this.onCommit(this, state, move)
+        }
+
         return
       }
 
       this.agreedState = state
       this.opponentMove = this.pendingMoves[1 - this.playerID]
       this.playerMoves = [this.pendingMoves[this.playerID]!]
+
+      if (this.onCommit !== undefined) {
+        this.onCommit(this, state, move)
+      }
+
+      const pendingMoves = this.pendingMoves
       this.currentState = await state.nextState(this.pendingMoves[0]!, this.pendingMoves[1]!)
       this.pendingMoves = [undefined, undefined]
+
+      if (this.onChange !== undefined) {
+        this.onChange(this, state, this.currentState, pendingMoves[0]!, pendingMoves[1]!)
+      }
     }
 
     const winner = await this.currentState.winner
@@ -348,6 +370,14 @@ interface StateInterface {
     // XXX: https://github.com/ethereum/solidity/issues/3270
     readonly data: [ethers.utils.BigNumber]
   }
+}
+
+interface ChangeCallback {
+  (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move): void
+}
+
+interface CommitCallback {
+  (match: Match, previousState: State, move: Move): void
 }
 
 function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature {

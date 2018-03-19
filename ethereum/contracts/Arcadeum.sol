@@ -16,8 +16,6 @@ contract Arcadeum {
   // XXX: https://github.com/ethereum/solidity/issues/3270
   // *** THIS MUST MATCH DGame.sol ***
   uint private constant PUBLIC_SEED_LENGTH = 1;
-  uint private constant META_STATE_DATA_LENGTH = 3;
-  uint private constant STATE_DATA_LENGTH = 1;
 
   struct Match {
     DGame game;

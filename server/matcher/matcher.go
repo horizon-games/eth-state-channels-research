@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"encoding/json"
+	"strconv"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	gethcrypto "github.com/ethereum/go-ethereum/crypto"
@@ -22,7 +24,6 @@ import (
 	"github.com/horizon-games/arcadeum/server/lib/crypto"
 	"github.com/horizon-games/arcadeum/server/lib/util"
 	"github.com/satori/go.uuid"
-	"strconv"
 )
 
 type Code int
@@ -483,7 +484,7 @@ func (s *Service) RequestTimestampProof(sess *Session) error {
 }
 
 func (s *Service) CreateSession(p *MatchResponse) (*Session, error) {
-	id := uuid.NewV4()
+	id, _ := uuid.NewV4()
 	player, err := s.BuildPlayerInfo(p)
 	if err != nil {
 		return nil, err

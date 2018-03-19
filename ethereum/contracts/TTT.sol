@@ -15,7 +15,7 @@ contract TTT is DGame {
     return 10 minutes;
   }
 
-  function initialState(bytes, bytes) public pure returns (MetaState) {
+  function initialState(bytes32[PUBLIC_SEED_LENGTH], bytes32[PUBLIC_SEED_LENGTH]) public pure returns (MetaState) {
     State memory state;
 
     return meta(state);

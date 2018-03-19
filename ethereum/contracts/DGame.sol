@@ -75,7 +75,8 @@ contract DGame {
     return [bytes32(0)];
   }
 
-  function initialState(bytes publicSeed0, bytes publicSeed1) public pure returns (MetaState);
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  function initialState(bytes32[PUBLIC_SEED_LENGTH] publicSeed0, bytes32[PUBLIC_SEED_LENGTH] publicSeed1) public pure returns (MetaState);
 
   function winner(MetaState metaState) public pure returns (Winner) {
     if (metaState.tag == MetaTag.NONE) {

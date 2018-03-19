@@ -12,6 +12,7 @@ vendor/**/*
 !vendor/**/
 !vendor/**/*.go
 !vendor/**/*.proto
+!vendor/**/*.s
 !vendor/**/*.c
 !vendor/**/*.h
 !vendor/**/LICENSE*

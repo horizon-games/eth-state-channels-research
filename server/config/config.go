@@ -22,7 +22,6 @@ type ENVConfig struct {
 type MatcherConfig struct {
 	AccountAddress common.Address // Ethereum address of account associated with this private key (derived)
 	PrivKeyFile    string         `toml:"priv_key_file"`
-	PubKeyFile     string         `toml:"pub_key_file"`
 }
 
 type ETHConfig struct {

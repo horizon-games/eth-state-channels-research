@@ -117,7 +117,6 @@ export class Relay {
   }
 
   send(json: string, code = 0) {
-    console.log(`wsrelay: sending ${json}`)
     if (this.isInitialized()) {
       const message = new Message(new Meta(this.subkey, this.index, code), json)
       this.ws.send(JSON.stringify(message))
@@ -130,33 +129,28 @@ export class Relay {
 
   private onError(obv: Subscriber<Message>) {
     return (event: Event) => {
-      console.log('error: ' + event)
       obv.error(this.newError('Error receiving message.'))
     }
   }
 
   private onOpen(obv: Subscriber<Message>) {
     return (event: Event) => {
-      console.log('open: ' + event)
     }
   }
 
   private onMessage(obv: Subscriber<Message>) {
     return (msg: MessageEvent) => {
       try {
-        console.log(`msg.data: ${msg.data}`)
         const data = <Message>JSON.parse(msg.data)
         if (data.meta.code === -1) {
           obv.error(data)
           return
         }
-        console.log(`Relay message received: ${JSON.stringify(data)}`)
         if (data.meta.code === 1) { // cache session info
           this.index = data.meta.index
         }
         obv.next(data)
       } catch (e) {
-        console.log('Error parsing message.' + e)
         obv.error(this.newError('Error parsing message.'))
       }
     }

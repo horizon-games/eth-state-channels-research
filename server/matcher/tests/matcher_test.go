@@ -20,7 +20,7 @@ func buildService() *matcher.Service {
 			WorkingDir: fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/arcadeum/server/"),
 		},
 		&config.MatcherConfig{
-			PrivKeyFile: "etc/matcher/ec-secp256k1-priv.key",
+			PrivKeyFile: "etc/keys/ec-secp256k1-priv.key",
 		},
 		&config.ETHConfig{
 			NodeURL: "http://localhost:8545",
@@ -28,7 +28,9 @@ func buildService() *matcher.Service {
 		&config.ArcadeumConfig{
 			ContractAddress: "0x0230CfC895646d34538aE5b684d76Bf40a8B8B88",
 		},
-		&config.RedisConfig{})
+		&config.RedisConfig{
+			Address: "localhost:6379",
+		})
 	return service
 }
 func TestVerifySignature(t *testing.T) {

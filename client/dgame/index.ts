@@ -332,41 +332,6 @@ export class Move {
   signature: Signature
 }
 
-export class Signature {
-  constructor(signature?: string | Signature) {
-    if (typeof signature === `string`) {
-      const signatureBytes = ethers.utils.arrayify(signature)
-
-      this.v = signatureBytes[64]
-      this.r = new Uint8Array(signatureBytes.buffer, 0, 32)
-      this.s = new Uint8Array(signatureBytes.buffer, 32, 32)
-
-    } else {
-      if (signature !== undefined && signature.hasOwnProperty('v')) {
-        this.v = signature.v
-      } else {
-        this.v = 0
-      }
-
-      if (signature !== undefined && signature.hasOwnProperty('r')) {
-        this.r = signature.r
-      } else {
-        this.r = new Uint8Array(32)
-      }
-
-      if (signature !== undefined && signature.hasOwnProperty('s')) {
-        this.s = signature.s
-      } else {
-        this.s = new Uint8Array(32)
-      }
-    }
-  }
-
-  readonly v: number
-  readonly r: Uint8Array
-  readonly s: Uint8Array
-}
-
 interface MatchInterface {
   readonly game: string
   readonly timestamp: ethers.utils.BigNumber
@@ -433,6 +398,41 @@ class RemoteMatch extends Match {
 
   error(error: any): void {
   }
+}
+
+class Signature {
+  constructor(signature?: string | Signature) {
+    if (typeof signature === `string`) {
+      const signatureBytes = ethers.utils.arrayify(signature)
+
+      this.v = signatureBytes[64]
+      this.r = new Uint8Array(signatureBytes.buffer, 0, 32)
+      this.s = new Uint8Array(signatureBytes.buffer, 32, 32)
+
+    } else {
+      if (signature !== undefined && signature.hasOwnProperty('v')) {
+        this.v = signature.v
+      } else {
+        this.v = 0
+      }
+
+      if (signature !== undefined && signature.hasOwnProperty('r')) {
+        this.r = signature.r
+      } else {
+        this.r = new Uint8Array(32)
+      }
+
+      if (signature !== undefined && signature.hasOwnProperty('s')) {
+        this.s = signature.s
+      } else {
+        this.s = new Uint8Array(32)
+      }
+    }
+  }
+
+  readonly v: number
+  readonly r: Uint8Array
+  readonly s: Uint8Array
 }
 
 function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature {

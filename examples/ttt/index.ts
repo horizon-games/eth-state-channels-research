@@ -10,6 +10,8 @@ async function main(): Promise<void> {
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 
   const match = await ttt.createMatch(new Uint8Array(0), (match: dgame.Match, previousState: dgame.State, currentState: dgame.State, aMove: dgame.Move, anotherMove?: dgame.Move) => {
+    console.log(currentState)
+
     switch (match.playerID) {
     case 0:
       switch ((currentState as any).tag) {
@@ -48,6 +50,7 @@ async function main(): Promise<void> {
   })
 
   console.log(match)
+  console.log(await match.state)
 
   if (match.playerID === 0) {
     return match.commit(new dgame.Move({ playerID: 0, data: new Uint8Array([0]) }))

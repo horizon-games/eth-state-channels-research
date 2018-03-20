@@ -267,10 +267,15 @@ export class State {
 }
 
 export class Move {
-  constructor(readonly move: { playerID: number, data: Uint8Array }) {
+  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: Signature }) {
     this.playerID = move.playerID
     this.data = move.data
-    this.signature = new Signature()
+
+    if (move.signature !== undefined) {
+      this.signature = move.signature
+    } else {
+      this.signature = new Signature()
+    }
   }
 
   async sign(subkey: ethers.Wallet, state: State): Promise<void> {

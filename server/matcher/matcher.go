@@ -23,7 +23,8 @@ import (
 	"github.com/horizon-games/arcadeum/server/lib/arcadeum"
 	"github.com/horizon-games/arcadeum/server/lib/crypto"
 	"github.com/horizon-games/arcadeum/server/lib/util"
-	"github.com/satori/go.uuid"
+	"github.com/pborman/uuid"
+	"strings"
 )
 
 type Code int
@@ -241,7 +242,7 @@ func (s *Service) Reconnect(token *Token) (bool, error) {
 func (s *Service) FindMatch(token *Token) {
 	reconnection, err := s.Reconnect(token)
 	if err != nil {
-		s.Publish(token.SubKey.String(), NewTerminateMessage(fmt.Sprintf("failure finding match, disconnecting", err.Error())))
+		s.PublishToSubKey(token.SubKey, NewTerminateMessage(fmt.Sprintf("failure finding match, disconnecting", err.Error())))
 		return
 	}
 	if reconnection {
@@ -250,7 +251,7 @@ func (s *Service) FindMatch(token *Token) {
 	response, err := s.Authenticate(token)
 	if err != nil {
 		message := fmt.Sprintf("Error authenticating match request. Closing connection. %s", err.Error())
-		s.Publish(token.SubKey.String(), NewTerminateMessage(message))
+		s.PublishToSubKey(token.SubKey, NewTerminateMessage(message))
 		return
 	}
 	matchResponseChannel <- response
@@ -352,9 +353,13 @@ func (s *Service) RemoveFromWaitingPool(resps ...*MatchResponse) {
 	//! Cleanup session cache
 }
 
+func (s *Service) PublishToSubKey(subKey *common.Address, message Message) error {
+	return s.Publish(strings.ToLower(fmt.Sprintf(SUBKEY_KEY_FMT, subKey.String())), message)
+}
+
 func (s *Service) Close(message string, p ...*MatchResponse) {
 	for _, r := range p {
-		s.Publish(r.SubKey.String(), NewTerminateMessage(message))
+		s.PublishToSubKey(r.SubKey, NewTerminateMessage(message))
 	}
 	s.RemoveFromWaitingPool(p...)
 }
@@ -383,7 +388,7 @@ func (srv *Service) BeginVerifiedMatch(sess *Session) error {
 		},
 		Payload: payloadJson,
 	}
-	err = srv.Publish(relaymsg.SubKey.String(), *relaymsg)
+	err = srv.PublishToSubKey(relaymsg.SubKey, *relaymsg)
 	if err != nil {
 		return err
 	}
@@ -401,7 +406,7 @@ func (srv *Service) BeginVerifiedMatch(sess *Session) error {
 		},
 		Payload: payloadJson,
 	}
-	err = srv.Publish(relaymsg.SubKey.String(), *relaymsg)
+	err = srv.PublishToSubKey(relaymsg.SubKey, *relaymsg)
 	if err != nil {
 		return err
 	}
@@ -463,7 +468,7 @@ func (s *Service) SendTimestampProof(p *PlayerInfo, timestamp int64) error {
 			Index:  p.Index,
 		},
 		Payload: strconv.FormatInt(timestamp, 10)}
-	err := s.Publish(message.SubKey.String(), message)
+	err := s.PublishToSubKey(message.SubKey, message)
 	if err != nil {
 		return err
 	}
@@ -484,13 +489,13 @@ func (s *Service) RequestTimestampProof(sess *Session) error {
 }
 
 func (s *Service) CreateSession(p *MatchResponse) (*Session, error) {
-	id, _ := uuid.NewV4()
+	id := uuid.New()
 	player, err := s.BuildPlayerInfo(p)
 	if err != nil {
 		return nil, err
 	}
 	return &Session{
-		ID:      UUID(id.String()),
+		ID:      UUID(id),
 		GameID:  player.GameID,
 		Player1: player,
 	}, nil
@@ -610,7 +615,12 @@ func (s *Service) OnMessage(msg *Message) error {
 			log.Println("No opponent, swallowing message")
 			return nil
 		}
-		s.Publish(opponent.SubKey.String(), *msg)
+		s.PublishToSubKey(opponent.SubKey, *msg)
 	}
 	return nil
+}
+
+// Subscribed to published messages for this player
+func (s *Service) SubscribeToSubKey(subkey *common.Address, messages chan *Message) {
+	s.Subscribe(strings.ToLower(fmt.Sprintf(SUBKEY_KEY_FMT, subkey.String())), messages)
 }

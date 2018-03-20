@@ -75,7 +75,7 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) FindMatch(token *matcher.Token, conn *websocket.Conn) {
 	channel := make(chan *matcher.Message)
-	s.Matcher.Subscribe(token.SubKey.String(), channel)
+	s.Matcher.SubscribeToSubKey(token.SubKey, channel)
 	go OnMessage(conn, channel)
 	go s.Matcher.FindMatch(token)
 }

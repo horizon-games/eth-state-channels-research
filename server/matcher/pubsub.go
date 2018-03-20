@@ -50,7 +50,7 @@ func (mgr *PubSubManager) Subscribe(key string, channel chan *Message) {
 		for {
 			log.Printf("Waiting for message on channel %s", key)
 			message, err := ps.ReceiveMessage()
-			log.Printf("Got message %s on channel %s", message, key)
+			log.Printf("Received message %s on channel %s", message, key)
 			if err != nil {
 				log.Printf("Error receiving redis message or timeout, continuing: %s", err.Error())
 				continue

@@ -11,13 +11,17 @@ import (
 	"github.com/horizon-games/arcadeum/server/lib/util"
 	"github.com/pkg/errors"
 	"log"
+	"strings"
 	"time"
 )
 
 type UUID string
 
 const (
-	RANK_KEY_FMT = "rank:%d"
+	RANK_KEY_FMT    = "rank:%d"
+	SESSION_KEY_FMT = "session:%s"
+	ACCOUNT_KEY_FMT = "account:%s"
+	SUBKEY_KEY_FMT  = "subkey:%s"
 )
 
 type PlayerInfo struct {
@@ -60,7 +64,7 @@ func (s *Session) FindPlayerByAccount(account common.Address) (*PlayerInfo, erro
 	} else if s.Player2.Account != nil && *s.Player2.Account == account {
 		return s.Player2, nil
 	}
-	return nil, errors.New("Unknonw account " + account.String())
+	return nil, errors.New("Unknown account " + account.String())
 }
 
 func (u UUID) IsEmpty() bool {
@@ -161,7 +165,7 @@ func setSessionKeys(tx *redis.Tx, sess *Session) error {
 	if err != nil {
 		return err
 	}
-	setSessStatus, err := tx.Set(uid, sessJson, time.Hour).Result() // overrides previous
+	setSessStatus, err := tx.Set(strings.ToLower(fmt.Sprintf(SESSION_KEY_FMT, uid)), sessJson, time.Hour).Result() // overrides previous
 	if err != nil {
 		return err
 	}
@@ -181,14 +185,14 @@ func setSessionKeys(tx *redis.Tx, sess *Session) error {
 
 func setPlayerSessionKeys(tx *redis.Tx, uid string, p *PlayerInfo) error {
 	if p != nil {
-		status, err := tx.Set(p.SubKey.String(), uid, time.Hour).Result()
+		status, err := tx.Set(strings.ToLower(fmt.Sprintf(SUBKEY_KEY_FMT, p.SubKey.String())), uid, time.Hour).Result()
 		if err != nil {
 			return err
 		}
 		if status == "" {
 			return errors.New(fmt.Sprintf("Error setting player subkey %s", p.SubKey.String()))
 		}
-		status, err = tx.Set(p.Account.String(), uid, time.Hour).Result()
+		status, err = tx.Set(strings.ToLower(fmt.Sprintf(ACCOUNT_KEY_FMT, p.Account.String())), uid, time.Hour).Result()
 		if err != nil {
 			return err
 		}
@@ -205,7 +209,7 @@ func (mgr *SessionManager) GetSessionByID(uid UUID) (*Session, error) {
 		return sess, nil
 	}
 	sess = &Session{}
-	jsonStr, err := mgr.RedisClient.Get(string(uid)).Result()
+	jsonStr, err := mgr.RedisClient.Get(strings.ToLower(fmt.Sprintf(SESSION_KEY_FMT, string(uid)))).Result()
 	if err == redis.Nil {
 		return sess, nil
 	}
@@ -220,15 +224,15 @@ func (mgr *SessionManager) GetSessionByID(uid UUID) (*Session, error) {
 }
 
 func (mgr *SessionManager) GetSessionBySubKey(key *common.Address) (*Session, error) {
-	return mgr.getSessionByKey(key)
+	return mgr.getSessionByKey(strings.ToLower(fmt.Sprintf(SUBKEY_KEY_FMT, key.String())))
 }
 
 func (mgr *SessionManager) GetSessionByAccount(key *common.Address) (*Session, error) {
-	return mgr.getSessionByKey(key)
+	return mgr.getSessionByKey(strings.ToLower(fmt.Sprintf(ACCOUNT_KEY_FMT, key.String())))
 }
 
-func (mgr *SessionManager) getSessionByKey(key *common.Address) (*Session, error) {
-	uid, err := mgr.RedisClient.Get(key.String()).Result()
+func (mgr *SessionManager) getSessionByKey(key string) (*Session, error) {
+	uid, err := mgr.RedisClient.Get(key).Result()
 	if err == redis.Nil {
 		return &Session{}, nil
 	}

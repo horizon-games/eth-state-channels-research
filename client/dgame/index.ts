@@ -1,4 +1,5 @@
 import * as ethers from 'ethers'
+import * as wsrelay from 'wsrelay'
 
 export enum Winner {
   None,
@@ -14,7 +15,7 @@ export enum NextPlayers {
 }
 
 export class DGame {
-  constructor(gameAddress: string, private server: Server) {
+  constructor(gameAddress: string) {
     const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
     const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
     const gameMetadata = require(`../../build/contracts/DGame.json`)
@@ -45,21 +46,43 @@ export class DGame {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
-    const timestamp = await this.server.sendSecretSeed(subkey.address, subkeySignature, secretSeed)
+    const seed64 = base64(secretSeed)
+    const r64 = base64(subkeySignature.r)
+    const s64 = base64(subkeySignature.s)
+    const relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
+    const timestamp = JSON.parse((await relay.connectForTimestamp()).payload)
     const timestampSignature = sign(subkey, [`uint`], [timestamp])
-    const match = await this.server.sendTimestampSignature(timestampSignature)
 
-    return new Match(this.arcadeumContract, this.gameContract, subkey, match, onChange, onCommit)
+    relay.send(JSON.stringify({
+      gameID: 1,
+      subkey: subkey.getAddress(),
+      timestamp: timestamp,
+      signature: {
+        v: timestampSignature.v,
+        r: base64(timestampSignature.r),
+        s: base64(timestampSignature.s)
+      }
+    }), 2)
+
+    const response = JSON.parse((await relay.connectForMatchVerified()).payload)
+
+    response.players[0].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[0].publicSeed))]
+    response.players[1].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[1].publicSeed))]
+    response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
+    response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
+    response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
+    response.players[1].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.s)))
+    response.matchSignature.r = unbase64(response.matchSignature.r)
+    response.matchSignature.s = unbase64(response.matchSignature.s)
+    response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
+    response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
+
+    return new RemoteMatch(relay, this.arcadeumContract, this.gameContract, subkey, response, onChange, onCommit)
   }
 
   private signer: ethers.providers.Web3Signer
   private arcadeumContract: ethers.Contract
   private gameContract: ethers.Contract
-}
-
-export interface Server {
-  sendSecretSeed(subkeyAddress: string, subkeySignature: Signature, secretSeed: Uint8Array): Promise<number>
-  sendTimestampSignature(timestampSignature: Signature): Promise<MatchInterface>
 }
 
 export class Match {
@@ -344,7 +367,7 @@ export class Signature {
   readonly s: Uint8Array
 }
 
-export interface MatchInterface {
+interface MatchInterface {
   readonly game: string
   readonly timestamp: ethers.utils.BigNumber
   readonly playerID: number
@@ -380,6 +403,38 @@ interface CommitCallback {
   (match: Match, previousState: State, move: Move): void
 }
 
+class RemoteMatch extends Match {
+  constructor(private relay: wsrelay.Relay, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, subkey: ethers.Wallet, match: MatchInterface, onChange?: ChangeCallback, onCommit?: CommitCallback) {
+    super(arcadeumContract, gameContract, subkey, match, onChange, onCommit)
+
+    relay.subscribe(this)
+  }
+
+  async commit(move: Move): Promise<void> {
+    await super.commit(move)
+
+    if (move.playerID === this.playerID) {
+      this.relay.send(JSON.stringify(move))
+    }
+  }
+
+  async next(message: wsrelay.Message): Promise<void> {
+    const move = JSON.parse(message.payload)
+
+    move.data = deserializeUint8Array(move.data)
+    move.signature.r = deserializeUint8Array(move.signature.r)
+    move.signature.s = deserializeUint8Array(move.signature.s)
+
+    return this.commit(new Move(move))
+  }
+
+  complete(): void {
+  }
+
+  error(error: any): void {
+  }
+}
+
 function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature {
   const hash = ethers.utils.solidityKeccak256(types, values)
   const signatureValues = new ethers.SigningKey(wallet.privateKey).signDigest(hash)
@@ -389,4 +444,22 @@ function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature 
     r: ethers.utils.padZeros(ethers.utils.arrayify(signatureValues.r), 32),
     s: ethers.utils.padZeros(ethers.utils.arrayify(signatureValues.s), 32)
   }
+}
+
+function deserializeUint8Array(data: object): Uint8Array {
+  const array: number[] = []
+
+  for (let i = 0; data[i] !== undefined; i++) {
+    array.push(data[i])
+  }
+
+  return new Uint8Array(array)
+}
+
+function base64(data: Uint8Array): string {
+  return new Buffer(ethers.utils.hexlify(data)).toString(`base64`)
+}
+
+function unbase64(data: string): Uint8Array {
+  return Uint8Array.from(Buffer.from(data, `base64`))
 }

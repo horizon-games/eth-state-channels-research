@@ -109,7 +109,7 @@ export class Relay {
 
   subscribe(observer: Observer<Message>): void {
     this.setStream()
-    this.stream.skip(2).subscribe(observer)
+    this.stream.skip(1).subscribe(observer) // XXX: skip(2) doesn't work for some reason
   }
 
   isInitialized(): boolean {

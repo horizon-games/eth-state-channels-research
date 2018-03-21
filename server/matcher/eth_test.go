@@ -1,4 +1,4 @@
-package matcher
+package matcher_test
 
 import (
 	"encoding/json"
@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/horizon-games/arcadeum/server/matcher"
 )
 
 func TestPubFromHashAndSignature(t *testing.T) {
 	message := "This message has been signed!"
 	signature := "0xb3825921747a8d3c024c4567d353c25b704e6da53c8bfffa99770ab66aecef0068758554798165e24a7dec85c5e209cc90a19bed424d64b16fdb2767cd771c2c1b"
 	address := "0xa5B06b0FF4FBF5D8C5e56F4a6783d28AF72a9a0d"
-	addr, err := Address(message, signature)
+	addr, err := matcher.Address(message, signature)
 	if err != nil {
 		t.Error(err)
 		return

@@ -127,16 +127,6 @@ func TestCompactMany(t *testing.T) {
 	}
 }
 
-type Sig struct {
-	V uint8  `json:"v"`
-	R []byte `json:"r"`
-	S []byte `json:"s"`
-}
-
-type Test struct {
-	Signature Sig `json:"signature"`
-}
-
 func read_int32(data []byte) (ret int32) {
 	buf := bytes.NewBuffer(data)
 	binary.Read(buf, binary.BigEndian, &ret)

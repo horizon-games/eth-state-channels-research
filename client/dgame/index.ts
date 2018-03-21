@@ -53,7 +53,7 @@ export class DGame {
 
     let subkeySignature: Signature
     if (this.account !== undefined) {
-      subkeySignature = sign(this.account, [`string`], [subkeyMessage])
+      subkeySignature = new Signature(await this.account.signMessage(subkeyMessage))
     } else /* this.signer !== undefined */ {
       subkeySignature = new Signature(await this.signer!.signMessage(subkeyMessage))
     }

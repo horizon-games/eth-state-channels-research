@@ -1,6 +1,6 @@
-## Websocket Relay Server Client
+## Websocket Client to the Arcadeum Server
 
-Use the `Relay` class to interface with the Relay Server.
+Use the `Relay` class to interface with the Arcadeum Server via a websocket connection.
 
 Example:
 

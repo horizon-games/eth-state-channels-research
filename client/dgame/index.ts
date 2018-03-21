@@ -1,5 +1,5 @@
 import * as ethers from 'ethers'
-import * as wsrelay from 'wsrelay'
+import * as wsrelay from '../wsrelay'
 
 export enum Winner {
   None,

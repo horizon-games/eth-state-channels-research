@@ -53,6 +53,10 @@
 
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "client/**/test/*.ts",
+    "client/**/test/*.tsx",
+    "examples/**/test/*.ts",
+    "examples/**/test/*.tsx"
   ]
 }

@@ -1,8 +1,12 @@
 #!/bin/bash
 
+echo 'Building...'
 yarn build
-yarn testrpc &
+echo 'Launching test rpc...'
+yarn testrpc &>/dev/null &
 sleep 5
+echo 'Running migrations...'
 yarn migrate
-yarn dev &
-yarn server &
+echo 'Launching server...'
+yarn server &>/dev/null &
+echo 'Done.'

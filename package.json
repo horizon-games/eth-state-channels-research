@@ -18,7 +18,9 @@
     "start": "yarn dev",
     "test": "jest --ci --runInBand",
     "test:watch": "jest --watchAll",
-    "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v"
+    "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v",
+    "launchall": "./scripts/launchall.sh",
+    "killall": "./scripts/killall.sh"
   },
   "dependencies": {
     "core-js": "^2.5.3",

@@ -65,6 +65,7 @@ contract Arcadeum {
   }
 
   mapping(address => uint) public balance;
+  mapping(address => uint) public withdrawalTime;
 
   function deposit() external payable {
     balance[msg.sender] += msg.value;
@@ -498,6 +499,5 @@ contract Arcadeum {
   }
 
   address private owner;
-  mapping(address => uint) private withdrawalTime;
   mapping(bytes32 => bool) private invalidatedTimestamps;
 }

@@ -9,6 +9,7 @@ contract Arcadeum {
   uint private constant PUBLIC_SEED_LENGTH = 1;
 
   mapping(address => uint) public balance;
+  mapping(address => uint) public withdrawalTime;
 
   function deposit() external payable;
 

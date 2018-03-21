@@ -3,9 +3,11 @@ import * as ethers from 'ethers'
 
 const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
 
-async function startMatch(): Promise<void> {
-  await ttt.deposit(ethers.utils.parseEther(`1`))
+async function deposit(): Promise<void> {
+  return ttt.deposit(ethers.utils.parseEther(`1`))
+}
 
+async function startMatch(): Promise<void> {
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 
@@ -57,4 +59,5 @@ async function startMatch(): Promise<void> {
   }
 }
 
+(window as any).deposit = deposit;
 (window as any).startMatch = startMatch

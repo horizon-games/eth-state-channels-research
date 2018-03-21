@@ -2,6 +2,7 @@ import * as dgame from 'dgame'
 import * as ethers from 'ethers'
 
 const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
+const signer = (ttt as any).signer
 const arcadeumContract = (ttt as any).arcadeumContract
 
 async function deposit(): Promise<void> {
@@ -72,3 +73,17 @@ async function startMatch(): Promise<void> {
 (window as any).startWithdrawal = startWithdrawal;
 (window as any).finishWithdrawal = finishWithdrawal;
 (window as any).startMatch = startMatch
+
+window.setInterval(async () => {
+  (document.getElementById(`currentTime`))!.textContent = new Date().toLocaleString()
+
+  const account = await signer.getAddress()
+
+  arcadeumContract.balance(account).then((balance) => {
+    (document.getElementById(`balance`))!.textContent = balance.toString()
+  })
+
+  arcadeumContract.withdrawalTime(account).then((withdrawalTime) => {
+    (document.getElementById(`withdrawalTime`))!.textContent = new Date(1000 * withdrawalTime.toNumber()).toLocaleString()
+  })
+}, 1000)

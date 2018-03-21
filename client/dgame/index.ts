@@ -15,15 +15,20 @@ export enum NextPlayers {
 }
 
 export class DGame {
-  constructor(gameAddress: string) {
+  constructor(gameAddress: string, private account?: ethers.Wallet) {
     const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
     const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
     const gameMetadata = require(`../../build/contracts/DGame.json`)
-    const provider = new ethers.providers.Web3Provider((window as any).web3.currentProvider)
 
-    this.signer = provider.getSigner() // XXX: choose account
-    this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, this.signer)
-    this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, this.signer)
+    if (account !== undefined) {
+      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, account)
+      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, account)
+
+    } else {
+      this.signer = (new ethers.providers.Web3Provider((window as any).web3.currentProvider)).getSigner() // XXX: choose account
+      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, this.signer)
+      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, this.signer)
+    }
   }
 
   get address(): string {
@@ -45,7 +50,14 @@ export class DGame {
   async createMatch(secretSeed: Uint8Array, onChange?: ChangeCallback, onCommit?: CommitCallback): Promise<Match> {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
-    const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
+
+    let subkeySignature: Signature
+    if (this.account !== undefined) {
+      subkeySignature = sign(this.account, [`string`], subkeyMessage)
+    } else /* this.signer !== undefined */ {
+      subkeySignature = new Signature(await this.signer!.signMessage(subkeyMessage))
+    }
+
     const seed64 = base64(secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
@@ -80,7 +92,7 @@ export class DGame {
     return new RemoteMatch(relay, this.arcadeumContract, this.gameContract, subkey, response, onChange, onCommit)
   }
 
-  private signer: ethers.providers.Web3Signer
+  private signer?: ethers.providers.Web3Signer
   private arcadeumContract: ethers.Contract
   private gameContract: ethers.Contract
 }

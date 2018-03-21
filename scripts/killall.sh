@@ -1,10 +1,12 @@
 #!/bin/bash
 
 echo 'Killing testrpc...'
-ps aux | grep ganache | grep horizon-games | awk '{print $2}' | xargs kill
+pkill -f ganache
 
 echo 'Killing dev...'
-ps aux | grep webpack-dev-server | grep horizon-games | awk '{print $2}' | xargs kill
+pkill -f horizon-games
 
 echo 'Killing server...'
-ps aux | grep arcadeum-server | grep bin | awk '{print $2}' | xargs kill
+pkill -f arcadeum-server
+
+exit 0

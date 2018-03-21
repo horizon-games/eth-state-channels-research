@@ -2,9 +2,18 @@ import * as dgame from 'dgame'
 import * as ethers from 'ethers'
 
 const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
+const arcadeumContract = (ttt as any).arcadeumContract
 
 async function deposit(): Promise<void> {
   return ttt.deposit(ethers.utils.parseEther(`1`))
+}
+
+async function startWithdrawal(): Promise<void> {
+  return arcadeumContract.startWithdrawal()
+}
+
+async function finishWithdrawal(): Promise<void> {
+  return arcadeumContract.finishWithdrawal()
 }
 
 async function startMatch(): Promise<void> {
@@ -60,4 +69,6 @@ async function startMatch(): Promise<void> {
 }
 
 (window as any).deposit = deposit;
+(window as any).startWithdrawal = startWithdrawal;
+(window as any).finishWithdrawal = finishWithdrawal;
 (window as any).startMatch = startMatch

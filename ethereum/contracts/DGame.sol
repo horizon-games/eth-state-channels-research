@@ -369,5 +369,21 @@ contract DGame {
     return metaState;
   }
 
+  function read(bytes32 b, uint i, uint n) internal pure returns (uint) {
+    uint mask;
+
+    mask = (uint(1) << n) - 1;
+
+    return uint(b >> i) & mask;
+  }
+
+  function write(bytes32 b, uint i, uint n, uint x) internal pure returns (bytes32) {
+    uint mask;
+
+    mask = (uint(1) << n) - 1;
+
+    return b & bytes32(~(mask << i)) | bytes32((x & mask) << i);
+  }
+
   address private owner;
 }

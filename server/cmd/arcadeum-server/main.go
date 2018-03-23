@@ -24,10 +24,13 @@ func main() {
 	cfg := &config.Config{}
 	err := config.NewFromFile(*configFile, os.Getenv("CONFIG"), cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
-	server := server.New(cfg)
+	server, err := server.New(cfg)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -55,6 +58,6 @@ func main() {
 	}
 
 	if err != nil {
-		log.Fatal("ListenAndServe:", err)
+		log.Panic("ListenAndServe:", err)
 	}
 }

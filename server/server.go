@@ -57,20 +57,29 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer ws.Close()
 
-	s.FindMatch(matcher.Context(r), ws)
+	go func() {
+		defer ws.Close()
+		s.FindMatch(matcher.Context(r), ws)
 
-	for {
-		var msg matcher.Message
-		err := ws.ReadJSON(&msg)
-		if err != nil {
-			log.Printf("error: %v", err)
-			ws.WriteJSON(matcher.NewError("Unrecognized message format."))
-		} else {
-			relay <- &MessageRequest{PlayerConn: ws, Message: &msg}
+		for {
+			var msg matcher.Message
+			err := ws.ReadJSON(&msg)
+			if err != nil {
+				log.Printf("error: %v", err)
+				if websocket.IsCloseError(err, 1001) {
+					break
+				}
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+					break
+				}
+
+				// ws.WriteJSON(matcher.NewError("Unrecognized message format."))
+			} else {
+				relay <- &MessageRequest{PlayerConn: ws, Message: &msg}
+			}
 		}
-	}
+	}()
 }
 
 func (s *Server) FindMatch(token *matcher.Token, conn *websocket.Conn) {
@@ -81,7 +90,7 @@ func (s *Server) FindMatch(token *matcher.Token, conn *websocket.Conn) {
 }
 
 func OnMessage(ws *websocket.Conn, messages chan *matcher.Message) {
-	defer ws.Close()
+	// defer ws.Close()
 	for {
 		msg := <-messages
 		log.Printf("GOT PUBLISHED MESSAGE, sending to client: %s", msg)

@@ -56,6 +56,10 @@
     "webpack-dev-server": "^2.11.1"
   },
   "jest": {
+    "moduleNameMapper": {
+      "wsrelay": "<rootDir>/client/wsrelay",
+      "dgame": "<rootDir>/client/dgame"
+    },
     "transform": {
       "^.+\\.jsx?$": "./node_modules/babel-jest",
       "^.+\\.tsx?$": "ts-jest"

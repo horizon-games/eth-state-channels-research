@@ -14,7 +14,7 @@
     "dist:server": "node dist/server",
     "lint": "tslint -c tslint.json client/**/*.ts client/**/*.tsx",
     "migrate": "truffle migrate --network ganache",
-    "server": "cd server && make copy-sample-config && make run",
+    "server": "cd ./server && make copy-sample-config && make run",
     "start": "yarn dev",
     "test": "NODE_ENV=testing jest --ci --runInBand --no-cache",
     "test:watch": "jest --watchAll",

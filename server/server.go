@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/horizon-games/arcadeum/server/config"
 	"github.com/horizon-games/arcadeum/server/matcher"
+	"github.com/pkg/errors"
 )
 
 type Server struct {
@@ -25,7 +26,10 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func New(cfg *config.Config) *Server {
+func New(cfg *config.Config) (*Server, error) {
+	if cfg.ENV.WorkingDir == "" {
+		return nil, errors.New("Missing working directory in config")
+	}
 	return &Server{
 		Matcher: matcher.NewService(
 			&cfg.ENV,
@@ -33,7 +37,7 @@ func New(cfg *config.Config) *Server {
 			&cfg.ETHConfig,
 			&cfg.ArcadeumConfig,
 			&cfg.RedisConfig),
-	}
+	}, nil
 }
 
 func (s *Server) Start() {

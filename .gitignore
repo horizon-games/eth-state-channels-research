@@ -3,3 +3,5 @@ build
 client/wsrelay/node_modules/
 node_modules
 yarn-error.log
+.idea/
+*.iml

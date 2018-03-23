@@ -1,4 +1,4 @@
-import { Relay, Message, Signature } from '../index'
+import { Relay, Message, Signature } from 'wsrelay'
 import { Server } from 'mock-socket'
 import { setTimeout } from 'timers'
 

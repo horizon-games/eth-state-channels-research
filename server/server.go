@@ -8,6 +8,9 @@ import (
 	"github.com/horizon-games/arcadeum/server/config"
 	"github.com/horizon-games/arcadeum/server/matcher"
 	"github.com/pkg/errors"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"fmt"
 )
 
 type Server struct {
@@ -40,9 +43,34 @@ func New(cfg *config.Config) (*Server, error) {
 	}, nil
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() error {
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Heartbeat("/ping"))
+	r.Use(middleware.Recoverer)
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`¯\_(ツ)_/¯`))
+	})
+
+	// Configure websocket route
+	r.With(matcher.AddTokenContext).HandleFunc("/ws", s.HandleConnections)
+
 	go s.HandleMessages()
 	go s.Matcher.HandleMatchResponses()
+
+	// Start the server on localhost
+	log.Printf("ARCADEUM Server started :%d; connect at /ws", s.Matcher.ENV.Port)
+
+	if s.Matcher.ENV.TLSEnabled {
+		return http.ListenAndServeTLS(fmt.Sprintf(":%d", s.Matcher.ENV.Port),
+			s.Matcher.ENV.TLSCertFile, s.Matcher.ENV.TLSKeyFile, r)
+	} else {
+		return http.ListenAndServe(fmt.Sprintf(":%d", s.Matcher.ENV.Port), r)
+	}
+
+	return nil
 }
 
 func (s *Server) HandleMessages() {

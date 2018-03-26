@@ -38,6 +38,9 @@
       "dgame": [
         "client/dgame"
       ],
+      "ethers": [
+        "client/ethers"
+      ],
       "wsrelay": [
         "client/wsrelay"
       ]

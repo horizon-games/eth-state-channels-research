@@ -10,7 +10,7 @@ describe('ttt', () => {
     await ttt.deposit(ethers.utils.parseEther(`1`))
     await ttt2.deposit(ethers.utils.parseEther(`1`))
     console.log('begin match')
-    Promise.all([startMatch(ttt), startMatch(ttt2)]).then(values => {
+    Promise.all([createMatch(ttt), createMatch(ttt2)]).then(values => {
       console.log('Winner!')
       console.log(values)
       done()
@@ -23,7 +23,7 @@ describe('ttt', () => {
 })
 
 // Client game logic that would normally run in the browser
-async function startMatch(game: dgame.DGame): Promise<dgame.Winner> {
+async function createMatch(game: dgame.DGame): Promise<dgame.Winner> {
   console.log(await game.matchDuration)
   console.log(await game.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 

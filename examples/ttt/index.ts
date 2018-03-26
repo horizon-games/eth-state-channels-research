@@ -17,7 +17,7 @@ async function finishWithdrawal(): Promise<void> {
   return arcadeumContract.finishWithdrawal()
 }
 
-async function startMatch(): Promise<void> {
+async function createMatch(): Promise<void> {
   console.log(await ttt.matchDuration)
   console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 
@@ -72,7 +72,7 @@ async function startMatch(): Promise<void> {
 (window as any).deposit = deposit;
 (window as any).startWithdrawal = startWithdrawal;
 (window as any).finishWithdrawal = finishWithdrawal;
-(window as any).startMatch = startMatch
+(window as any).createMatch = createMatch
 
 window.setInterval(async () => {
   (document.getElementById(`currentTime`))!.textContent = new Date().toLocaleString()

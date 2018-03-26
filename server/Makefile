@@ -51,9 +51,10 @@ tools:
 bootstrap: tools copy-sample-config
 
 copy-sample-config:
-	for i in arcadeum-server; do \
-		test -f ./etc/$$i.conf || cp ./etc/$$i.conf{.sample,}; \
-	done
+	# http://timmurphy.org/2015/09/27/how-to-get-a-makefile-directory-path/
+	test -f ./etc/arcadeum-server.conf || sed -e \
+		's|^working_dir   = ""$$|working_dir   = "$(dir $(realpath $(firstword $(MAKEFILE_LIST))))"|' \
+		./etc/arcadeum-server.conf.sample > ./etc/arcadeum-server.conf
 
 define run
 	@rerun -watch ./ -ignore vendor bin tests -run sh -c 'GOGC=off go build -i -o ./bin/$(1) ./cmd/$(1)/main.go && ./bin/$(1) -config=etc/$(1).conf'

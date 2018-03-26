@@ -1,19 +1,6 @@
 import * as ethers from 'ethers'
 import * as wsrelay from 'wsrelay'
 
-export enum Winner {
-  None,
-  Player0,
-  Player1
-}
-
-export enum NextPlayers {
-  None,
-  Player0,
-  Player1,
-  Both
-}
-
 export class DGame {
   constructor(gameAddress: string, private account?: ethers.Wallet) {
     const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
@@ -97,7 +84,93 @@ export class DGame {
   private gameContract: ethers.Contract
 }
 
-export class Match {
+export interface ChangeCallback {
+  (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move): void
+}
+
+export interface CommitCallback {
+  (match: Match, previousState: State, move: Move): void
+}
+
+export interface Match {
+  readonly playerID: number
+  readonly state: Promise<State>
+  commit(move: Move): Promise<void>
+}
+
+export interface State {
+  readonly winner: Promise<Winner>
+  readonly nextPlayers: Promise<NextPlayers>
+  isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }>
+  nextState(aMove: Move, anotherMove?: Move): Promise<State>
+  nextState(moves: [Move] | [Move, Move]): Promise<State>
+  readonly encoding: any
+  readonly hash: Promise<ethers.utils.BigNumber>
+}
+
+export enum Winner {
+  None,
+  Player0,
+  Player1
+}
+
+export enum NextPlayers {
+  None,
+  Player0,
+  Player1,
+  Both
+}
+
+export class Move {
+  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: any }) {
+    this.playerID = move.playerID
+    this.data = move.data
+
+    if (move.signature !== undefined) {
+      this.signature = move.signature
+    } else {
+      this.signature = new Signature()
+    }
+  }
+
+  async sign(subkey: ethers.Wallet, state: State): Promise<void> {
+    this.signature = sign(subkey, [`bytes32`, `uint8`, `bytes`], [await state.hash, this.playerID, this.data])
+  }
+
+  readonly playerID: number
+  readonly data: Uint8Array
+  private signature?: any
+}
+
+interface MatchInterface {
+  readonly game: string
+  readonly timestamp: ethers.utils.BigNumber
+  readonly playerID: number
+  readonly players: [PlayerInterface, PlayerInterface]
+  readonly matchSignature: Signature
+  readonly opponentSubkeySignature: Signature
+}
+
+interface PlayerInterface {
+  readonly seedRating: number
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly publicSeed: [ethers.utils.BigNumber]
+  readonly timestampSignature: Signature
+}
+
+interface StateInterface {
+  readonly nonce: number
+  readonly tag: number
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
+  readonly state: {
+    readonly tag: number
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    readonly data: [ethers.utils.BigNumber]
+  }
+}
+
+class BasicMatch {
   constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface, public onChange?: ChangeCallback, public onCommit?: CommitCallback) {
     this.game = match.game
     this.timestamp = match.timestamp
@@ -110,10 +183,12 @@ export class Match {
     this[`[object Object]`] = this.players // XXX
   }
 
+  readonly playerID: number
+
   get state(): Promise<State> {
     if (this.currentState === undefined) {
       return this.gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
-        this.agreedState = new State(this.arcadeumContract, this.gameContract, response)
+        this.agreedState = new BasicState(this.arcadeumContract, this.gameContract, response)
         this.currentState = this.agreedState
         return this.currentState
       })
@@ -216,12 +291,11 @@ export class Match {
     }
   }
 
-  readonly game: string
-  readonly timestamp: ethers.utils.BigNumber
-  readonly playerID: number
-  readonly players: [PlayerInterface, PlayerInterface]
-  readonly matchSignature: Signature
-  readonly opponentSubkeySignature: Signature
+  private readonly game: string
+  private readonly timestamp: ethers.utils.BigNumber
+  private readonly players: [PlayerInterface, PlayerInterface]
+  private readonly matchSignature: Signature
+  private readonly opponentSubkeySignature: Signature
 
   private get opponentID(): number {
     return 1 - this.playerID
@@ -238,149 +312,7 @@ export class Match {
   private pendingMoves: [Move | undefined, Move | undefined]
 }
 
-export class State {
-  constructor(private arcadeumContract: ethers.Contract, protected gameContract: ethers.Contract, state: StateInterface) {
-    this.tag = state.state.tag
-    this.data = state.state.data
-    this.metadata = {
-      nonce: state.nonce,
-      tag: state.tag,
-      data: state.data
-    }
-  }
-
-  get winner(): Promise<Winner> {
-    return this.gameContract.winner(this.encoding)
-  }
-
-  get nextPlayers(): Promise<NextPlayers> {
-    return this.gameContract.nextPlayers(this.encoding)
-  }
-
-  async isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }> {
-    const response = await this.gameContract.isMoveLegal(this.encoding, move)
-
-    return {
-      isLegal: response[0],
-      reason: response[1]
-    }
-  }
-
-  async nextState(aMove: Move): Promise<State>
-  async nextState(aMove: Move, anotherMove: Move): Promise<State>
-  async nextState(aMove: [Move]): Promise<State>
-  async nextState(aMove: [Move, Move]): Promise<State>
-  async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<State> {
-    if (aMove instanceof Array) {
-      if (anotherMove !== undefined) {
-        throw Error(`unexpected second argument: array already given`)
-      }
-
-      switch (aMove.length) {
-      case 1:
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]))
-
-      case 2:
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]))
-      }
-
-    } else {
-      if (anotherMove === undefined) {
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove))
-
-      } else {
-        return new State(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove))
-      }
-    }
-
-    throw Error(`expected dgame.Move[] of length 1 or 2`)
-  }
-
-  get encoding(): StateInterface {
-    return {
-      nonce: this.metadata.nonce,
-      tag: this.metadata.tag,
-      data: this.metadata.data,
-      state: {
-        tag: this.tag,
-        data: this.data
-      }
-    }
-  }
-
-  get hash(): Promise<ethers.utils.BigNumber> {
-    return this.arcadeumContract.stateHash(this.encoding)
-  }
-
-  private tag: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  private data: [ethers.utils.BigNumber]
-  private metadata: {
-    nonce: number
-    tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
-  }
-}
-
-export class Move {
-  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: Signature }) {
-    this.playerID = move.playerID
-    this.data = move.data
-
-    if (move.signature !== undefined) {
-      this.signature = move.signature
-    } else {
-      this.signature = new Signature()
-    }
-  }
-
-  async sign(subkey: ethers.Wallet, state: State): Promise<void> {
-    this.signature = sign(subkey, [`bytes32`, `uint8`, `bytes`], [await state.hash, this.playerID, this.data])
-  }
-
-  readonly playerID: number
-  readonly data: Uint8Array
-  signature: Signature
-}
-
-interface MatchInterface {
-  readonly game: string
-  readonly timestamp: ethers.utils.BigNumber
-  readonly playerID: number
-  readonly players: [PlayerInterface, PlayerInterface]
-  readonly matchSignature: Signature
-  readonly opponentSubkeySignature: Signature
-}
-
-interface PlayerInterface {
-  readonly seedRating: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly publicSeed: [ethers.utils.BigNumber]
-  readonly timestampSignature: Signature
-}
-
-interface StateInterface {
-  readonly nonce: number
-  readonly tag: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
-  readonly state: {
-    readonly tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [ethers.utils.BigNumber]
-  }
-}
-
-interface ChangeCallback {
-  (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move): void
-}
-
-interface CommitCallback {
-  (match: Match, previousState: State, move: Move): void
-}
-
-class RemoteMatch extends Match {
+class RemoteMatch extends BasicMatch {
   constructor(private relay: wsrelay.Relay, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, subkey: ethers.Wallet, match: MatchInterface, onChange?: ChangeCallback, onCommit?: CommitCallback) {
     super(arcadeumContract, gameContract, subkey, match, onChange, onCommit)
 
@@ -409,6 +341,87 @@ class RemoteMatch extends Match {
   }
 
   error(error: any): void {
+  }
+}
+
+class BasicState {
+  constructor(private arcadeumContract: ethers.Contract, protected gameContract: ethers.Contract, state: StateInterface) {
+    this.tag = state.state.tag
+    this.data = state.state.data
+    this.metadata = {
+      nonce: state.nonce,
+      tag: state.tag,
+      data: state.data
+    }
+  }
+
+  get winner(): Promise<Winner> {
+    return this.gameContract.winner(this.encoding)
+  }
+
+  get nextPlayers(): Promise<NextPlayers> {
+    return this.gameContract.nextPlayers(this.encoding)
+  }
+
+  async isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }> {
+    const response = await this.gameContract.isMoveLegal(this.encoding, move)
+
+    return {
+      isLegal: response[0],
+      reason: response[1]
+    }
+  }
+
+  async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<State> {
+    if (aMove instanceof Array) {
+      if (anotherMove !== undefined) {
+        throw Error(`unexpected second argument: array already given`)
+      }
+
+      switch (aMove.length) {
+      case 1:
+        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]))
+
+      case 2:
+        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]))
+      }
+
+    } else {
+      if (anotherMove === undefined) {
+        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove))
+
+      } else {
+        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove))
+      }
+    }
+
+    throw Error(`expected dgame.Move[] of length 1 or 2`)
+  }
+
+  get encoding(): any {
+    return {
+      nonce: this.metadata.nonce,
+      tag: this.metadata.tag,
+      data: this.metadata.data,
+      state: {
+        tag: this.tag,
+        data: this.data
+      }
+    }
+  }
+
+  get hash(): Promise<ethers.utils.BigNumber> {
+    return this.arcadeumContract.stateHash(this.encoding)
+  }
+
+  private tag: number
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  private data: [ethers.utils.BigNumber]
+  private metadata: {
+    nonce: number
+    tag: number
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
   }
 }
 

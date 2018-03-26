@@ -7,7 +7,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": false,
-    "declaration": false,
+    "declaration": true,
     "downlevelIteration": true,
     "importHelpers": true,
     "removeComments": false,

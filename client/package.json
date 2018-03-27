@@ -45,13 +45,7 @@
         "skipBabel": true
       }
     },
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "ts",
-      "tsx",
-      "json"
-    ],
+    "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },

@@ -1,0 +1,11 @@
+{
+  "lerna": "2.9.0",
+  "packages": [
+    "client/*",
+    "ethereum/*",
+    "examples/*"
+  ],
+  "version": "independent",
+  "npmClient": "yarn",
+  "useWorkspaces": true
+}

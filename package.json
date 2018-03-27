@@ -1,78 +1,49 @@
 {
-  "name": "arcadeumxx",
-  "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "client",
+    "ethereum",
+    "examples/*"
+  ],
   "license": "none",
   "scripts": {
-    "build": "rm -rf ./build && truffle compile && tsc",
-    "dev": "webpack-dev-server --progress --color --disable-host-check --config config/webpack/webpack.config.dev.js",
-    "dist": "yarn dist:build",
-    "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
-    "dist:build": "yarn dist:clean && webpack --color --config config/webpack/webpack.config.dist.js",
-    "dist:clean": "rm -rf ./dist",
-    "dist:client": "serve --silent --port 3000 ./dist",
-    "dist:server": "node dist/server",
-    "lint": "tslint -c tslint.json client/**/*.ts client/**/*.tsx",
-    "migrate": "truffle migrate --network ganache",
-    "server": "cd ./server && make copy-sample-config && make run",
-    "start": "yarn dev",
-    "test": "NODE_ENV=testing jest --ci --runInBand --no-cache",
-    "test:watch": "jest --watchAll",
-    "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v",
-    "launchall": "./scripts/launchall.sh",
-    "killall": "./scripts/killall.sh"
-  },
-  "dependencies": {
-    "arcadeum": "/Users/peter/Dev/go/src/github.com/horizon-games/arcadeum/client",
-    "core-js": "^2.5.3",
-    "ethers": "^3.0.1",
-    "ganache-cli": "^6.1.0",
-    "global": "^4.3.2",
-    "rxjs": "^5.4.2"
+    "bootstrap": "yarn clean && yarn install && lerna bootstrap",
+    "clean": "lerna clean --yes; rm -rf ./node_modules",
+    "build": "yarn run bootstrap && lerna run build",
+    "build:lib": "lerna run build:lib",
+    "build:umd": "lerna run build:umd",
+    "publish": "lerna build; lerna publish --registry=https://registry.npmjs.org/",
+    "prettier": "prettier --write '**/*.{ts,tsx}'",
+    "prettier:ci": "prettier --list-different '**/*.{ts,tsx}'",
+    "lint": "lerna run lint",
+    "testrpc": "cd ./ethereum && yarn testrpc",
+    "testrpc:verbose": "cd ./ethereum && yarn testrpc:verbose",
+    "migrate": "cd ./ethereum && yarn migrate",
+    "test": "jest --ci --runInBand",
+    "deploy-examples": "./deploy/deploy-examples.sh"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.1",
-    "babel-jest": "^22.4.3",
-    "dotenv": "^5.0.0",
-    "express": "^4.16.2",
-    "file-loader": "^1.1.6",
-    "fork-ts-checker-webpack-plugin": "^0.3.0",
-    "html-webpack-plugin": "^2.28.0",
     "jest": "^22.4.3",
-    "mock-socket": "^7.1.0",
-    "node-fetch": "^2.0.0",
+    "lerna": "^2.9.0",
     "prettier": "^1.10.2",
-    "serve": "^6.4.9",
-    "source-map-loader": "^0.2.1",
-    "truffle": "^4.0.6",
     "ts-jest": "^22.4.2",
-    "ts-loader": "^3.4.0",
     "tslint": "^5.9.1",
-    "typescript": "2.8.1",
-    "uglifyjs-webpack-plugin": "^1.1.8",
-    "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
-    "webpack-assets-by-type-plugin": "^0.1.0",
-    "webpack-bundle-analyzer": "^2.10.0",
-    "webpack-dev-server": "^2.11.1"
+    "typescript": "2.8.1"
   },
   "jest": {
-    "moduleNameMapper": {
-      "wsrelay": "<rootDir>/client/wsrelay",
-      "dgame": "<rootDir>/client/dgame"
+    "globals": {
+      "ts-jest": {
+        "skipBabel": true
+      }
     },
+    "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"],
     "transform": {
-      "^.+\\.jsx?$": "./node_modules/babel-jest",
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
+    "testRegex": "(/__tests__/.*|(\\.|/)(test))\\.(tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "testEnvironment": "node"
   }
 }

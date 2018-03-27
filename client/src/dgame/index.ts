@@ -1,11 +1,11 @@
 import * as ethers from 'ethers'
-import * as wsrelay from 'wsrelay'
+import * as wsrelay from '../wsrelay'
 
 export class DGame {
   constructor(gameAddress: string, private account?: ethers.Wallet) {
     const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
-    const arcadeumMetadata = require(`../../build/contracts/Arcadeum.json`)
-    const gameMetadata = require(`../../build/contracts/DGame.json`)
+    const arcadeumMetadata = require(`../../../../../build/contracts/Arcadeum.json`)
+    const gameMetadata = require(`../../../../../build/contracts/DGame.json`)
 
     if (account !== undefined) {
       this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, account)

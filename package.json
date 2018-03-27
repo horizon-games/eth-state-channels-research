@@ -23,6 +23,7 @@
     "killall": "./scripts/killall.sh"
   },
   "dependencies": {
+    "arcadeum": "/Users/peter/Dev/go/src/github.com/horizon-games/arcadeum/client",
     "core-js": "^2.5.3",
     "ethers": "^3.0.1",
     "ganache-cli": "^6.1.0",

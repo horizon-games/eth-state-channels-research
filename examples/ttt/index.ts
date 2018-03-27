@@ -1,4 +1,4 @@
-import * as dgame from 'dgame'
+import * as dgame from 'arcadeum'
 import * as ethers from 'ethers'
 
 const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)

@@ -1,0 +1,22 @@
+{
+  "name": "arcadeum-contracts",
+  "version": "0.1.0",
+  "description": "Arcadeum.network Ethereum Smart Contracts",
+  "repository": "https://github.com/horizon-games/arcadeum",
+  "license": "(c) 2018-present Horizon Blockchain Games Inc.",
+  "keywords": [
+    "arcadeum",
+    "dgame",
+    "ethereum",
+    "horizongames"
+  ],
+  "scripts": {
+    "migrate": "truffle migrate --network ganache",
+    "prepare-abi": "echo TODO",
+    "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v"
+  },
+  "devDependencies": {
+    "ganache-cli": "6.1.0",
+    "truffle": "^4.1.3"
+  }
+}

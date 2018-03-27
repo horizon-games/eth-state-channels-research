@@ -22,7 +22,8 @@
     "migrate": "truffle migrate --network ganache"
   },
   "dependencies": {
-    "arcadeum": "0.1.0"
+    "arcadeum": "0.1.0",
+    "arcadeum-contracts": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^22.2.2",

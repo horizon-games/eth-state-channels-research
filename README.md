@@ -35,7 +35,7 @@ Welcome to the ARCADEUM.network
 # TODO, Build Optimizations
 
 * ethereum/
-  * dedicate abi.json files for each contract
+  * dedicated abi.json files for each contract
 
 * client/
   * why is filesize so large? minified at 544 kb for such a small code-base

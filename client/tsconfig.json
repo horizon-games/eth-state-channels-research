@@ -1,37 +1,8 @@
 {
-  "version": "2.8.1",
-
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es2015", "dom"],
-    "sourceMap": true,
-    "moduleResolution": "node",
-    "declaration": true,
-    "baseUrl": ".",
-
-    "outDir": "dist/lib",
-
-    "allowSyntheticDefaultImports": false,
-    "downlevelIteration": true,
-    "importHelpers": true,
-    "removeComments": false,
-
-    "strictNullChecks": true,
-    "noImplicitUseStrict": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedParameters": false,
-
-    "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": false,
-    "checkJs": false,
-
-    "plugins": []
+    "outDir": "dist/lib"
   },
-
   "include": [
     "src/**/*.ts"
   ]

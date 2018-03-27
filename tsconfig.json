@@ -1,13 +1,16 @@
 {
-  "version": "2.7.1",
+  "version": "2.8.1",
 
   "compilerOptions": {
     "target": "es5",
+    "module": "commonjs",
+    "lib": ["es2015", "dom"],
     "sourceMap": true,
-    "module": "esnext",
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": false,
     "declaration": true,
+    "baseUrl": ".",
+
+    "allowSyntheticDefaultImports": false,
     "downlevelIteration": true,
     "importHelpers": true,
     "removeComments": false,
@@ -24,31 +27,6 @@
     "allowJs": false,
     "checkJs": false,
 
-    "baseUrl": ".",
-
-    "lib": [
-      "dom",
-      "es2015"
-    ],
-    
-    "plugins": [
-    ]
-  },
-
-  "include": [
-    "examples/**/*.ts",
-    "examples/**/*.tsx"
-  ],
-
-  "exclude": [
-    "client/**/*.ts",
-    "client/**/*.tsx",
-
-    "node_modules",
-    "dist",
-    "client/**/test/*.ts",
-    "client/**/test/*.tsx",
-    "examples/**/test/*.ts",
-    "examples/**/test/*.tsx"
-  ]
+    "plugins": []
+  }
 }

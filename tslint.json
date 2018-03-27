@@ -2,7 +2,7 @@
   "rules": {
     "class-name": true,
     "comment-format": [
-      true,
+      false,
       "check-space"
     ],
     "curly": false,
@@ -63,7 +63,6 @@
       true,
       "check-branch",
       "check-decl",
-      "check-operator",
       "check-separator",
       "check-type"
     ]

@@ -1,5 +1,5 @@
 import { wallet1, wallet2 } from './wallet'
-import * as dgame from '../client/dist/lib'
+import * as dgame from 'arcadeum'
 import * as ethers from 'ethers'
 
 describe('ttt', () => {

@@ -1,4 +1,6 @@
-# How to run tests
+# Arcadeum End-to-End Integrated Test Suite
+
+## How to run tests
 
 (1) Bootstrap services
 

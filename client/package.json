@@ -19,8 +19,8 @@
     "build:umd": "rm -rf ./dist/umd && webpack --mode production --color --config config/webpack/webpack.config.dist.js",
     "build:clean": "rm -rf ./dist",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",
-    "test:watch": "jest --watchAll",
-    "test": "jest --ci --runInBand"
+    "test": "jest --ci --runInBand --verbose",
+    "test:watch": "jest --watchAll"
   },
   "dependencies": {
     "arcadeum-contracts": "0.1.0",
@@ -46,14 +46,19 @@
         "skipBabel": true
       }
     },
-    "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json"
+    ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test))\\.(tsx?)$",
     "testPathIgnorePatterns": [
       "/node_modules/"
-    ],
-    "testEnvironment": "node"
+    ]
   }
 }

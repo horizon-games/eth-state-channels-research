@@ -16,8 +16,8 @@
     "dist:clean": "rm -rf ./dist",
     "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",
+    "test": "jest --ci --runInBand --verbose",
     "test:watch": "jest --watchAll",
-    "test": "jest --ci --runInBand",
     "serve": "serve --silent --port 3000 ./dist",
     "migrate": "truffle migrate --network ganache"
   },
@@ -62,7 +62,6 @@
     "testRegex": "(/__tests__/.*|(\\.|/)(test))\\.(tsx?)$",
     "testPathIgnorePatterns": [
       "/node_modules/"
-    ],
-    "testEnvironment": "node"
+    ]
   }
 }

@@ -11,8 +11,8 @@
     "horizongames"
   ],
   "scripts": {
-    "dev": "webpack-dev-server --mode development --progress --color --config webpack.config.dev.js",
-    "dist": "yarn build:clean && webpack --mode production --color --config webpack.config.dist.js",
+    "dev": "webpack-dev-server --mode development --progress --color --config ./config/webpack/webpack.config.dev.js",
+    "dist": "yarn build:clean && webpack --mode production --color --config ./config/webpack/webpack.config.dist.js",
     "dist:clean": "rm -rf ./dist",
     "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",
@@ -22,8 +22,8 @@
     "migrate": "truffle migrate --network ganache"
   },
   "dependencies": {
-    "arcadeum": "0.1.0",
-    "arcadeum-contracts": "0.1.0"
+    "arcadeum": "link:../../client",
+    "arcadeum-contracts": "link:../../ethereum"
   },
   "devDependencies": {
     "@types/jest": "^22.2.2",

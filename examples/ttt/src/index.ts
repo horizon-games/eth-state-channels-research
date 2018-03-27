@@ -1,7 +1,7 @@
 import * as dgame from 'arcadeum'
 import * as ethers from 'ethers'
 
-const ttt = new dgame.DGame(`0xc89ce4735882c9f0f0fe26686c53074e09b0d550`)
+const ttt = new dgame.DGame(`0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb`)
 const signer = (ttt as any).signer
 const arcadeumContract = (ttt as any).arcadeumContract
 

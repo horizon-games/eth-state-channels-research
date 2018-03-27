@@ -22,7 +22,8 @@ password = ""
 contract_address = "0xcfeb869f69431e42cdb54a4f4f105c19c080a601"
 min_stake_usd = 20.00
 etherscan_price_url = "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=FWI7VM1XS26DR69JZIAFSPQQGCEXMS14FA"
+
 [[arcadeum.games]]
 id = 1
 name = "ttt"
-contract_address = "0xc89ce4735882c9f0f0fe26686c53074e09b0d550"
+contract_address = "0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"

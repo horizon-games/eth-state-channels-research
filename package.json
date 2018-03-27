@@ -2,8 +2,7 @@
   "private": true,
   "workspaces": [
     "client",
-    "ethereum",
-    "examples/*"
+    "ethereum"
   ],
   "license": "none",
   "scripts": {

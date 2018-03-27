@@ -3,7 +3,7 @@ const fs = require('fs')
 const webpack = require('webpack')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const shared = require('../../client/config/webpack/shared')
+const shared = require('./shared')
 
 const main = [
   'webpack-dev-server/client?http://0.0.0.0:3000',

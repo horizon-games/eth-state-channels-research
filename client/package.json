@@ -16,17 +16,19 @@
     "dev": "echo noop",
     "build": "yarn build:lib && yarn build:umd",
     "build:lib": "rm -rf ./dist/lib && tsc -p tsconfig.json",
-    "build:umd": "rm -rf ./dist/umd && webpack --mode production --color --config config/webpack/webpack.config.dist.js",
+    "build:umd": "rm -rf ./dist/umd && webpack --mode production --color --config webpack.config.dist.js",
     "build:clean": "rm -rf ./dist",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",
     "test": "jest --ci --runInBand --verbose",
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
-    "arcadeum-contracts": "0.1.0",
     "core-js": "^2.5.3",
     "ethers": "3.0.7",
     "rxjs": "5.5.8"
+  },
+  "peerDependencies": {
+    "arcadeum-contracts": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^22.2.2",

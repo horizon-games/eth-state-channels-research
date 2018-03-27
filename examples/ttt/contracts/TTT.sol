@@ -1,7 +1,8 @@
 pragma solidity ^0.4.19;
 pragma experimental ABIEncoderV2;
 
-import './DGame.sol';
+// import '../../../../node_modules/arcadeum-contracts/contracts/DGame.sol';
+import 'arcadeum-contracts/contracts/DGame.sol';
 
 contract TTT is DGame {
   uint32 private constant REASON_WRONG_LENGTH = 1;

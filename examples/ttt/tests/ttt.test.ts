@@ -4,8 +4,8 @@ import * as ethers from 'ethers'
 
 describe('ttt', () => {
   it('should successfully complete an end-to-end game', async (done) => {
-    const ttt = new dgame.DGame('0xc89ce4735882c9f0f0fe26686c53074e09b0d550', wallet1)
-    const ttt2 = new dgame.DGame('0xc89ce4735882c9f0f0fe26686c53074e09b0d550', wallet2)
+    const ttt = new dgame.DGame('0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb', wallet1)
+    const ttt2 = new dgame.DGame('0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb', wallet2)
     await ttt.deposit(ethers.utils.parseEther(`1`))
     await ttt2.deposit(ethers.utils.parseEther(`1`))
     console.log('begin match')

@@ -2,8 +2,7 @@
   "lerna": "2.9.0",
   "packages": [
     "client/*",
-    "ethereum/*",
-    "examples/*"
+    "ethereum/*"
   ],
   "version": "independent",
   "npmClient": "yarn",

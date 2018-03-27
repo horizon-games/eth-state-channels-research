@@ -2,6 +2,8 @@
 
 Welcome to the ARCADEUM.network
 
+Arcadeum is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
+
 
 ## Usage / Dev
 
@@ -10,6 +12,7 @@ Welcome to the ARCADEUM.network
 1. Install node v8.x or v9.x
 2. `yarn install`
 3. `yarn bootstrap`
+4. `yarn build`
 
 
 ### Client
@@ -22,14 +25,23 @@ Welcome to the ARCADEUM.network
 ### Ethereum
 
 1. cd ethereum/
-2. yarn testrpc - in a separate terminal
+2. yarn testrpc -- in a separate terminal
 3. yarn migrate
 
 
 ### Server
 
 1. cd server/
-2. 
+2. make run
+
+
+### Running TTT example
+
+1. cd examples/ttt
+2. yarn install -- this is required because `ttt` is configured outside of the arcadeum workspace
+3. yarn build -- this will compile the TTT.sol ethereum contract
+4. yarn migrate -- migrate the contract to the ganache testrpc
+5. yarn dev -- this will start the webapp on http://localhost:3000/
 
 
 # TODO, Build Optimizations
@@ -41,25 +53,3 @@ Welcome to the ARCADEUM.network
   * why is filesize so large? minified at 544 kb for such a small code-base
   * analyze bundle size
   * potentially refactor out rxjs if turns out to be adding weight
-
-
-
-# OLD:
-
-Arcadeum is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
-
-## Usage
-
-```yarn```
-
-```yarn build```
-
-```yarn testrpc```
-
-```yarn migrate```
-
-```yarn server```
-
-```yarn dev```
-
-Open a browser with MetaMask installed and go to http://localhost:3000/.

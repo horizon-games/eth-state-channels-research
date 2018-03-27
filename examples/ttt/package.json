@@ -15,6 +15,7 @@
     "dist": "yarn build:clean && webpack --mode production --color --config ./config/webpack/webpack.config.dist.js",
     "dist:clean": "rm -rf ./dist",
     "dist:analyze": "serve --silent --open --port 5555 ./dist/.stats",
+    "build": "rm -rf ./build && truffle compile",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",
     "test": "jest --ci --runInBand --verbose",
     "test:watch": "jest --watchAll",

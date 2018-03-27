@@ -11,6 +11,7 @@
     "horizongames"
   ],
   "scripts": {
+    "build": "rm -rf ./build && truffle compile",
     "migrate": "truffle migrate --network ganache",
     "prepare-abi": "echo TODO",
     "testrpc": "ganache-cli -d -e 1000000000 -g 1000000000 -l 1000000000 -v"

@@ -14,7 +14,7 @@
   "types": "dist/lib/index.d.ts",
   "scripts": {
     "dev": "echo noop",
-    "build": "yarn build:lib && yarn build:umd",
+    "build": "yarn build:lib",
     "build:lib": "rm -rf ./dist/lib && tsc -p tsconfig.json",
     "build:umd": "rm -rf ./dist/umd && webpack --mode production --color --config webpack.config.dist.js",
     "build:clean": "rm -rf ./dist",

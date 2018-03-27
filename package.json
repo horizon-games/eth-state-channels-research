@@ -8,9 +8,7 @@
   "scripts": {
     "bootstrap": "yarn clean && yarn install && lerna bootstrap",
     "clean": "lerna clean --yes; rm -rf ./node_modules",
-    "build": "yarn run bootstrap && lerna run build",
-    "build:lib": "lerna run build:lib",
-    "build:umd": "lerna run build:umd",
+    "build": "lerna run build",
     "publish": "lerna build; lerna publish --registry=https://registry.npmjs.org/",
     "prettier": "prettier --write '**/*.{ts,tsx}'",
     "prettier:ci": "prettier --list-different '**/*.{ts,tsx}'",
@@ -19,7 +17,8 @@
     "testrpc:verbose": "cd ./ethereum && yarn testrpc:verbose",
     "migrate": "cd ./ethereum && yarn migrate",
     "test": "jest --ci --runInBand",
-    "deploy-examples": "./deploy/deploy-examples.sh"
+    "deploy-examples": "./deploy/deploy-examples.sh",
+    "server": "cd ./server && make run"
   },
   "devDependencies": {
     "jest": "^22.4.3",

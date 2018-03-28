@@ -5,8 +5,8 @@ import { wallet1, wallet2 } from './wallet'
 
 describe('ttt', () => {
   it('should successfully complete an end-to-end game', async (done) => {
-    const ttt = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet1)
-    const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet2)
+    const ttt = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet1})
+    const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet2})
     const arcadeumContract = (ttt as any).arcadeumContract
     const depositInWei = ethers.utils.parseEther(deposit)
     const balanceInWei = await arcadeumContract.balance(wallet1.address) as ethers.utils.BigNumber

@@ -14,14 +14,20 @@ describe('ttt', () => {
     if (balanceInWei.lt(depositInWei)) {
       console.log(`staking ${deposit} ETH for wallet ${wallet1.address}`)
       const response = await ttt.deposit(depositInWei)
-      const transaction = await wallet1.provider.waitForTransaction(response.hash, 60000)
-      console.log(`transaction hash mined ${transaction.hash}`)
+
+      if (wallet1.provider !== undefined) {
+        const transaction = await wallet1.provider.waitForTransaction(response.hash, 60000)
+        console.log(`transaction hash mined ${transaction.hash}`)
+      }
     }
     if (balance2InWei.lt(depositInWei)) {
       console.log(`staking ${deposit} ETH for wallet ${wallet2.address}`)
       const response = await ttt2.deposit(depositInWei)
-      const transaction = await wallet2.provider.waitForTransaction(response.hash, 60000)
-      console.log(`transaction hash mined ${transaction.hash}`)
+
+      if (wallet2.provider !== undefined) {
+        const transaction = await wallet2.provider.waitForTransaction(response.hash, 60000)
+        console.log(`transaction hash mined ${transaction.hash}`)
+      }
     }
     console.log('begin match')
     Promise.all([createMatch(ttt), createMatch(ttt2)]).then(values => {

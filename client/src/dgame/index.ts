@@ -112,7 +112,6 @@ export interface State {
   nextState(moves: [Move] | [Move, Move]): Promise<State>
   readonly encoding: any
   readonly hash: Promise<ethers.utils.BigNumber>
-  readonly gameContract: ethers.Contract
 }
 
 export enum Winner {
@@ -352,7 +351,7 @@ class RemoteMatch extends BasicMatch {
 }
 
 class BasicState {
-  constructor(private arcadeumContract: ethers.Contract, readonly gameContract: ethers.Contract, state: StateInterface) {
+  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, state: StateInterface) {
     this.tag = state.state.tag
     this.data = state.state.data
     this.metadata = {

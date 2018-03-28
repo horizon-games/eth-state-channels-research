@@ -23,7 +23,7 @@ export class DGame {
     return this.gameContract.address
   }
 
-  async deposit(value: ethers.utils.BigNumber): Promise<void> {
+  async deposit(value: ethers.utils.BigNumber): Promise<{ hash: string }> {
     return this.arcadeumContract.deposit({ value: value })
   }
 

@@ -2,8 +2,9 @@ import * as ethers from 'ethers'
 import * as wsrelay from '../wsrelay'
 
 export class DGame {
-  constructor(gameAddress: string, private account?: ethers.Wallet) {
-    const arcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
+  constructor(arcadeumAddress: string, gameAddress: string, arcadeumServerHost: string, arcadeumServerPort: number, private account?: ethers.Wallet) {
+    this.arcadeumServerHost = arcadeumServerHost
+    this.arcadeumServerPort = arcadeumServerPort
 
     const arcadeumMetadata = require('arcadeum-contracts/build/contracts/Arcadeum.json')
     const gameMetadata = require('arcadeum-contracts/build/contracts/DGame.json')
@@ -49,7 +50,7 @@ export class DGame {
     const seed64 = base64(secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
-    const relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
+    const relay = new wsrelay.Relay(this.arcadeumServerHost, this.arcadeumServerPort, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
     const timestamp = JSON.parse((await relay.connectForTimestamp()).payload)
     const timestampSignature = sign(subkey, [`uint`], [timestamp])
 
@@ -83,6 +84,8 @@ export class DGame {
   private signer?: ethers.providers.Web3Signer
   private arcadeumContract: ethers.Contract
   private gameContract: ethers.Contract
+  private arcadeumServerHost: string
+  private arcadeumServerPort: number
 }
 
 export interface ChangeCallback {

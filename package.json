@@ -16,7 +16,8 @@
     "testrpc": "cd ./ethereum && yarn testrpc",
     "testrpc:verbose": "cd ./ethereum && yarn testrpc:verbose",
     "migrate": "cd ./ethereum && yarn migrate",
-    "test": "jest --ci --runInBand",
+    "test": "NODE_ENV=development jest --ci --runInBand",
+    "staging:test": "NODE_ENV=staging jest --ci --runInBand",
     "deploy-examples": "./deploy/deploy-examples.sh",
     "server": "cd ./server && make copy-sample-config && make run"
   },
@@ -34,7 +35,13 @@
         "skipBabel": true
       }
     },
-    "moduleFileExtensions": ["js", "jsx", "ts", "tsx", "json"],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "json"
+    ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },

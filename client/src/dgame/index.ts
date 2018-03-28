@@ -2,16 +2,17 @@ import * as ethers from 'ethers'
 import * as wsrelay from '../wsrelay'
 
 export class DGame {
-  constructor(arcadeumAddress: string, gameAddress: string, arcadeumServerHost: string, arcadeumServerPort: number, private account?: ethers.Wallet) {
-    this.arcadeumServerHost = arcadeumServerHost
-    this.arcadeumServerPort = arcadeumServerPort
+  constructor(arcadeumAddress: string, gameAddress: string, options: { arcadeumServerHost?: string, arcadeumServerPort?: number, account?: ethers.Wallet} = {}) {
+    this.arcadeumServerHost = options.arcadeumServerHost !== undefined ? options.arcadeumServerHost : 'localhost'
+    this.arcadeumServerPort = options.arcadeumServerPort !== undefined ? options.arcadeumServerPort : 8000
+    this.account = options.account
 
     const arcadeumMetadata = require('arcadeum-contracts/build/contracts/Arcadeum.json')
     const gameMetadata = require('arcadeum-contracts/build/contracts/DGame.json')
 
-    if (account !== undefined) {
-      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, account)
-      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, account)
+    if (this.account !== undefined) {
+      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, this.account)
+      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, this.account)
 
     } else {
       this.signer = (new ethers.providers.Web3Provider((window as any).web3.currentProvider)).getSigner() // XXX: choose account
@@ -86,6 +87,7 @@ export class DGame {
   private gameContract: ethers.Contract
   private arcadeumServerHost: string
   private arcadeumServerPort: number
+  private account: ethers.Wallet | undefined
 }
 
 export interface ChangeCallback {

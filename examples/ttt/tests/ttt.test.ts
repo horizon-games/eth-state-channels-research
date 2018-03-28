@@ -7,8 +7,22 @@ describe('ttt', () => {
   it('should successfully complete an end-to-end game', async (done) => {
     const ttt = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet1)
     const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet2)
-    await ttt.deposit(ethers.utils.parseEther(deposit))
-    await ttt2.deposit(ethers.utils.parseEther(deposit))
+    const arcadeumContract = (ttt as any).arcadeumContract
+    const depositInWei = ethers.utils.parseEther(deposit)
+    const balanceInWei = await arcadeumContract.balance(wallet1.address) as ethers.utils.BigNumber
+    const balance2InWei = await arcadeumContract.balance(wallet2.address) as ethers.utils.BigNumber
+    if (balanceInWei.lt(depositInWei)) {
+      console.log(`staking ${deposit} ETH for wallet ${wallet1.address}`)
+      const response = await ttt.deposit(depositInWei)
+      const transaction = await wallet1.provider.waitForTransaction(response.hash, 60000)
+      console.log(`transaction hash mined ${transaction.hash}`)
+    }
+    if (balance2InWei.lt(depositInWei)) {
+      console.log(`staking ${deposit} ETH for wallet ${wallet2.address}`)
+      const response = await ttt2.deposit(depositInWei)
+      const transaction = await wallet2.provider.waitForTransaction(response.hash, 60000)
+      console.log(`transaction hash mined ${transaction.hash}`)
+    }
     console.log('begin match')
     Promise.all([createMatch(ttt), createMatch(ttt2)]).then(values => {
       console.log('Winner!')
@@ -19,7 +33,7 @@ describe('ttt', () => {
       console.log(e)
       done(e)
     })
-  }, 150000)
+  }, 200000)
 })
 
 // Client game logic that would normally run in the browser

@@ -1,13 +1,14 @@
-import { wallet1, wallet2 } from './wallet'
 import * as dgame from 'arcadeum'
 import * as ethers from 'ethers'
+import { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit } from './arcadeum'
+import { wallet1, wallet2 } from './wallet'
 
 describe('ttt', () => {
   it('should successfully complete an end-to-end game', async (done) => {
-    const ttt = new dgame.DGame('0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb', wallet1)
-    const ttt2 = new dgame.DGame('0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb', wallet2)
-    await ttt.deposit(ethers.utils.parseEther(`1`))
-    await ttt2.deposit(ethers.utils.parseEther(`1`))
+    const ttt = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet1)
+    const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, wallet2)
+    await ttt.deposit(ethers.utils.parseEther(deposit))
+    await ttt2.deposit(ethers.utils.parseEther(deposit))
     console.log('begin match')
     Promise.all([createMatch(ttt), createMatch(ttt2)]).then(values => {
       console.log('Winner!')
@@ -18,7 +19,7 @@ describe('ttt', () => {
       console.log(e)
       done(e)
     })
-  }, 20000)
+  }, 150000)
 })
 
 // Client game logic that would normally run in the browser

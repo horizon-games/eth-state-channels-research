@@ -351,7 +351,7 @@ class RemoteMatch extends BasicMatch {
 }
 
 class BasicState {
-  constructor(private arcadeumContract: ethers.Contract, protected gameContract: ethers.Contract, state: StateInterface) {
+  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, state: StateInterface) {
     this.tag = state.state.tag
     this.data = state.state.data
     this.metadata = {

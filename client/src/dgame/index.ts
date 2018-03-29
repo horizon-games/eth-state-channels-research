@@ -178,6 +178,14 @@ interface StateInterface {
   }
 }
 
+enum MetaTag {
+  None,
+  CommittingRandom,
+  RevealingRandom,
+  CommittingSecret,
+  RevealingSecret
+}
+
 class BasicMatch {
   constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface, public onChange?: ChangeCallback, public onCommit?: CommitCallback) {
     this.game = match.game

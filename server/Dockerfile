@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.9.2-alpine3.7 as builder
+FROM golang:1.10.0-alpine3.7 as builder
 
 RUN apk add --no-cache \
       ca-certificates tzdata gnupg coreutils bash \
@@ -15,7 +15,7 @@ RUN make dist
 # Runner image
 FROM alpine:3.7
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache --update ca-certificates tzdata
 
 # Bin
 COPY --from=builder /go/src/github.com/horizon-games/arcadeum/server/bin/* /usr/bin/

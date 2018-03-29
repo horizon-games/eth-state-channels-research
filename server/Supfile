@@ -3,8 +3,8 @@
 version: 0.5
 
 env:
-  IMAGE: davatar/arcadeum/server
-  CONFIG: /data/etc/arcadeum-server.conf
+  IMAGE: arcadeum/server
+  CONFIG: /data/etc
   HOST_PORT: 8000
   CONTAINER_PORT: 8000
   GITTAG: $(git describe --exact-match --tags HEAD 2>/dev/null || :)
@@ -14,9 +14,14 @@ env:
 
 
 networks:
-  local:
+  development:
     hosts:
       - localhost
+  staging:
+    env:
+      VIRTUAL_HOST: relay.arcadeum.com
+    hosts:
+      - ubuntu@server.arcadeum.com
   production:
     env:
       VIRTUAL_HOST: relay.arcadeum.com
@@ -50,15 +55,20 @@ commands:
     once: true
 
   pull:
-    desc: Pull latest Docker dgame-server image
+    desc: Pull latest Docker arcadeum-server image
     run: >
       sudo docker pull $IMAGE:$VERSION || (echo && echo "--" && \
         echo "Whoops, did you forget to build the docker image?" && \
         echo "First run: sup $SUP_NETWORK docker-build" && echo "--" && echo && exit 1)
 
+  pull-redis:
+    desc: Pull latest Redis image
+    run: >
+      sudo docker pull redis:latest
+
   ps:
-    desc: List running dgame-server containers
-    run: sudo docker ps | grep dgame-server
+    desc: List running arcadeum-server containers
+    run: sudo docker ps | grep arcadeum-server
 
   health:
     desc: Application health check
@@ -66,19 +76,48 @@ commands:
 
   start:
     desc: Start a stopped Docker container
-    run: sudo docker start dgame-server || exit 0
+    run: sudo docker start arcadeum-server || exit 0
+
+  start-redis:
+    desc: Start a stopped Docker container
+    run: sudo docker start redis || exit 0
 
   stop:
     desc: Stop Docker container
-    run: sudo docker stop dgame-server || exit 0
+    run: sudo docker stop arcadeum-server || exit 0
+
+  stop-redis:
+    desc: Stop Docker container
+    run: sudo docker stop redis || exit 0
 
   restart:
     desc: Restart Docker container
-    run: sudo docker restart dgame-server || exit 0
+    run: sudo docker restart arcadeum-server || exit 0
+
+  restart-redis:
+    desc: Restart Docker container
+    run: sudo docker restart redis || exit 0
 
   rm:
     desc: Remove Docker container
-    run: sudo docker rm dgame-server || exit 0
+    run: sudo docker rm arcadeum-server || exit 0
+
+  rm-redis:
+    desc: Remove Docker container
+    run: sudo docker rm redis || exit 0
+
+  run-redis:
+    desc: Run redis docker container
+    run: >
+      sudo docker stop redis || :; \
+        sudo docker run -d \
+          -p 6379:6379 \
+          --network=localnet \
+          --restart=always \
+          --log-driver json-file \
+          --log-opt max-size=100m \
+          --log-opt max-file=5 \
+          --name redis -t redis:latest
 
   run:
     desc: Rolling update (stop & remove old Docker container, run new one)
@@ -87,8 +126,9 @@ commands:
         sudo docker rm arcadeum-server || :; \
           sudo docker run -d \
           -p $HOST_PORT:$CONTAINER_PORT \
-          -v $CONFIG:/etc/arcadeum-server.conf \
-          -v /data/certs/relay.arcadeum.com:/data/certs/relay.arcadeum.com \
+          -v $CONFIG:/etc \
+          -v /data/etc/certs/relay.arcadeum.com:/etc/certs/relay.arcadeum.com \
+          -v /data/etc/keys/relay.arcadeum.com:/etc/keys/relay.arcadeum.com \
           --network=localnet \
           --restart=always \
           --memory-swappiness=0 \
@@ -98,11 +138,11 @@ commands:
           -e "VIRTUAL_HOST=$VIRTUAL_HOST" \
           -e "LETSENCRYPT_HOST=$VIRTUAL_HOST" \
           -e "LETSENCRYPT_EMAIL=peter.kieltyka@gmail.com" \
-          --name arcadeum-server $IMAGE:$VERSION arcadeum-server -config=/etc/arcadeum-server.conf
+          --name arcadeum-server -t $IMAGE:$VERSION
 
   images:
     desc: List Docker images
-    run: sudo docker images davatar/arcadeum/server
+    run: sudo docker images arcadeum/server
 
   config:
     desc: Upload/test config file.

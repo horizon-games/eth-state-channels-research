@@ -193,7 +193,7 @@ class BasicMatch {
 
   readonly playerID: number
 
-  get state(): Promise<State> {
+  get state(): Promise<BasicState> {
     if (this.currentState === undefined) {
       return this.gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
         this.agreedState = new BasicState(this.arcadeumContract, this.gameContract, response)
@@ -313,10 +313,10 @@ class BasicMatch {
     return this.players[this.opponentID].timestampSignature
   }
 
-  private agreedState?: State
+  private agreedState?: BasicState
   private opponentMove?: Move
   private playerMoves: Move[]
-  private currentState?: State
+  private currentState?: BasicState
   private pendingMoves: [Move | undefined, Move | undefined]
 }
 
@@ -388,7 +388,7 @@ class BasicState {
     }
   }
 
-  async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<State> {
+  async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<BasicState> {
     if (aMove instanceof Array) {
       if (anotherMove !== undefined) {
         throw Error(`unexpected second argument: array already given`)

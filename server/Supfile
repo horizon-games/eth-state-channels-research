@@ -126,9 +126,9 @@ commands:
         sudo docker rm arcadeum-server || :; \
           sudo docker run -d \
           -p $HOST_PORT:$CONTAINER_PORT \
-          -v $CONFIG:/etc \
-          -v /data/etc/certs/relay.arcadeum.com:/etc/certs/relay.arcadeum.com \
-          -v /data/etc/keys/relay.arcadeum.com:/etc/keys/relay.arcadeum.com \
+          -v $CONFIG:/data/etc \
+          -v /data/etc/certs/relay.arcadeum.com:/data/etc/certs/relay.arcadeum.com \
+          -v /data/etc/keys/relay.arcadeum.com:/data/etc/keys/relay.arcadeum.com \
           --network=localnet \
           --restart=always \
           --memory-swappiness=0 \

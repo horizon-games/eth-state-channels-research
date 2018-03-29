@@ -371,6 +371,13 @@ class BasicState {
     }
   }
 
+  readonly metadata: {
+    readonly nonce: number
+    readonly tag: number
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    readonly data: [Uint8Array, Uint8Array, Uint8Array]
+  }
+
   get winner(): Promise<Winner> {
     return this.gameContract.winner(this.encoding)
   }
@@ -430,15 +437,9 @@ class BasicState {
     return this.arcadeumContract.stateHash(this.encoding)
   }
 
-  private tag: number
+  private readonly tag: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  private data: [Uint8Array]
-  private metadata: {
-    nonce: number
-    tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    data: [Uint8Array, Uint8Array, Uint8Array]
-  }
+  private readonly data: [Uint8Array]
 }
 
 class Signature {

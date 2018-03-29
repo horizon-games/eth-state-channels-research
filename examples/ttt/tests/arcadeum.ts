@@ -7,5 +7,6 @@ const gameAddress = cfg.gameAddress
 const arcadeumServerHost = cfg.arcadeumServerHost
 const arcadeumServerPort = cfg.arcadeumServerPort
 const deposit = cfg.deposit
+const ssl = cfg.ssl
 
-export { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit }
+export { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit, ssl }

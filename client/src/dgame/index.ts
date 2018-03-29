@@ -2,10 +2,11 @@ import * as ethers from 'ethers'
 import * as wsrelay from '../wsrelay'
 
 export class DGame {
-  constructor(arcadeumAddress: string, gameAddress: string, options: { arcadeumServerHost?: string, arcadeumServerPort?: number, account?: ethers.Wallet} = {}) {
+  constructor(arcadeumAddress: string, gameAddress: string, options: { arcadeumServerHost?: string, arcadeumServerPort?: number, account?: ethers.Wallet, ssl: boolean } = { ssl: false }) {
     this.arcadeumServerHost = options.arcadeumServerHost !== undefined ? options.arcadeumServerHost : 'localhost'
     this.arcadeumServerPort = options.arcadeumServerPort !== undefined ? options.arcadeumServerPort : 8000
     this.account = options.account
+    this.ssl = options.ssl
 
     const arcadeumMetadata = require('arcadeum-contracts/build/contracts/Arcadeum.json')
     const gameMetadata = require('arcadeum-contracts/build/contracts/DGame.json')
@@ -51,7 +52,7 @@ export class DGame {
     const seed64 = base64(secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
-    const relay = new wsrelay.Relay(this.arcadeumServerHost, this.arcadeumServerPort, false, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
+    const relay = new wsrelay.Relay(this.arcadeumServerHost, this.arcadeumServerPort, this.ssl, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
     const timestamp = JSON.parse((await relay.connectForTimestamp()).payload)
     const timestampSignature = sign(subkey, [`uint`], [timestamp])
 
@@ -88,6 +89,7 @@ export class DGame {
   private arcadeumServerHost: string
   private arcadeumServerPort: number
   private account: ethers.Wallet | undefined
+  private ssl: boolean
 }
 
 export interface ChangeCallback {

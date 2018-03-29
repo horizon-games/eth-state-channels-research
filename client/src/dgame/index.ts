@@ -113,7 +113,7 @@ export interface State {
   nextState(aMove: Move, anotherMove?: Move): Promise<State>
   nextState(moves: [Move] | [Move, Move]): Promise<State>
   readonly encoding: any
-  readonly hash: Promise<ethers.utils.BigNumber>
+  readonly hash: Promise<Uint8Array>
 }
 
 export enum Winner {
@@ -162,7 +162,7 @@ interface MatchInterface {
 interface PlayerInterface {
   readonly seedRating: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly publicSeed: [ethers.utils.BigNumber]
+  readonly publicSeed: [Uint8Array]
   readonly timestampSignature: Signature
 }
 
@@ -170,11 +170,11 @@ interface StateInterface {
   readonly nonce: number
   readonly tag: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
+  readonly data: [Uint8Array, Uint8Array, Uint8Array]
   readonly state: {
     readonly tag: number
     // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [ethers.utils.BigNumber]
+    readonly data: [Uint8Array]
   }
 }
 
@@ -418,18 +418,18 @@ class BasicState {
     }
   }
 
-  get hash(): Promise<ethers.utils.BigNumber> {
+  get hash(): Promise<Uint8Array> {
     return this.arcadeumContract.stateHash(this.encoding)
   }
 
   private tag: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  private data: [ethers.utils.BigNumber]
+  private data: [Uint8Array]
   private metadata: {
     nonce: number
     tag: number
     // XXX: https://github.com/ethereum/solidity/issues/3270
-    data: [ethers.utils.BigNumber, ethers.utils.BigNumber, ethers.utils.BigNumber]
+    data: [Uint8Array, Uint8Array, Uint8Array]
   }
 }
 

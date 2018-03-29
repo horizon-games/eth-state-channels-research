@@ -1,12 +1,12 @@
 import * as dgame from 'arcadeum'
 import * as ethers from 'ethers'
-import { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit } from './arcadeum'
+import { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit, ssl } from './arcadeum'
 import { wallet1, wallet2 } from './wallet'
 
 describe('ttt', () => {
   it('should successfully complete an end-to-end game', async (done) => {
-    const ttt = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet1})
-    const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet2})
+    const ttt = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet1, ssl: ssl})
+    const ttt2 = new dgame.DGame(arcadeumAddress, gameAddress, { arcadeumServerHost, arcadeumServerPort, account: wallet2, ssl: ssl})
     const arcadeumContract = (ttt as any).arcadeumContract
     const depositInWei = ethers.utils.parseEther(deposit)
     const balanceInWei = await arcadeumContract.balance(wallet1.address) as ethers.utils.BigNumber

@@ -11,11 +11,14 @@
     "horizongames"
   ],
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
+  "module": "dist/es/index.js",
+  "types": "dist/es/index.d.ts",
   "scripts": {
     "dev": "echo noop",
     "build": "yarn build:lib",
-    "build:lib": "rm -rf ./dist/lib && tsc -p tsconfig.json",
+    "build:lib": "yarn build:lib:cjs; yarn build:lib:es",
+    "build:lib:cjs": "rm -rf ./dist/lib && tsc -p tsconfig.cjs.json",
+    "build:lib:es": "rm -rf ./dist/es && tsc -p tsconfig.es.json",
     "build:umd": "rm -rf ./dist/umd && webpack --mode production --color --config webpack.config.dist.js",
     "build:clean": "rm -rf ./dist",
     "lint": "tslint -c tslint.json src/**/*.ts src/**/*.tsx test/**/*.ts",

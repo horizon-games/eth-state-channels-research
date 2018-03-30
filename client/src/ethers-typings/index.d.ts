@@ -184,7 +184,7 @@ declare module 'ethers' {
 
     const etherSymbol: string
 
-    function arrayify(hex: string, name?: string): Uint8Array
+    function arrayify(hex: string | BigNumber | { readonly length: number, [index: number]: number }, name?: string): Uint8Array
 
     function concat(objects: any[]): Uint8Array
     function padZeros(value: any, length: number): Uint8Array

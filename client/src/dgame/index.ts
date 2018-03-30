@@ -361,6 +361,14 @@ class BasicState {
       tag: state.tag,
       data: state.data
     }
+
+    for (let i in this.data) {
+      this.data[i] = ethers.utils.arrayify(this.data[i])
+    }
+
+    for (let i in this.metadata.data) {
+      this.metadata.data[i] = ethers.utils.arrayify(this.metadata.data[i])
+    }
   }
 
   get winner(): Promise<Winner> {

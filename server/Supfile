@@ -70,6 +70,10 @@ commands:
     desc: List running arcadeum-server containers
     run: sudo docker ps | grep arcadeum-server
 
+  ps-redis:
+    desc: List running redis containers
+    run: sudo docker ps | grep redis
+
   health:
     desc: Application health check
     run: for i in {1..3}; do curl localhost:$HOST_PORT/ping && break || sleep 1; done
@@ -174,9 +178,12 @@ targets:
 
   deploy:
     - pull
+    - pull-redis
     - config
     - run
+    - run-redis
     - ps
+    - ps-redis
     - logs
     - health
 

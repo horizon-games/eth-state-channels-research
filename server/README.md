@@ -1,4 +1,4 @@
-# dgame-server
+# Arcadeum Server
 
 ## Usage / Dev
 
@@ -7,3 +7,17 @@
 3. `make tools`
 4. `make bootstrap`
 5. `make run`
+
+## Deploy to staging
+
+Staging deploys will push to `https://relay.arcadeum.com` and point to rinkeby testnet.
+
+1. Build docker image
+```
+sup staging build
+```
+
+2. Pull & run docker containers
+```
+sup staging deploy
+```

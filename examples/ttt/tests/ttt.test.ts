@@ -48,51 +48,53 @@ async function createMatch(game: dgame.DGame): Promise<dgame.Winner> {
   console.log(await game.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
 
   return new Promise<dgame.Winner>(async (resolve, reject) => {
-    const match = await game.createMatch(new Uint8Array(0), async (match: dgame.Match, previousState: dgame.State, currentState: dgame.State, aMove: dgame.Move, anotherMove?: dgame.Move) => {
-      const winner = await currentState.winner
-      if (winner !== dgame.Winner.None) {
-        resolve(winner)
-      }
+    const match = await game.createMatch(new Uint8Array(0), {
+      onTransition: async (match: dgame.Match, previousState: dgame.State, currentState: dgame.State, aMove: dgame.Move, anotherMove?: dgame.Move) => {
+        const winner = await currentState.winner
+        if (winner !== dgame.Winner.None) {
+          resolve(winner)
+        }
 
-      switch (match.playerID) {
-        case 0:
-          switch ((currentState as any).tag) {
-            case 2:
-              match.commit(new dgame.Move({ playerID: 0, data: new Uint8Array([8]) }))
-              break
+        switch (match.playerID) {
+          case 0:
+            switch ((currentState as any).tag) {
+              case 2:
+                await match.commitMove(await match.createMove(new Uint8Array([8])))
+                break
 
-            case 4:
-              match.commit(new dgame.Move({ playerID: 0, data: new Uint8Array([6]) }))
-              break
+              case 4:
+                await match.commitMove(await match.createMove(new Uint8Array([6])))
+                break
 
-            case 6:
-              match.commit(new dgame.Move({ playerID: 0, data: new Uint8Array([7]) }))
-              break
-          }
+              case 6:
+                await match.commitMove(await match.createMove(new Uint8Array([7])))
+                break
+            }
 
-          break
+            break
 
-        case 1:
-          switch ((currentState as any).tag) {
-            case 1:
-              match.commit(new dgame.Move({ playerID: 1, data: new Uint8Array([4]) }))
-              break
+          case 1:
+            switch ((currentState as any).tag) {
+              case 1:
+                await match.commitMove(await match.createMove(new Uint8Array([4])))
+                break
 
-            case 3:
-              match.commit(new dgame.Move({ playerID: 1, data: new Uint8Array([2]) }))
-              break
+              case 3:
+                await match.commitMove(await match.createMove(new Uint8Array([2])))
+                break
 
-            case 5:
-              match.commit(new dgame.Move({ playerID: 1, data: new Uint8Array([3]) }))
-              break
-          }
+              case 5:
+                await match.commitMove(await match.createMove(new Uint8Array([3])))
+                break
+            }
 
-          break
+            break
+        }
       }
     })
 
     if (match.playerID === 0) {
-      match.commit(new dgame.Move({ playerID: 0, data: new Uint8Array([0]) }))
+      await match.commitMove(await match.createMove(new Uint8Array([0])))
     }
   })
 }

@@ -38,7 +38,7 @@ export class DGame {
     return this.gameContract.isSecretSeedValid(address, secretSeed)
   }
 
-  async createMatch(secretSeed: Uint8Array, onChange?: ChangeCallback, onCommit?: CommitCallback): Promise<Match> {
+  async createMatch(secretSeed: Uint8Array, callbacks?: Callbacks): Promise<Match> {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
 
@@ -80,7 +80,7 @@ export class DGame {
     response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
     response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
 
-    return new RemoteMatch(relay, this.arcadeumContract, this.gameContract, subkey, response, onChange, onCommit)
+    return new RemoteMatch(response, subkey, this.arcadeumContract, this.gameContract, relay, callbacks)
   }
 
   private signer?: ethers.providers.Web3Signer
@@ -92,18 +92,17 @@ export class DGame {
   private ssl: boolean
 }
 
-export interface ChangeCallback {
-  (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move): void
-}
-
-export interface CommitCallback {
-  (match: Match, previousState: State, move: Move): void
-}
-
 export interface Match {
   readonly playerID: number
+  readonly opponentID: number
   readonly state: Promise<State>
-  commit(move: Move): Promise<void>
+  createMove(data: Uint8Array): Promise<Move>
+  commitMove(move: Move): Promise<State>
+}
+
+export interface Callbacks {
+  onCommit?: (match: Match, state: State, move: Move) => void
+  onTransition?: (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => void
 }
 
 export interface State {
@@ -142,11 +141,21 @@ export class Move {
   }
 
   async sign(subkey: ethers.Wallet, state: State): Promise<void> {
-    this.signature = sign(subkey, [`bytes32`, `uint8`, `bytes`], [await state.hash, this.playerID, this.data])
+    this.stateHash = await state.hash
+    this.signature = sign(subkey, [`bytes32`, `uint8`, `bytes`], [this.stateHash, this.playerID, this.data])
+  }
+
+  async wasSignedWithState(state: State): Promise<boolean> {
+    if (this.stateHash === undefined) {
+      return false
+    }
+
+    return areArraysEqual(await state.hash, this.stateHash)
   }
 
   readonly playerID: number
   readonly data: Uint8Array
+  private stateHash?: Uint8Array
   private signature?: any
 }
 
@@ -178,16 +187,8 @@ interface StateInterface {
   }
 }
 
-enum MetaTag {
-  None,
-  CommittingRandom,
-  RevealingRandom,
-  CommittingSecret,
-  RevealingSecret
-}
-
 class BasicMatch {
-  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, private subkey: ethers.Wallet, match: MatchInterface, public onChange?: ChangeCallback, public onCommit?: CommitCallback) {
+  constructor(match: MatchInterface, private subkey: ethers.Wallet, private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, callbacks?: Callbacks) {
     this.game = match.game
     this.timestamp = match.timestamp
     this.playerID = match.playerID
@@ -195,43 +196,73 @@ class BasicMatch {
     this.matchSignature = match.matchSignature
     this.opponentSubkeySignature = match.opponentSubkeySignature
     this.playerMoves = []
-    this.pendingMoves = [undefined, undefined]
+    this.committedMoves = [undefined, undefined]
     this[`[object Object]`] = this.players // XXX
+
+    if (callbacks !== undefined) {
+      this.callbacks = callbacks
+    } else {
+      this.callbacks = {}
+    }
+
+    this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
+      const state = new BasicState(this.arcadeumContract, this.gameContract, response)
+      this.agreedState = state
+      return state
+    })
+  }
+
+  set callbacks(callbacks: Callbacks) {
+    this.actualCallbacks = Object.assign({}, callbacks)
+
+    if (this.actualCallbacks.onCommit === undefined) {
+      this.actualCallbacks.onCommit = (match: Match, state: State, move: Move) => {}
+    }
+
+    if (this.actualCallbacks.onTransition === undefined) {
+      this.actualCallbacks.onTransition = (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => {}
+    }
   }
 
   readonly playerID: number
 
-  get state(): Promise<BasicState> {
-    if (this.currentState === undefined) {
-      return this.gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
-        this.agreedState = new BasicState(this.arcadeumContract, this.gameContract, response)
-        this.currentState = this.agreedState
-        return this.currentState
-      })
-    }
-
-    return Promise.resolve(this.currentState)
+  get opponentID(): number {
+    return 1 - this.playerID
   }
 
-  async commit(move: Move): Promise<void> {
-    if (this.pendingMoves[move.playerID] !== undefined) {
-      throw Error(`player ${move.playerID} already committed`)
+  get state(): Promise<BasicState> {
+    return this.getState()
+  }
+
+  async createMove(data: Uint8Array): Promise<Move> {
+    const move = new Move({ playerID: this.playerID, data: data })
+    const state = await this.statePromise
+    const response = await state.isMoveLegal(move)
+
+    if (!response.isLegal) {
+      throw Error(`illegal player move: reason ${response.reason}`)
     }
 
-    const state = await this.state
+    await move.sign(this.subkey, state)
+    return move
+  }
+
+  async commitMove(move: Move): Promise<BasicState> {
+    const state = await this.statePromise
 
     if (move.playerID === this.playerID) {
-      const response = await state.isMoveLegal(move)
-
-      if (!response.isLegal) {
-        throw Error(`illegal move: ${response.reason}`)
+      if (!move.wasSignedWithState(state)) {
+        throw Error(`move not signed by player`)
       }
 
-      await move.sign(this.subkey, state)
-
     } else {
-      const opponent = await this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature)
-      const moveMaker = await this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature)
+      const [
+        opponent,
+        moveMaker
+      ] = await Promise.all([
+        this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature),
+        this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature)
+      ])
 
       if (moveMaker !== opponent) {
         throw Error(`move not signed by opponent`)
@@ -241,16 +272,22 @@ class BasicMatch {
 
       if (!response.isLegal) {
         if (await this.arcadeumContract.canReportCheater(this, state.encoding, move)) {
-          await this.arcadeumContract.reportCheater(this, state.encoding, move)
+          this.arcadeumContract.reportCheater(this, state.encoding, move)
         }
 
-        throw Error(`illegal move: ${response.reason}`)
+        throw Error(`illegal opponent move: reason ${response.reason}`)
       }
     }
 
-    const nextPlayers = await state.nextPlayers
+    if (this.committedMoves[move.playerID] !== undefined) {
+      throw Error(`player ${move.playerID} already committed`)
+    }
 
-    if (nextPlayers !== NextPlayers.Both) {
+    let nextState: BasicState
+
+    switch (await state.nextPlayers) {
+    case NextPlayers.Player0:
+    case NextPlayers.Player1:
       if (move.playerID === this.playerID) {
         this.playerMoves.push(move)
 
@@ -260,51 +297,47 @@ class BasicMatch {
         this.playerMoves = []
       }
 
-      if (this.onCommit !== undefined) {
-        this.onCommit(this, state, move)
+      this.actualCallbacks.onCommit!(this, state, move)
+      this.statePromise = state.nextState(move)
+      nextState = await this.statePromise
+      this.actualCallbacks.onTransition!(this, state, nextState, move)
+      break
+
+    case NextPlayers.Both:
+      this.committedMoves[move.playerID] = move
+      this.actualCallbacks.onCommit!(this, state, move)
+
+      if (this.committedMoves[0] === undefined || this.committedMoves[1] === undefined) {
+        return state
       }
 
-      this.currentState = await state.nextState(move)
-
-      if (this.onChange !== undefined) {
-        this.onChange(this, state, this.currentState, move)
-      }
-
-    } else {
-      this.pendingMoves[move.playerID] = move
-
-      if (this.pendingMoves[0] === undefined || this.pendingMoves[1] === undefined) {
-        if (this.onCommit !== undefined) {
-          this.onCommit(this, state, move)
-        }
-
-        return
-      }
-
+      const committedMoves = [this.committedMoves[0], this.committedMoves[1]] as [Move, Move]
+      this.committedMoves = [undefined, undefined]
       this.agreedState = state
-      this.opponentMove = this.pendingMoves[1 - this.playerID]
-      this.playerMoves = [this.pendingMoves[this.playerID]!]
+      this.opponentMove = committedMoves[this.opponentID]
+      this.playerMoves = [committedMoves[this.playerID]]
+      this.statePromise = state.nextState(committedMoves)
+      nextState = await this.statePromise
+      this.actualCallbacks.onTransition!(this, state, nextState, committedMoves[0], committedMoves[1])
+      break
 
-      if (this.onCommit !== undefined) {
-        this.onCommit(this, state, move)
-      }
-
-      const pendingMoves = this.pendingMoves
-      this.currentState = await state.nextState(this.pendingMoves[0]!, this.pendingMoves[1]!)
-      this.pendingMoves = [undefined, undefined]
-
-      if (this.onChange !== undefined) {
-        this.onChange(this, state, this.currentState, pendingMoves[0]!, pendingMoves[1]!)
-      }
+    default:
+      throw Error(`impossible since move is legal`)
     }
 
-    const winner = await this.currentState.winner
+    const winner = await nextState.winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)) {
-        this.arcadeumContract.claimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)
+      if (await this.arcadeumContract.canClaimReward(this, this.agreedState.encoding, this.opponentMove, this.playerMoves)) {
+        this.arcadeumContract.claimReward(this, this.agreedState.encoding, this.opponentMove, this.playerMoves)
       }
     }
+
+    return nextState
+  }
+
+  protected async getState(): Promise<BasicState> {
+    return this.statePromise
   }
 
   private readonly game: string
@@ -313,44 +346,40 @@ class BasicMatch {
   private readonly matchSignature: Signature
   private readonly opponentSubkeySignature: Signature
 
-  private get opponentID(): number {
-    return 1 - this.playerID
-  }
-
   private get opponentTimestampSignature(): Signature {
     return this.players[this.opponentID].timestampSignature
   }
 
-  private agreedState?: BasicState
+  private actualCallbacks: Callbacks
+  private statePromise: Promise<BasicState>
+  private agreedState: BasicState
   private opponentMove?: Move
   private playerMoves: Move[]
-  private currentState?: BasicState
-  private pendingMoves: [Move | undefined, Move | undefined]
+  private committedMoves: [Move | undefined, Move | undefined]
 }
 
 class RemoteMatch extends BasicMatch {
-  constructor(private relay: wsrelay.Relay, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, subkey: ethers.Wallet, match: MatchInterface, onChange?: ChangeCallback, onCommit?: CommitCallback) {
-    super(arcadeumContract, gameContract, subkey, match, onChange, onCommit)
+  constructor(match: MatchInterface, subkey: ethers.Wallet, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, relay: wsrelay.Relay, callbacks?: Callbacks) {
+    super(match, subkey, arcadeumContract, gameContract)
+
+    this.callbacks = {
+      onCommit: (match: Match, state: State, move: Move) => {
+        if (move.playerID === match.playerID) {
+          relay.send(JSON.stringify(move))
+        }
+
+        if (callbacks !== undefined && callbacks.onCommit !== undefined) {
+          callbacks.onCommit(match, state, move)
+        }
+      },
+      onTransition: (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => {
+        if (callbacks !== undefined && callbacks.onTransition !== undefined) {
+          callbacks.onTransition(match, previousState, currentState, aMove, anotherMove)
+        }
+      }
+    }
 
     relay.subscribe(this)
-  }
-
-  async commit(move: Move): Promise<void> {
-    await super.commit(move)
-
-    if (move.playerID === this.playerID) {
-      this.relay.send(JSON.stringify(move))
-    }
-  }
-
-  async next(message: wsrelay.Message): Promise<void> {
-    const move = JSON.parse(message.payload)
-
-    move.data = deserializeUint8Array(move.data)
-    move.signature.r = deserializeUint8Array(move.signature.r)
-    move.signature.s = deserializeUint8Array(move.signature.s)
-
-    return this.commit(new Move(move))
   }
 
   complete(): void {
@@ -358,6 +387,24 @@ class RemoteMatch extends BasicMatch {
 
   error(error: any): void {
   }
+
+  async next(message: wsrelay.Message): Promise<void> {
+    const response = JSON.parse(message.payload)
+
+    response.data = deserializeUint8Array(response.data)
+    response.signature.r = deserializeUint8Array(response.signature.r)
+    response.signature.s = deserializeUint8Array(response.signature.s)
+
+    await super.commitMove(new Move(response))
+  }
+}
+
+enum MetaTag {
+  None,
+  CommittingRandom,
+  RevealingRandom,
+  CommittingSecret,
+  RevealingSecret
 }
 
 class BasicState {
@@ -496,7 +543,11 @@ function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature 
   }
 }
 
-function deserializeUint8Array(data: object): Uint8Array {
+function deserializeUint8Array(data?: object): Uint8Array | undefined {
+  if (data === undefined) {
+    return undefined
+  }
+
   const array: number[] = []
 
   for (let i = 0; data[i] !== undefined; i++) {
@@ -512,4 +563,18 @@ function base64(data: Uint8Array): string {
 
 function unbase64(data: string): Uint8Array {
   return Uint8Array.from(Buffer.from(data, `base64`))
+}
+
+function areArraysEqual(anArray: { readonly length: number, [index: number]: any }, anotherArray: { readonly length: number, [index: number]: any }): boolean {
+  if (anArray.length !== anotherArray.length) {
+    return false
+  }
+
+  for (let i in anArray) {
+    if (anArray[i] !== anotherArray[i]) {
+      return false
+    }
+  }
+
+  return true
 }

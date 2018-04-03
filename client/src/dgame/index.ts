@@ -442,7 +442,7 @@ class BasicState {
   }
 
   get hash(): Promise<Uint8Array> {
-    return this.arcadeumContract.stateHash(this.encoding)
+    return this.arcadeumContract.stateHash(this.encoding).then(response => ethers.utils.arrayify(response))
   }
 
   private readonly tag: number

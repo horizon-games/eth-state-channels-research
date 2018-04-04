@@ -11,7 +11,6 @@
     "horizongames"
   ],
   "main": "dist/lib/index.js",
-  "module": "dist/es/index.js",
   "types": "dist/es/index.d.ts",
   "scripts": {
     "dev": "echo noop",

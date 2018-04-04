@@ -255,8 +255,8 @@ contract DGame {
 
         // XXX: https://github.com/ethereum/solidity/issues/3270
         for (i = 0; i < 32; i++) {
-          next.data[1] |= bytes32(moves[0].data[i]) << ((31 - i) * 8);
-          next.data[2] |= bytes32(moves[1].data[i]) << ((31 - i) * 8);
+          next.data[1] |= bytes32(moves[0].data[i]) >> (8 * i);
+          next.data[2] |= bytes32(moves[1].data[i]) >> (8 * i);
         }
 
         next.state = metaState.state;
@@ -286,8 +286,8 @@ contract DGame {
 
         // XXX: https://github.com/ethereum/solidity/issues/3270
         for (i = 0; i < 32; i++) {
-          next.data[0] |= bytes32(moves[0].data[i]) << ((31 - i) * 8);
-          next.data[1] |= bytes32(moves[1].data[i]) << ((31 - i) * 8);
+          next.data[0] |= bytes32(moves[0].data[i]) >> (8 * i);
+          next.data[1] |= bytes32(moves[1].data[i]) >> (8 * i);
         }
 
         next.state = metaState.state;

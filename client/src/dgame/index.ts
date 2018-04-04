@@ -206,7 +206,7 @@ class BasicMatch {
     }
 
     this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
-      const state = new BasicState(this.arcadeumContract, this.gameContract, response)
+      const state = new BasicState(response, this.arcadeumContract, this.gameContract)
       this.agreedState = state
       return state
     })
@@ -408,7 +408,7 @@ enum MetaTag {
 }
 
 class BasicState {
-  constructor(private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, state: StateInterface) {
+  constructor(state: StateInterface, private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract) {
     this.tag = state.state.tag
     this.data = state.state.data
     this.metadata = {
@@ -458,18 +458,18 @@ class BasicState {
 
       switch (aMove.length) {
       case 1:
-        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]))
+        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]), this.arcadeumContract, this.gameContract)
 
       case 2:
-        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]))
+        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
       }
 
     } else {
       if (anotherMove === undefined) {
-        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove))
+        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove), this.arcadeumContract, this.gameContract)
 
       } else {
-        return new BasicState(this.arcadeumContract, this.gameContract, await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove))
+        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove), this.arcadeumContract, this.gameContract)
       }
     }
 

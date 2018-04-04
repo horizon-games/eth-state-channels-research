@@ -31,7 +31,7 @@ export class DGame {
   }
 
   get matchDuration(): Promise<number> {
-    return this.gameContract.matchDuration().then(response => response.toNumber())
+    return this.gameContract.matchDuration().then((response: ethers.utils.BigNumber) => response.toNumber())
   }
 
   async isSecretSeedValid(address: string, secretSeed: Uint8Array): Promise<boolean> {
@@ -195,6 +195,7 @@ class BasicMatch {
     this.players = match.players
     this.matchSignature = match.matchSignature
     this.opponentSubkeySignature = match.opponentSubkeySignature
+    this.actualCallbacks = {}
     this.playerMoves = []
     this.committedMoves = [undefined, undefined]
     this[`[object Object]`] = this.players // XXX
@@ -205,12 +206,14 @@ class BasicMatch {
       this.callbacks = {}
     }
 
-    this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then(response => {
+    this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then((response: StateInterface) => {
       const state = new BasicState(response, this.arcadeumContract, this.gameContract)
       this.agreedState = state
       return state
     })
   }
+
+  [index: string]: any // XXX
 
   set callbacks(callbacks: Callbacks) {
     this.actualCallbacks = Object.assign({}, callbacks)
@@ -328,8 +331,8 @@ class BasicMatch {
     const winner = await nextState.winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      if (await this.arcadeumContract.canClaimReward(this, this.agreedState.encoding, this.opponentMove, this.playerMoves)) {
-        this.arcadeumContract.claimReward(this, this.agreedState.encoding, this.opponentMove, this.playerMoves)
+      if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)) {
+        this.arcadeumContract.claimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)
       }
     }
 
@@ -352,7 +355,7 @@ class BasicMatch {
 
   private actualCallbacks: Callbacks
   private statePromise: Promise<BasicState>
-  private agreedState: BasicState
+  private agreedState?: BasicState
   private opponentMove?: Move
   private playerMoves: Move[]
   private committedMoves: [Move | undefined, Move | undefined]
@@ -489,7 +492,7 @@ class BasicState {
   }
 
   get hash(): Promise<Uint8Array> {
-    return this.arcadeumContract.stateHash(this.encoding).then(response => ethers.utils.arrayify(response))
+    return this.arcadeumContract.stateHash(this.encoding).then((response: string) => ethers.utils.arrayify(response))
   }
 
   private readonly tag: number
@@ -543,7 +546,7 @@ function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature 
   }
 }
 
-function deserializeUint8Array(data?: object): Uint8Array | undefined {
+function deserializeUint8Array(data?: { [index: number]: number }): Uint8Array | undefined {
   if (data === undefined) {
     return undefined
   }

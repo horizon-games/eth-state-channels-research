@@ -38,7 +38,7 @@ export class DGame {
     return this.gameContract.isSecretSeedValid(address, secretSeed)
   }
 
-  async createMatch(secretSeed: Uint8Array, callbacks?: Callbacks): Promise<Match> {
+  async createMatch(secretSeed: Uint8Array, onNextState?: NextStateCallback): Promise<Match> {
     const subkey = ethers.Wallet.createRandom()
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
 
@@ -80,7 +80,7 @@ export class DGame {
     response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
     response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
 
-    return new RemoteMatch(response, subkey, this.arcadeumContract, this.gameContract, relay, callbacks)
+    return new RemoteMatch(response, subkey, this.arcadeumContract, this.gameContract, relay, onNextState)
   }
 
   private signer?: ethers.providers.Web3Signer
@@ -97,18 +97,17 @@ export interface Match {
   readonly opponentID: number
   readonly state: Promise<State>
   createMove(data: Uint8Array): Promise<Move>
-  commitMove(move: Move): Promise<State>
+  queueMove(move: Move): void
 }
 
-export interface Callbacks {
-  onCommit?: (match: Match, state: State, move: Move) => void
-  onTransition?: (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => void
+export interface NextStateCallback {
+  (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move): void
 }
 
 export interface State {
   readonly winner: Promise<Winner>
   readonly nextPlayers: Promise<NextPlayers>
-  isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }>
+  isMoveLegal(move: Move): Promise<{ isMoveLegal: boolean, reason: number }>
   nextState(aMove: Move, anotherMove?: Move): Promise<State>
   nextState(moves: [Move] | [Move, Move]): Promise<State>
   readonly encoding: any
@@ -188,44 +187,34 @@ interface StateInterface {
 }
 
 class BasicMatch {
-  constructor(match: MatchInterface, private subkey: ethers.Wallet, private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract, callbacks?: Callbacks) {
+  constructor(match: MatchInterface, private subkey: ethers.Wallet, private arcadeumContract: ethers.Contract, gameContract: ethers.Contract, onNextState?: NextStateCallback) {
+    if (onNextState !== undefined) {
+      this.onNextState = onNextState
+    } else {
+      this.onNextState = (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move) => {}
+    }
+
     this.game = match.game
     this.timestamp = match.timestamp
     this.playerID = match.playerID
     this.players = match.players
     this.matchSignature = match.matchSignature
     this.opponentSubkeySignature = match.opponentSubkeySignature
-    this.actualCallbacks = {}
-    this.playerMoves = []
-    this.committedMoves = [undefined, undefined]
-    this[`[object Object]`] = this.players // XXX
-
-    if (callbacks !== undefined) {
-      this.callbacks = callbacks
-    } else {
-      this.callbacks = {}
-    }
 
     this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then((response: StateInterface) => {
-      const state = new BasicState(response, this.arcadeumContract, this.gameContract)
+      const state = new BasicState(response, arcadeumContract, gameContract)
       this.agreedState = state
       return state
     })
+
+    this.playerMoves = []
+    this.appliedMoves = [undefined, undefined]
+    this.queue = []
+    this.isProcessingQueue = false
+    this[`[object Object]`] = this.players // XXX
   }
 
   [index: string]: any // XXX
-
-  set callbacks(callbacks: Callbacks) {
-    this.actualCallbacks = Object.assign({}, callbacks)
-
-    if (this.actualCallbacks.onCommit === undefined) {
-      this.actualCallbacks.onCommit = (match: Match, state: State, move: Move) => {}
-    }
-
-    if (this.actualCallbacks.onTransition === undefined) {
-      this.actualCallbacks.onTransition = (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => {}
-    }
-  }
 
   readonly playerID: number
 
@@ -240,25 +229,44 @@ class BasicMatch {
   async createMove(data: Uint8Array): Promise<Move> {
     const move = new Move({ playerID: this.playerID, data: data })
     const state = await this.statePromise
-    const response = await state.isMoveLegal(move)
 
-    if (!response.isLegal) {
-      throw Error(`illegal player move: reason ${response.reason}`)
+    const {
+      isMoveLegal: isMoveLegal,
+      reason: reason
+    } = await state.isMoveLegal(move)
+
+    if (!isMoveLegal) {
+      throw Error(`illegal player move: reason ${reason}`)
     }
 
     await move.sign(this.subkey, state)
     return move
   }
 
-  async commitMove(move: Move): Promise<BasicState> {
+  queueMove(move: Move): void {
+    if (this.queue.indexOf(move) !== -1) {
+      return
+    }
+
+    this.queue.push(move)
+    this.processQueue()
+  }
+
+  protected getState(): Promise<BasicState> {
+    return this.statePromise
+  }
+
+  protected onNextState: NextStateCallback
+
+  protected async applyMove(move: Move): Promise<boolean> {
     const state = await this.statePromise
 
     if (move.playerID === this.playerID) {
-      if (!move.wasSignedWithState(state)) {
-        throw Error(`move not signed by player`)
+      if (!await move.wasSignedWithState(state)) {
+        return false
       }
 
-    } else {
+    } else /* move.playerID === this.opponentID */ {
       const [
         opponent,
         moveMaker
@@ -268,22 +276,25 @@ class BasicMatch {
       ])
 
       if (moveMaker !== opponent) {
-        throw Error(`move not signed by opponent`)
+        return false
       }
 
-      const response = await state.isMoveLegal(move)
+      const {
+        isMoveLegal: isMoveLegal,
+        reason: reason
+      } = await state.isMoveLegal(move)
 
-      if (!response.isLegal) {
+      if (!isMoveLegal) {
         if (await this.arcadeumContract.canReportCheater(this, state.encoding, move)) {
           this.arcadeumContract.reportCheater(this, state.encoding, move)
         }
 
-        throw Error(`illegal opponent move: reason ${response.reason}`)
+        throw Error(`illegal opponent move: reason ${reason}`)
       }
     }
 
-    if (this.committedMoves[move.playerID] !== undefined) {
-      throw Error(`player ${move.playerID} already committed`)
+    if (this.appliedMoves[move.playerID] !== undefined) {
+      return false
     }
 
     let nextState: BasicState
@@ -294,34 +305,32 @@ class BasicMatch {
       if (move.playerID === this.playerID) {
         this.playerMoves.push(move)
 
-      } else {
+      } else /* move.playerID === this.opponentID */ {
         this.agreedState = state
         this.opponentMove = move
         this.playerMoves = []
       }
 
-      this.actualCallbacks.onCommit!(this, state, move)
       this.statePromise = state.nextState(move)
       nextState = await this.statePromise
-      this.actualCallbacks.onTransition!(this, state, nextState, move)
+      this.onNextState(this, state, nextState, move)
       break
 
     case NextPlayers.Both:
-      this.committedMoves[move.playerID] = move
-      this.actualCallbacks.onCommit!(this, state, move)
+      this.appliedMoves[move.playerID] = move
 
-      if (this.committedMoves[0] === undefined || this.committedMoves[1] === undefined) {
-        return state
+      if (this.appliedMoves[0] === undefined || this.appliedMoves[1] === undefined) {
+        return true
       }
 
-      const committedMoves = [this.committedMoves[0], this.committedMoves[1]] as [Move, Move]
-      this.committedMoves = [undefined, undefined]
+      const appliedMoves = [this.appliedMoves[0], this.appliedMoves[1]] as [Move, Move]
+      this.appliedMoves = [undefined, undefined]
       this.agreedState = state
-      this.opponentMove = committedMoves[this.opponentID]
-      this.playerMoves = [committedMoves[this.playerID]]
-      this.statePromise = state.nextState(committedMoves)
+      this.opponentMove = appliedMoves[this.opponentID]
+      this.playerMoves = [appliedMoves[this.playerID]]
+      this.statePromise = state.nextState(appliedMoves)
       nextState = await this.statePromise
-      this.actualCallbacks.onTransition!(this, state, nextState, committedMoves[0], committedMoves[1])
+      this.onNextState(this, state, nextState, appliedMoves[0], appliedMoves[1])
       break
 
     default:
@@ -336,11 +345,29 @@ class BasicMatch {
       }
     }
 
-    return nextState
+    return true
   }
 
-  protected async getState(): Promise<BasicState> {
-    return this.statePromise
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue) {
+      return
+    }
+
+    this.isProcessingQueue = true
+
+    let queue: Move[]
+
+    do {
+      queue = this.queue.slice()
+
+      for (let move of queue) {
+        if (await this.applyMove(move)) {
+          this.queue = this.queue.filter((aMove: Move) => aMove !== move)
+        }
+      }
+    } while (!areArraysEqual(this.queue, queue))
+
+    this.isProcessingQueue = false
   }
 
   private readonly game: string
@@ -353,34 +380,18 @@ class BasicMatch {
     return this.players[this.opponentID].timestampSignature
   }
 
-  private actualCallbacks: Callbacks
   private statePromise: Promise<BasicState>
   private agreedState?: BasicState
   private opponentMove?: Move
   private playerMoves: Move[]
-  private committedMoves: [Move | undefined, Move | undefined]
+  private appliedMoves: [Move | undefined, Move | undefined]
+  private queue: Move[]
+  private isProcessingQueue: boolean
 }
 
 class RemoteMatch extends BasicMatch {
-  constructor(match: MatchInterface, subkey: ethers.Wallet, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, relay: wsrelay.Relay, callbacks?: Callbacks) {
-    super(match, subkey, arcadeumContract, gameContract)
-
-    this.callbacks = {
-      onCommit: (match: Match, state: State, move: Move) => {
-        if (move.playerID === match.playerID) {
-          relay.send(JSON.stringify(move))
-        }
-
-        if (callbacks !== undefined && callbacks.onCommit !== undefined) {
-          callbacks.onCommit(match, state, move)
-        }
-      },
-      onTransition: (match: Match, previousState: State, currentState: State, aMove: Move, anotherMove?: Move) => {
-        if (callbacks !== undefined && callbacks.onTransition !== undefined) {
-          callbacks.onTransition(match, previousState, currentState, aMove, anotherMove)
-        }
-      }
-    }
+  constructor(match: MatchInterface, subkey: ethers.Wallet, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, private relay: wsrelay.Relay, onNextState?: NextStateCallback) {
+    super(match, subkey, arcadeumContract, gameContract, onNextState)
 
     relay.subscribe(this)
   }
@@ -391,14 +402,26 @@ class RemoteMatch extends BasicMatch {
   error(error: any): void {
   }
 
-  async next(message: wsrelay.Message): Promise<void> {
+  next(message: wsrelay.Message): void {
     const response = JSON.parse(message.payload)
 
     response.data = deserializeUint8Array(response.data)
     response.signature.r = deserializeUint8Array(response.signature.r)
     response.signature.s = deserializeUint8Array(response.signature.s)
 
-    await super.commitMove(new Move(response))
+    this.queueMove(new Move(response))
+  }
+
+  protected async applyMove(move: Move): Promise<boolean> {
+    const wasApplied = await super.applyMove(move)
+
+    if (wasApplied) {
+      if (move.playerID === this.playerID) {
+        this.relay.send(JSON.stringify(move))
+      }
+    }
+
+    return wasApplied
   }
 }
 
@@ -444,11 +467,11 @@ class BasicState {
     return this.gameContract.nextPlayers(this.encoding)
   }
 
-  async isMoveLegal(move: Move): Promise<{ isLegal: boolean, reason: number }> {
+  async isMoveLegal(move: Move): Promise<{ isMoveLegal: boolean, reason: number }> {
     const response = await this.gameContract.isMoveLegal(this.encoding, move)
 
     return {
-      isLegal: response[0],
+      isMoveLegal: response[0],
       reason: response[1]
     }
   }

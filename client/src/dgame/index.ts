@@ -391,7 +391,54 @@ class BasicMatch {
 
 class RemoteMatch extends BasicMatch {
   constructor(match: MatchInterface, subkey: ethers.Wallet, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, private relay: wsrelay.Relay, onNextState?: NextStateCallback) {
-    super(match, subkey, arcadeumContract, gameContract, onNextState)
+    super(match, subkey, arcadeumContract, gameContract)
+
+    super.getState().then(async (state: BasicState) => {
+      switch (state.metadata.tag) {
+      case MetaTag.CommittingRandom:
+        if (this.random === undefined) {
+          this.random = ethers.utils.randomBytes(state.metadata.data[0][31])
+          this.queueMove(await this.createMove(ethers.utils.arrayify(ethers.utils.keccak256(this.random))))
+        }
+
+        break
+      }
+    })
+
+    this.onNextState = async (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move) => {
+      if (!(match instanceof RemoteMatch)) {
+        throw Error(`impossible`)
+      }
+
+      if (!(nextState instanceof BasicState)) {
+        throw Error(`impossible`)
+      }
+
+      switch (nextState.metadata.tag) {
+      case MetaTag.CommittingRandom:
+        if (match.random === undefined) {
+          match.random = ethers.utils.randomBytes(nextState.metadata.data[0][31])
+          match.queueMove(await match.createMove(ethers.utils.arrayify(ethers.utils.keccak256(match.random))))
+        }
+
+        break
+
+      case MetaTag.RevealingRandom:
+        if (match.random !== undefined) {
+          match.queueMove(await match.createMove(match.random))
+          delete match.random
+        }
+
+        break
+
+      default:
+        if (onNextState !== undefined) {
+          onNextState(match, previousState, nextState, aMove, anotherMove)
+        }
+
+        break
+      }
+    }
 
     relay.subscribe(this)
   }
@@ -423,6 +470,8 @@ class RemoteMatch extends BasicMatch {
 
     return wasApplied
   }
+
+  private random?: Uint8Array
 }
 
 enum MetaTag {

@@ -186,7 +186,7 @@ interface StateInterface {
   }
 }
 
-class BasicMatch {
+class BasicMatch implements Match {
   constructor(match: MatchInterface, private subkey: ethers.Wallet, private arcadeumContract: ethers.Contract, gameContract: ethers.Contract, onNextState?: NextStateCallback) {
     if (onNextState !== undefined) {
       this.onNextState = onNextState
@@ -211,10 +211,10 @@ class BasicMatch {
     this.appliedMoves = [undefined, undefined]
     this.queue = []
     this.isProcessingQueue = false
+
+    // @ts-ignore
     this[`[object Object]`] = this.players // XXX
   }
-
-  [index: string]: any // XXX
 
   readonly playerID: number
 
@@ -358,7 +358,7 @@ class BasicMatch {
     let queue: Move[]
 
     do {
-      queue = this.queue.slice()
+      queue = [...this.queue]
 
       for (let move of queue) {
         if (await this.applyMove(move)) {
@@ -482,7 +482,7 @@ enum MetaTag {
   RevealingSecret
 }
 
-class BasicState {
+class BasicState implements State {
   constructor(state: StateInterface, private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract) {
     this.tag = state.state.tag
     this.data = state.state.data

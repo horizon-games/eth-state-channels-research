@@ -1,12 +1,12 @@
-import * as dgame from 'arcadeum'
+import * as arcadeum from 'arcadeum'
 import * as ethers from 'ethers'
 
-const ttt = new dgame.DGame(`0xcfeb869f69431e42cdb54a4f4f105c19c080a601`, `0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb`)
-const signer = (ttt as any).signer
-const arcadeumContract = (ttt as any).arcadeumContract
+const game = new arcadeum.Game(`0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb`)
+const signer = (game as any).signer
+const arcadeumContract = (game as any).arcadeumContract
 
-async function deposit(): Promise<{ hash: string }> {
-  return ttt.deposit(ethers.utils.parseEther(`1`))
+async function deposit(): Promise<string> {
+  return game.deposit(ethers.utils.bigNumberify(`1000000000000000000`))
 }
 
 async function startWithdrawal(): Promise<void> {
@@ -18,15 +18,19 @@ async function finishWithdrawal(): Promise<void> {
 }
 
 async function createMatch(): Promise<void> {
-  console.log(await ttt.matchDuration)
-  console.log(await ttt.isSecretSeedValid(`0x0123456789012345678901234567890123456789`, new Uint8Array(0)))
+  const match = game.createMatch(new Uint8Array(0))
 
-  const match = await ttt.createMatch(new Uint8Array(0), async (match: dgame.Match, previousState: dgame.State, nextState: dgame.State, aMove: dgame.Move, anotherMove?: dgame.Move) => {
+  match.addCallback(async (nextState: arcadeum.State, previousState?: arcadeum.State, aMove?: arcadeum.Move, anotherMove?: arcadeum.Move) => {
+    console.log(aMove)
     console.log(nextState)
 
     switch (match.playerID) {
     case 0:
-      switch ((nextState as any).tag) {
+      switch ((nextState as any).state.tag) {
+      case 0:
+        match.queueMove(await match.createMove(new Uint8Array([0])))
+        break
+
       case 2:
         match.queueMove(await match.createMove(new Uint8Array([8])))
         break
@@ -43,7 +47,7 @@ async function createMatch(): Promise<void> {
       break
 
     case 1:
-      switch ((nextState as any).tag) {
+      switch ((nextState as any).state.tag) {
       case 1:
         match.queueMove(await match.createMove(new Uint8Array([4])))
         break
@@ -62,11 +66,8 @@ async function createMatch(): Promise<void> {
   })
 
   console.log(match)
-  console.log(await match.state)
 
-  if (match.playerID === 0) {
-    match.queueMove(await match.createMove(new Uint8Array([0])))
-  }
+  return match.ready
 }
 
 (window as any).deposit = deposit;

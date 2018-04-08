@@ -1,117 +1,51 @@
-import * as ethers from 'ethers'
 import * as wsrelay from '../wsrelay'
+import * as ethers from 'ethers'
+import * as rxjs from 'rxjs'
 
-export class DGame {
-  constructor(arcadeumAddress: string, gameAddress: string, options: { arcadeumServerHost?: string, arcadeumServerPort?: number, account?: ethers.Wallet, ssl: boolean } = { ssl: false }) {
-    this.arcadeumServerHost = options.arcadeumServerHost !== undefined ? options.arcadeumServerHost : 'localhost'
-    this.arcadeumServerPort = options.arcadeumServerPort !== undefined ? options.arcadeumServerPort : 8000
-    this.account = options.account
-    this.ssl = options.ssl
+const ArcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
+const ArcadeumContract = require(`arcadeum-contracts/build/contracts/Arcadeum.json`)
+const GameContract = require(`arcadeum-contracts/build/contracts/DGame.json`)
 
-    const arcadeumMetadata = require('arcadeum-contracts/build/contracts/Arcadeum.json')
-    const gameMetadata = require('arcadeum-contracts/build/contracts/DGame.json')
+export class Game {
+  constructor(gameAddress: string) {
+    const web3 = (window as any)[`web3`]
+    const provider = new ethers.providers.Web3Provider(web3.currentProvider)
+    this.signer = provider.getSigner()
 
-    if (this.account !== undefined) {
-      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, this.account)
-      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, this.account)
-
-    } else {
-      this.signer = (new ethers.providers.Web3Provider((window as any).web3.currentProvider)).getSigner() // XXX: choose account
-      this.arcadeumContract = new ethers.Contract(arcadeumAddress, arcadeumMetadata.abi, this.signer)
-      this.gameContract = new ethers.Contract(gameAddress, gameMetadata.abi, this.signer)
-    }
+    this.arcadeumContract = new ethers.Contract(ArcadeumAddress, ArcadeumContract.abi, this.signer)
+    this.gameContract = new ethers.Contract(gameAddress, GameContract.abi, this.signer)
   }
 
-  get address(): string {
-    return this.gameContract.address
+  async deposit(wei: ethers.utils.BigNumber): Promise<string> {
+    return (await this.arcadeumContract.deposit({ value: wei })).hash
   }
 
-  async deposit(value: ethers.utils.BigNumber): Promise<{ hash: string }> {
-    return this.arcadeumContract.deposit({ value: value })
+  createMatch(secretSeed: Uint8Array): Match {
+    return new BasicMatch(secretSeed, this.signer, this.arcadeumContract, this.gameContract)
   }
 
-  get matchDuration(): Promise<number> {
-    return this.gameContract.matchDuration().then((response: ethers.utils.BigNumber) => response.toNumber())
-  }
-
-  async isSecretSeedValid(address: string, secretSeed: Uint8Array): Promise<boolean> {
-    return this.gameContract.isSecretSeedValid(address, secretSeed)
-  }
-
-  async createMatch(secretSeed: Uint8Array, onNextState?: NextStateCallback): Promise<Match> {
-    const subkey = ethers.Wallet.createRandom()
-    const subkeyMessage = await this.arcadeumContract.subkeyMessage(subkey.getAddress())
-
-    let subkeySignature: Signature
-    if (this.account !== undefined) {
-      subkeySignature = new Signature(await this.account.signMessage(subkeyMessage))
-    } else /* this.signer !== undefined */ {
-      subkeySignature = new Signature(await this.signer!.signMessage(subkeyMessage))
-    }
-
-    const seed64 = base64(secretSeed)
-    const r64 = base64(subkeySignature.r)
-    const s64 = base64(subkeySignature.s)
-    const relay = new wsrelay.Relay(this.arcadeumServerHost, this.arcadeumServerPort, this.ssl, seed64, new wsrelay.Signature(subkeySignature.v, r64, s64), subkey.getAddress(), 1)
-    const timestamp = JSON.parse((await relay.connectForTimestamp()).payload)
-    const timestampSignature = sign(subkey, [`uint`], [timestamp])
-
-    relay.send(JSON.stringify({
-      gameID: 1,
-      subkey: subkey.getAddress(),
-      timestamp: timestamp,
-      signature: {
-        v: timestampSignature.v,
-        r: base64(timestampSignature.r),
-        s: base64(timestampSignature.s)
-      }
-    }), 2)
-
-    const response = JSON.parse((await relay.connectForMatchVerified()).payload)
-
-    response.players[0].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[0].publicSeed))]
-    response.players[1].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[1].publicSeed))]
-    response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
-    response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
-    response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
-    response.players[1].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.s)))
-    response.matchSignature.r = unbase64(response.matchSignature.r)
-    response.matchSignature.s = unbase64(response.matchSignature.s)
-    response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
-    response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
-
-    return new RemoteMatch(response, subkey, this.arcadeumContract, this.gameContract, relay, onNextState)
-  }
-
-  private signer?: ethers.providers.Web3Signer
-  private arcadeumContract: ethers.Contract
-  private gameContract: ethers.Contract
-  private arcadeumServerHost: string
-  private arcadeumServerPort: number
-  private account: ethers.Wallet | undefined
-  private ssl: boolean
+  private readonly signer: ethers.providers.Web3Signer
+  private readonly arcadeumContract: ethers.Contract
+  private readonly gameContract: ethers.Contract
 }
 
 export interface Match {
-  readonly playerID: number
-  readonly opponentID: number
+  readonly ready: Promise<void>
+  readonly playerID?: number
+  readonly opponentID?: number
   readonly state: Promise<State>
+
+  addCallback(callback: NextStateCallback): void
   createMove(data: Uint8Array): Promise<Move>
   queueMove(move: Move): void
-}
-
-export interface NextStateCallback {
-  (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move): void
 }
 
 export interface State {
   readonly winner: Promise<Winner>
   readonly nextPlayers: Promise<NextPlayers>
+
   isMoveLegal(move: Move): Promise<{ isMoveLegal: boolean, reason: number }>
-  nextState(aMove: Move, anotherMove?: Move): Promise<State>
-  nextState(moves: [Move] | [Move, Move]): Promise<State>
-  readonly encoding: any
-  readonly hash: Promise<Uint8Array>
+  nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<State>
 }
 
 export enum Winner {
@@ -127,144 +61,258 @@ export enum NextPlayers {
   Both
 }
 
-export class Move {
-  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: any }) {
-    this.playerID = move.playerID
-    this.data = move.data
-
-    if (move.signature !== undefined) {
-      this.signature = move.signature
-    } else {
-      this.signature = new Signature()
-    }
-  }
-
-  async sign(subkey: ethers.Wallet, state: State): Promise<void> {
-    this.stateHash = await state.hash
-    this.signature = sign(subkey, [`bytes32`, `uint8`, `bytes`], [this.stateHash, this.playerID, this.data])
-  }
-
-  async wasSignedWithState(state: State): Promise<boolean> {
-    if (this.stateHash === undefined) {
-      return false
-    }
-
-    return areArraysEqual(await state.hash, this.stateHash)
-  }
-
+export interface Move {
   readonly playerID: number
   readonly data: Uint8Array
-  private stateHash?: Uint8Array
-  private signature?: any
 }
 
-interface MatchInterface {
-  readonly game: string
-  readonly timestamp: ethers.utils.BigNumber
-  readonly playerID: number
-  readonly players: [PlayerInterface, PlayerInterface]
-  readonly matchSignature: Signature
-  readonly opponentSubkeySignature: Signature
+export interface NextStateCallback {
+  (nextState: State, previousState?: State, aMove?: Move, anotherMove?: Move): Promise<void>
 }
 
-interface PlayerInterface {
-  readonly seedRating: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly publicSeed: [Uint8Array]
-  readonly timestampSignature: Signature
-}
+class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
+  constructor(private readonly secretSeed: Uint8Array, private readonly signer: ethers.providers.Web3Signer, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
+    this.callbacks = []
+    this.queue = []
+    this.isRunning = true
+    this.didQueueChange = false
+    this.processedMoves = [undefined, undefined]
+    this.playerMoves = []
 
-interface StateInterface {
-  readonly nonce: number
-  readonly tag: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly data: [Uint8Array, Uint8Array, Uint8Array]
-  readonly state: {
-    readonly tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [Uint8Array]
-  }
-}
-
-class BasicMatch implements Match {
-  constructor(match: MatchInterface, private subkey: ethers.Wallet, private arcadeumContract: ethers.Contract, gameContract: ethers.Contract, onNextState?: NextStateCallback) {
-    if (onNextState !== undefined) {
-      this.onNextState = onNextState
-    } else {
-      this.onNextState = (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move) => {}
+    this.next = (message: wsrelay.Message) => {
+      const move = JSON.parse(message.payload)
+      move.data = decodeBytes(move.data)
+      move.signature.r = decodeBytes(move.signature.r)
+      move.signature.s = decodeBytes(move.signature.s)
+      this.queueMove(new BasicMove(move))
     }
 
-    this.game = match.game
-    this.timestamp = match.timestamp
-    this.playerID = match.playerID
-    this.players = match.players
-    this.matchSignature = match.matchSignature
-    this.opponentSubkeySignature = match.opponentSubkeySignature
-
-    this.statePromise = gameContract.initialState(this.players[0].publicSeed, this.players[1].publicSeed).then((response: StateInterface) => {
-      const state = new BasicState(response, arcadeumContract, gameContract)
-      this.agreedState = state
-      return state
-    })
-
-    this.playerMoves = []
-    this.appliedMoves = [undefined, undefined]
-    this.queue = []
-    this.isProcessingQueue = false
-
-    // @ts-ignore
-    this[`[object Object]`] = this.players // XXX
+    this.error = (error: any) => {}
+    this.complete = () => {}
   }
 
-  readonly playerID: number
+  get ready(): Promise<void> {
+    if (this.readyPromise === undefined) {
+      this.readyPromise = this.getReady()
+    }
 
-  get opponentID(): number {
+    return this.readyPromise
+  }
+
+  playerID?: number
+
+  get opponentID(): number | undefined {
+    if (this.playerID === undefined) {
+      return undefined
+    }
+
     return 1 - this.playerID
   }
 
   get state(): Promise<BasicState> {
-    return this.getState()
+    return this.ready.then(() => this.statePromise!)
+  }
+
+  addCallback(callback: NextStateCallback): void {
+    this.callbacks.push(callback)
   }
 
   async createMove(data: Uint8Array): Promise<Move> {
-    const move = new Move({ playerID: this.playerID, data: data })
-    const state = await this.statePromise
-
-    const {
-      isMoveLegal: isMoveLegal,
-      reason: reason
-    } = await state.isMoveLegal(move)
-
-    if (!isMoveLegal) {
-      throw Error(`illegal player move: reason ${reason}`)
+    if (this.playerID === undefined || this.subkey === undefined) {
+      throw Error(`match not ready`)
     }
 
-    await move.sign(this.subkey, state)
+    const move = new BasicMove({ playerID: this.playerID, data: data })
+    await move.sign(this.subkey, await this.state)
     return move
   }
 
   queueMove(move: Move): void {
-    if (this.queue.indexOf(move) !== -1) {
-      return
+    this.queue.push(move)
+
+    if (this.isRunning) {
+      this.didQueueChange = true
+    } else {
+      this.processQueue()
+    }
+  }
+
+  readonly next: (message: wsrelay.Message) => void
+  readonly error: (error: any) => void
+  readonly complete: () => void
+
+  private game?: string
+  private timestamp?: ethers.utils.BigNumber
+  private players?: [PlayerEncoding, PlayerEncoding]
+  private matchSignature?: Signature
+  private opponentSubkeySignature?: Signature
+
+  private get opponentTimestampSignature(): Signature | undefined {
+    if (this.opponentID === undefined || this.players === undefined) {
+      return undefined
     }
 
-    this.queue.push(move)
+    return this.players[this.opponentID].timestampSignature
+  }
+
+  private readyPromise?: Promise<void>
+  private statePromise?: Promise<BasicState>
+  private relay?: wsrelay.Relay
+  private subkey?: ethers.Wallet
+  private callbacks: NextStateCallback[]
+  private queue: Move[]
+  private isRunning: boolean
+  private didQueueChange: boolean
+  private processedMoves: [Move | undefined, Move | undefined]
+  private agreedState?: State
+  private opponentMove?: Move
+  private playerMoves: Move[]
+  private random?: Uint8Array
+
+  private async getReady(): Promise<void> {
+    this.subkey = ethers.Wallet.createRandom()
+    const subkeyMessage = await this.arcadeumContract.subkeyMessage(this.subkey.address)
+    const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
+
+    const seed64 = base64(this.secretSeed)
+    const r64 = base64(subkeySignature.r)
+    const s64 = base64(subkeySignature.s)
+    const relaySignature = new wsrelay.Signature(subkeySignature.v, r64, s64)
+    this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, relaySignature, this.subkey.address, 1)
+    this.relay.subscribe(this)
+
+    const timestamp = JSON.parse((await this.relay.connectForTimestamp()).payload)
+    const timestampSignature = sign(this.subkey, [`uint`], [timestamp])
+
+    this.relay.send(JSON.stringify({
+      gameID: 1,
+      subkey: this.subkey.address,
+      timestamp: timestamp,
+      signature: {
+        v: timestampSignature.v,
+        r: base64(timestampSignature.r),
+        s: base64(timestampSignature.s)
+      }
+    }), 2)
+
+    const response = JSON.parse((await this.relay.connectForMatchVerified()).payload)
+    response.players[0].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[0].publicSeed))]
+    response.players[1].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[1].publicSeed))]
+    response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
+    response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
+    response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
+    response.players[1].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.s)))
+    response.matchSignature.r = unbase64(response.matchSignature.r)
+    response.matchSignature.s = unbase64(response.matchSignature.s)
+    response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
+    response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
+
+    this.game = response.game
+    this.timestamp = response.timestamp
+    this.playerID = response.playerID
+    this.players = response.players
+    this.matchSignature = response.matchSignature
+    this.opponentSubkeySignature = response.opponentSubkeySignature
+
+    const initialState = this.gameContract.initialState(this.players![0].publicSeed, this.players![1].publicSeed)
+    this.statePromise = initialState.then((response: StateEncoding) => {
+      const state = new BasicState(response, this.arcadeumContract, this.gameContract)
+      this.agreedState = state
+      return state
+    })
+
+    this.statePromise!.then((state: BasicState) => this.runCallbacks(state))
+    this.isRunning = true
+
+    // XXX
+    // @ts-ignore
+    this[`[object Object]`] = this.players
+  }
+
+  private async runCallbacks(nextState: BasicState, previousState?: BasicState, aMove?: Move, anotherMove?: Move): Promise<void> {
+    this.isRunning = true
+
+    switch (nextState.tag) {
+    case MetaTag.CommittingRandom:
+      this.random = ethers.utils.randomBytes(nextState.data[0][31])
+      this.queueMove(await this.createMove(ethers.utils.arrayify(ethers.utils.keccak256(this.random))))
+      break
+
+    case MetaTag.RevealingRandom:
+      this.queueMove(await this.createMove(this.random!))
+      delete this.random
+      break
+
+    default:
+      const run = (callback: NextStateCallback) => callback(nextState, previousState, aMove, anotherMove).catch((reason: any) => {})
+      await Promise.all(this.callbacks.map(run))
+      break
+    }
+
     this.processQueue()
   }
 
-  protected getState(): Promise<BasicState> {
-    return this.statePromise
+  private async processQueue(): Promise<void> {
+    this.isRunning = true
+
+    const [
+      { state: state, stateHash: stateHash },
+      opponent
+    ] = await Promise.all([
+      this.state.then(async (state: BasicState) => ({ state: state, stateHash: await state.hash })),
+      this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature)
+    ])
+
+    const queue = [...this.queue]
+    this.didQueueChange = false
+    const canProcessMove = await Promise.all(queue.map((move: Move) => this.canProcessMove(move, state, stateHash, opponent)))
+    const movesToProcess = queue.filter((move: Move, i: number) => canProcessMove[i])
+    this.queue = this.queue.filter((move: Move) => movesToProcess.indexOf(move) === -1)
+
+    for (let move of movesToProcess) {
+      await this.processMove(move as BasicMove)
+    }
+
+    if (await this.state === state) {
+      if (this.didQueueChange) {
+        this.processQueue()
+      } else {
+        this.isRunning = false
+      }
+    }
   }
 
-  protected onNextState: NextStateCallback
+  private async canProcessMove(move: Move, state: BasicState, stateHash: Uint8Array, opponent: string): Promise<boolean> {
+    if (move instanceof BasicMove) {
+      if (move.playerID === this.playerID) {
+        if (move.hasStateHash(stateHash)) {
+          return true
+        }
+      }
 
-  protected async applyMove(move: Move): Promise<boolean> {
-    const state = await this.statePromise
+      if (move.playerID === this.opponentID) {
+        const moveMaker = await this.arcadeumContract.moveMaker(state, move, this.opponentSubkeySignature)
+
+        if (moveMaker === opponent) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  private async processMove(move: BasicMove): Promise<void> {
+    const state = await this.state
 
     if (move.playerID === this.playerID) {
-      if (!await move.wasSignedWithState(state)) {
-        return false
+      const stateHash = await state.hash
+
+      if (!move.hasStateHash(stateHash)) {
+        throw Error(`move not signed by player`)
       }
+
+      this.relay!.send(JSON.stringify(move))
 
     } else /* move.playerID === this.opponentID */ {
       const [
@@ -272,32 +320,27 @@ class BasicMatch implements Match {
         moveMaker
       ] = await Promise.all([
         this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature),
-        this.arcadeumContract.moveMaker(state.encoding, move, this.opponentSubkeySignature)
+        this.arcadeumContract.moveMaker(state, move, this.opponentSubkeySignature)
       ])
 
       if (moveMaker !== opponent) {
-        return false
+        throw Error(`move not signed by opponent`)
       }
 
-      const {
-        isMoveLegal: isMoveLegal,
-        reason: reason
-      } = await state.isMoveLegal(move)
+      const { isMoveLegal: isMoveLegal, reason: reason } = await state.isMoveLegal(move)
 
       if (!isMoveLegal) {
-        if (await this.arcadeumContract.canReportCheater(this, state.encoding, move)) {
-          this.arcadeumContract.reportCheater(this, state.encoding, move)
+        if (await this.arcadeumContract.canReportCheater(this, state, move)) {
+          this.arcadeumContract.reportCheater(this, state, move)
         }
 
         throw Error(`illegal opponent move: reason ${reason}`)
       }
     }
 
-    if (this.appliedMoves[move.playerID] !== undefined) {
-      return false
+    if (this.processedMoves[move.playerID] !== undefined) {
+      throw Error(`already processed player ${move.playerID}'s move`)
     }
-
-    let nextState: BasicState
 
     switch (await state.nextPlayers) {
     case NextPlayers.Player0:
@@ -312,166 +355,53 @@ class BasicMatch implements Match {
       }
 
       this.statePromise = state.nextState(move)
-      nextState = await this.statePromise
-      this.onNextState(this, state, nextState, move)
+      this.runCallbacks(await this.state, state, move)
       break
 
     case NextPlayers.Both:
-      this.appliedMoves[move.playerID] = move
+      this.processedMoves[move.playerID] = move
 
-      if (this.appliedMoves[0] === undefined || this.appliedMoves[1] === undefined) {
-        return true
+      if (this.processedMoves[0] === undefined || this.processedMoves[1] === undefined) {
+        return
       }
 
-      const appliedMoves = [this.appliedMoves[0], this.appliedMoves[1]] as [Move, Move]
-      this.appliedMoves = [undefined, undefined]
+      const processedMoves = this.processedMoves as [Move, Move]
+      this.processedMoves = [undefined, undefined]
       this.agreedState = state
-      this.opponentMove = appliedMoves[this.opponentID]
-      this.playerMoves = [appliedMoves[this.playerID]]
-      this.statePromise = state.nextState(appliedMoves)
-      nextState = await this.statePromise
-      this.onNextState(this, state, nextState, appliedMoves[0], appliedMoves[1])
+      this.opponentMove = processedMoves[this.opponentID!]
+      this.playerMoves = [processedMoves[this.playerID!]]
+      this.statePromise = state.nextState(processedMoves)
+      this.runCallbacks(await this.state, state, processedMoves[0], processedMoves[1])
       break
-
-    default:
-      throw Error(`impossible since move is legal`)
     }
 
-    const winner = await nextState.winner
+    const winner = await (await this.state).winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)) {
-        this.arcadeumContract.claimReward(this, this.agreedState!.encoding, this.opponentMove, this.playerMoves)
+      if (await this.arcadeumContract.canClaimReward(this, this.agreedState, this.opponentMove, this.playerMoves)) {
+        this.arcadeumContract.claimReward(this, this.agreedState, this.opponentMove, this.playerMoves)
       }
     }
-
-    return true
   }
-
-  private async processQueue(): Promise<void> {
-    if (this.isProcessingQueue) {
-      return
-    }
-
-    this.isProcessingQueue = true
-
-    let queue: Move[]
-
-    do {
-      queue = [...this.queue]
-
-      for (let move of queue) {
-        if (await this.applyMove(move)) {
-          this.queue = this.queue.filter((aMove: Move) => aMove !== move)
-        }
-      }
-    } while (!areArraysEqual(this.queue, queue))
-
-    this.isProcessingQueue = false
-  }
-
-  private readonly game: string
-  private readonly timestamp: ethers.utils.BigNumber
-  private readonly players: [PlayerInterface, PlayerInterface]
-  private readonly matchSignature: Signature
-  private readonly opponentSubkeySignature: Signature
-
-  private get opponentTimestampSignature(): Signature {
-    return this.players[this.opponentID].timestampSignature
-  }
-
-  private statePromise: Promise<BasicState>
-  private agreedState?: BasicState
-  private opponentMove?: Move
-  private playerMoves: Move[]
-  private appliedMoves: [Move | undefined, Move | undefined]
-  private queue: Move[]
-  private isProcessingQueue: boolean
 }
 
-class RemoteMatch extends BasicMatch {
-  constructor(match: MatchInterface, subkey: ethers.Wallet, arcadeumContract: ethers.Contract, gameContract: ethers.Contract, private relay: wsrelay.Relay, onNextState?: NextStateCallback) {
-    super(match, subkey, arcadeumContract, gameContract)
+interface PlayerEncoding {
+  readonly seedRating: number
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly publicSeed: [Uint8Array]
+  readonly timestampSignature: Signature
+}
 
-    super.getState().then(async (state: BasicState) => {
-      switch (state.metadata.tag) {
-      case MetaTag.CommittingRandom:
-        if (this.random === undefined) {
-          this.random = ethers.utils.randomBytes(state.metadata.data[0][31])
-          this.queueMove(await this.createMove(ethers.utils.arrayify(ethers.utils.keccak256(this.random))))
-        }
-
-        break
-      }
-    })
-
-    this.onNextState = async (match: Match, previousState: State, nextState: State, aMove: Move, anotherMove?: Move) => {
-      if (!(match instanceof RemoteMatch)) {
-        throw Error(`impossible`)
-      }
-
-      if (!(nextState instanceof BasicState)) {
-        throw Error(`impossible`)
-      }
-
-      switch (nextState.metadata.tag) {
-      case MetaTag.CommittingRandom:
-        if (match.random === undefined) {
-          match.random = ethers.utils.randomBytes(nextState.metadata.data[0][31])
-          match.queueMove(await match.createMove(ethers.utils.arrayify(ethers.utils.keccak256(match.random))))
-        }
-
-        break
-
-      case MetaTag.RevealingRandom:
-        if (match.random !== undefined) {
-          match.queueMove(await match.createMove(match.random))
-          delete match.random
-        }
-
-        break
-
-      default:
-        if (onNextState !== undefined) {
-          onNextState(match, previousState, nextState, aMove, anotherMove)
-        }
-
-        break
-      }
-    }
-
-    relay.subscribe(this)
+interface StateEncoding {
+  readonly nonce: number
+  readonly tag: MetaTag
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  readonly data: [Uint8Array, Uint8Array, Uint8Array]
+  readonly state: {
+    readonly tag: number
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    readonly data: [Uint8Array]
   }
-
-  complete(): void {
-  }
-
-  error(error: any): void {
-  }
-
-  next(message: wsrelay.Message): void {
-    const response = JSON.parse(message.payload)
-
-    response.data = deserializeUint8Array(response.data)
-    response.signature.r = deserializeUint8Array(response.signature.r)
-    response.signature.s = deserializeUint8Array(response.signature.s)
-
-    this.queueMove(new Move(response))
-  }
-
-  protected async applyMove(move: Move): Promise<boolean> {
-    const wasApplied = await super.applyMove(move)
-
-    if (wasApplied) {
-      if (move.playerID === this.playerID) {
-        this.relay.send(JSON.stringify(move))
-      }
-    }
-
-    return wasApplied
-  }
-
-  private random?: Uint8Array
 }
 
 enum MetaTag {
@@ -483,49 +413,37 @@ enum MetaTag {
 }
 
 class BasicState implements State {
-  constructor(state: StateInterface, private arcadeumContract: ethers.Contract, private gameContract: ethers.Contract) {
-    this.tag = state.state.tag
-    this.data = state.state.data
-    this.metadata = {
-      nonce: state.nonce,
-      tag: state.tag,
-      data: state.data
-    }
+  constructor(state: StateEncoding, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
+    this.nonce = state.nonce
+    this.tag = state.tag
+    this.data = state.data
+    this.state = state.state
 
     for (let i in this.data) {
       this.data[i] = ethers.utils.arrayify(this.data[i])
     }
 
-    for (let i in this.metadata.data) {
-      this.metadata.data[i] = ethers.utils.arrayify(this.metadata.data[i])
+    for (let i in this.state.data) {
+      this.state.data[i] = ethers.utils.arrayify(this.state.data[i])
     }
-  }
-
-  readonly metadata: {
-    readonly nonce: number
-    readonly tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [Uint8Array, Uint8Array, Uint8Array]
   }
 
   get winner(): Promise<Winner> {
-    return this.gameContract.winner(this.encoding)
+    return this.gameContract.winner(this)
   }
 
   get nextPlayers(): Promise<NextPlayers> {
-    return this.gameContract.nextPlayers(this.encoding)
+    return this.gameContract.nextPlayers(this)
   }
 
   async isMoveLegal(move: Move): Promise<{ isMoveLegal: boolean, reason: number }> {
-    const response = await this.gameContract.isMoveLegal(this.encoding, move)
-
-    return {
-      isMoveLegal: response[0],
-      reason: response[1]
-    }
+    const response = await this.gameContract.isMoveLegal(this, move)
+    return { isMoveLegal: response[0], reason: response[1] }
   }
 
   async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<BasicState> {
+    let nextState: (state: BasicState, aMove: Move, anotherMove?: Move) => Promise<StateEncoding>
+
     if (aMove instanceof Array) {
       if (anotherMove !== undefined) {
         throw Error(`unexpected second argument: array already given`)
@@ -533,43 +451,71 @@ class BasicState implements State {
 
       switch (aMove.length) {
       case 1:
-        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove[0]), this.arcadeumContract, this.gameContract)
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
+        return new BasicState(await nextState(this, aMove[0]), this.arcadeumContract, this.gameContract)
 
       case 2:
-        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
+        return new BasicState(await nextState(this, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
       }
 
-    } else {
+    } else /* aMove: Move */ {
       if (anotherMove === undefined) {
-        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`](this.encoding, aMove), this.arcadeumContract, this.gameContract)
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
+        return new BasicState(await nextState(this, aMove), this.arcadeumContract, this.gameContract)
 
       } else {
-        return new BasicState(await this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`](this.encoding, aMove, anotherMove), this.arcadeumContract, this.gameContract)
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
+        return new BasicState(await nextState(this, aMove, anotherMove), this.arcadeumContract, this.gameContract)
       }
     }
 
     throw Error(`expected dgame.Move[] of length 1 or 2`)
   }
 
-  get encoding(): any {
-    return {
-      nonce: this.metadata.nonce,
-      tag: this.metadata.tag,
-      data: this.metadata.data,
-      state: {
-        tag: this.tag,
-        data: this.data
-      }
-    }
-  }
-
   get hash(): Promise<Uint8Array> {
-    return this.arcadeumContract.stateHash(this.encoding).then((response: string) => ethers.utils.arrayify(response))
+    const hashPromise = this.arcadeumContract.stateHash(this)
+    return hashPromise.then((response: string) => ethers.utils.arrayify(response))
   }
 
-  private readonly tag: number
+  readonly tag: MetaTag
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  private readonly data: [Uint8Array]
+  readonly data: [Uint8Array, Uint8Array, Uint8Array]
+
+  private readonly nonce: number
+  // XXX: https://github.com/ethereum/solidity/issues/3270
+  private readonly state: { tag: number, data: [Uint8Array] }
+}
+
+class BasicMove implements Move {
+  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: Signature }) {
+    this.playerID = move.playerID
+    this.data = move.data
+    this.signature = move.signature
+  }
+
+  readonly playerID: number
+  readonly data: Uint8Array
+
+  async sign(subkey: ethers.Wallet, state: BasicState): Promise<void> {
+    const { isMoveLegal: isMoveLegal, reason: reason } = await state.isMoveLegal(this)
+
+    if (!isMoveLegal) {
+      throw Error(`illegal player move: reason ${reason}`)
+    }
+
+    this.stateHash = await state.hash
+    const types = [`bytes32`, `uint8`, `bytes`]
+    const values = [this.stateHash, this.playerID, this.data]
+    this.signature = sign(subkey, types, values)
+  }
+
+  hasStateHash(stateHash: Uint8Array): boolean {
+    return this.stateHash !== undefined && areArraysEqual(stateHash, this.stateHash)
+  }
+
+  private stateHash?: Uint8Array
+  private signature?: Signature
 }
 
 class Signature {
@@ -581,23 +527,23 @@ class Signature {
       this.r = new Uint8Array(signatureBytes.buffer, 0, 32)
       this.s = new Uint8Array(signatureBytes.buffer, 32, 32)
 
-    } else {
-      if (signature !== undefined && signature.hasOwnProperty('v')) {
-        this.v = signature.v
-      } else {
-        this.v = 0
-      }
+    } else /* signature?: Signature */ {
+      this.v = 0
+      this.r = new Uint8Array(32)
+      this.s = new Uint8Array(32)
 
-      if (signature !== undefined && signature.hasOwnProperty('r')) {
-        this.r = signature.r
-      } else {
-        this.r = new Uint8Array(32)
-      }
+      if (signature !== undefined) {
+        if (signature.hasOwnProperty(`v`)) {
+          this.v = signature.v
+        }
 
-      if (signature !== undefined && signature.hasOwnProperty('s')) {
-        this.s = signature.s
-      } else {
-        this.s = new Uint8Array(32)
+        if (signature.hasOwnProperty(`r`)) {
+          this.r = signature.r
+        }
+
+        if (signature.hasOwnProperty(`s`)) {
+          this.s = signature.s
+        }
       }
     }
   }
@@ -609,27 +555,13 @@ class Signature {
 
 function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature {
   const hash = ethers.utils.solidityKeccak256(types, values)
-  const signatureValues = new ethers.SigningKey(wallet.privateKey).signDigest(hash)
+  const signature = new ethers.SigningKey(wallet.privateKey).signDigest(hash)
 
   return {
-    v: 27 + signatureValues.recoveryParam,
-    r: ethers.utils.padZeros(ethers.utils.arrayify(signatureValues.r), 32),
-    s: ethers.utils.padZeros(ethers.utils.arrayify(signatureValues.s), 32)
+    v: 27 + signature.recoveryParam,
+    r: ethers.utils.padZeros(ethers.utils.arrayify(signature.r), 32),
+    s: ethers.utils.padZeros(ethers.utils.arrayify(signature.s), 32)
   }
-}
-
-function deserializeUint8Array(data?: { [index: number]: number }): Uint8Array | undefined {
-  if (data === undefined) {
-    return undefined
-  }
-
-  const array: number[] = []
-
-  for (let i = 0; data[i] !== undefined; i++) {
-    array.push(data[i])
-  }
-
-  return new Uint8Array(array)
 }
 
 function base64(data: Uint8Array): string {
@@ -640,7 +572,34 @@ function unbase64(data: string): Uint8Array {
   return Uint8Array.from(Buffer.from(data, `base64`))
 }
 
-function areArraysEqual(anArray: { readonly length: number, [index: number]: any }, anotherArray: { readonly length: number, [index: number]: any }): boolean {
+interface Bytes {
+  readonly length?: number
+  readonly [index: number]: number
+}
+
+function decodeBytes(bytes: Bytes): Uint8Array {
+  const data = [] as number[]
+
+  if (bytes.length !== undefined) {
+    for (let i = 0; i < bytes.length; i++) {
+      data.push(bytes[i])
+    }
+
+  } else {
+    for (let i = 0; bytes[i] !== undefined; i++) {
+      data.push(bytes[i])
+    }
+  }
+
+  return new Uint8Array(data)
+}
+
+interface Arrayish {
+  readonly length: number
+  readonly [index: number]: any
+}
+
+function areArraysEqual(anArray: Arrayish, anotherArray: Arrayish): boolean {
   if (anArray.length !== anotherArray.length) {
     return false
   }

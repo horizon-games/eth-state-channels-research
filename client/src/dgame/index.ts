@@ -161,7 +161,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
 
   private game?: string
   private timestamp?: ethers.utils.BigNumber
-  private players?: [PlayerEncoding, PlayerEncoding]
+  private players?: [Player, Player]
   private matchSignature?: Signature
   private opponentSubkeySignature?: Signature
 
@@ -403,7 +403,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
   }
 }
 
-interface PlayerEncoding {
+interface Player {
   readonly seedRating: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
   readonly publicSeed: [Uint8Array]

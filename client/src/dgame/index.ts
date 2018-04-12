@@ -233,7 +233,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     this.opponentSubkeySignature = response.opponentSubkeySignature
 
     const initialState = this.gameContract.initialState(this.players![0].publicSeed, this.players![1].publicSeed)
-    this.statePromise = initialState.then((response: StateEncoding) => {
+    this.statePromise = initialState.then((response: MetaState) => {
       const state = new BasicState(response, this.arcadeumContract, this.gameContract)
       this.agreedState = state
       return state
@@ -410,7 +410,7 @@ interface Player {
   readonly timestampSignature: Signature
 }
 
-interface StateEncoding {
+interface MetaState {
   readonly nonce: number
   readonly tag: MetaTag
   // XXX: https://github.com/ethereum/solidity/issues/3270
@@ -431,11 +431,11 @@ enum MetaTag {
 }
 
 class BasicState implements State {
-  constructor(state: StateEncoding, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
-    this.nonce = state.nonce
-    this.tag = state.tag
-    this.data = state.data
-    this.state = state.state
+  constructor(metaState: MetaState, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
+    this.nonce = metaState.nonce
+    this.tag = metaState.tag
+    this.data = metaState.data
+    this.state = metaState.state
 
     for (let i in this.data) {
       this.data[i] = ethers.utils.arrayify(this.data[i])
@@ -460,7 +460,7 @@ class BasicState implements State {
   }
 
   async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<BasicState> {
-    let nextState: (state: BasicState, aMove: Move, anotherMove?: Move) => Promise<StateEncoding>
+    let nextState: (state: BasicState, aMove: Move, anotherMove?: Move) => Promise<MetaState>
 
     if (aMove instanceof Array) {
       if (anotherMove !== undefined) {

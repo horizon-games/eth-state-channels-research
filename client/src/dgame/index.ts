@@ -182,7 +182,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
   private isRunning: boolean
   private didQueueChange: boolean
   private processedMoves: [Move | undefined, Move | undefined]
-  private agreedState?: State
+  private agreedState?: BasicState
   private opponentMove?: Move
   private playerMoves: Move[]
   private random?: Uint8Array
@@ -250,9 +250,9 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
   private async runCallbacks(nextState: BasicState, previousState?: BasicState, aMove?: Move, anotherMove?: Move): Promise<void> {
     this.isRunning = true
 
-    switch (nextState.tag) {
+    switch (nextState.metaState.tag) {
     case MetaTag.CommittingRandom:
-      this.random = ethers.utils.randomBytes(nextState.data[0][31])
+      this.random = ethers.utils.randomBytes(nextState.metaState.data[0][31])
       this.queueMove(await this.createMove(ethers.utils.arrayify(ethers.utils.keccak256(this.random))))
       break
 
@@ -309,7 +309,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
       }
 
       if (move.playerID === this.opponentID) {
-        const moveMaker = await this.arcadeumContract.moveMaker(state, move, this.opponentSubkeySignature)
+        const moveMaker = await this.arcadeumContract.moveMaker(state.metaState, move, this.opponentSubkeySignature)
 
         if (moveMaker === opponent) {
           return true
@@ -338,7 +338,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
         moveMaker
       ] = await Promise.all([
         this.arcadeumContract.playerAccount(this.timestamp, this.opponentTimestampSignature, this.opponentSubkeySignature),
-        this.arcadeumContract.moveMaker(state, move, this.opponentSubkeySignature)
+        this.arcadeumContract.moveMaker(state.metaState, move, this.opponentSubkeySignature)
       ])
 
       if (moveMaker !== opponent) {
@@ -348,8 +348,8 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
       const { isMoveLegal: isMoveLegal, reason: reason } = await state.isMoveLegal(move)
 
       if (!isMoveLegal) {
-        if (await this.arcadeumContract.canReportCheater(this, state, move)) {
-          this.arcadeumContract.reportCheater(this, state, move)
+        if (await this.arcadeumContract.canReportCheater(this, state.metaState, move)) {
+          this.arcadeumContract.reportCheater(this, state.metaState, move)
         }
 
         throw Error(`illegal opponent move: reason ${reason}`)
@@ -396,8 +396,8 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     const winner = await (await this.state).winner
 
     if (winner === Winner.Player0 && this.playerID === 0 || winner === Winner.Player1 && this.playerID === 1) {
-      if (await this.arcadeumContract.canClaimReward(this, this.agreedState, this.opponentMove, this.playerMoves)) {
-        this.arcadeumContract.claimReward(this, this.agreedState, this.opponentMove, this.playerMoves)
+      if (await this.arcadeumContract.canClaimReward(this, this.agreedState!.metaState, this.opponentMove, this.playerMoves)) {
+        this.arcadeumContract.claimReward(this, this.agreedState!.metaState, this.opponentMove, this.playerMoves)
       }
     }
   }
@@ -432,35 +432,38 @@ enum MetaTag {
 
 class BasicState implements State {
   constructor(metaState: MetaState, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
-    this.nonce = metaState.nonce
-    this.tag = metaState.tag
-    this.data = metaState.data
-    this.state = metaState.state
+    this.tag = metaState.state.tag
+    this.data = metaState.state.data
+    this.meta = {
+      nonce: metaState.nonce,
+      tag: metaState.tag,
+      data: metaState.data
+    }
 
     for (let i in this.data) {
       this.data[i] = ethers.utils.arrayify(this.data[i])
     }
 
-    for (let i in this.state.data) {
-      this.state.data[i] = ethers.utils.arrayify(this.state.data[i])
+    for (let i in this.meta.data) {
+      this.meta.data[i] = ethers.utils.arrayify(this.meta.data[i])
     }
   }
 
   get winner(): Promise<Winner> {
-    return this.gameContract.winner(this)
+    return this.gameContract.winner(this.metaState)
   }
 
   get nextPlayers(): Promise<NextPlayers> {
-    return this.gameContract.nextPlayers(this)
+    return this.gameContract.nextPlayers(this.metaState)
   }
 
   async isMoveLegal(move: Move): Promise<{ isMoveLegal: boolean, reason: number }> {
-    const response = await this.gameContract.isMoveLegal(this, move)
+    const response = await this.gameContract.isMoveLegal(this.metaState, move)
     return { isMoveLegal: response[0], reason: response[1] }
   }
 
   async nextState(aMove: Move | [Move] | [Move, Move], anotherMove?: Move): Promise<BasicState> {
-    let nextState: (state: BasicState, aMove: Move, anotherMove?: Move) => Promise<MetaState>
+    let nextState: (metaState: MetaState, aMove: Move, anotherMove?: Move) => Promise<MetaState>
 
     if (aMove instanceof Array) {
       if (anotherMove !== undefined) {
@@ -470,21 +473,21 @@ class BasicState implements State {
       switch (aMove.length) {
       case 1:
         nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
-        return new BasicState(await nextState(this, aMove[0]), this.arcadeumContract, this.gameContract)
+        return new BasicState(await nextState(this.metaState, aMove[0]), this.arcadeumContract, this.gameContract)
 
       case 2:
         nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
-        return new BasicState(await nextState(this, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
+        return new BasicState(await nextState(this.metaState, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
       }
 
     } else /* aMove: Move */ {
       if (anotherMove === undefined) {
         nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
-        return new BasicState(await nextState(this, aMove), this.arcadeumContract, this.gameContract)
+        return new BasicState(await nextState(this.metaState, aMove), this.arcadeumContract, this.gameContract)
 
       } else {
         nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
-        return new BasicState(await nextState(this, aMove, anotherMove), this.arcadeumContract, this.gameContract)
+        return new BasicState(await nextState(this.metaState, aMove, anotherMove), this.arcadeumContract, this.gameContract)
       }
     }
 
@@ -492,17 +495,31 @@ class BasicState implements State {
   }
 
   get hash(): Promise<Uint8Array> {
-    const hashPromise = this.arcadeumContract.stateHash(this)
+    const hashPromise = this.arcadeumContract.stateHash(this.metaState)
     return hashPromise.then((response: string) => ethers.utils.arrayify(response))
   }
 
-  readonly tag: MetaTag
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly data: [Uint8Array, Uint8Array, Uint8Array]
+  get metaState(): MetaState {
+    return {
+      nonce: this.meta.nonce,
+      tag: this.meta.tag,
+      data: this.meta.data,
+      state: {
+        tag: this.tag,
+        data: this.data
+      }
+    }
+  }
 
-  private readonly nonce: number
+  private readonly tag: number
   // XXX: https://github.com/ethereum/solidity/issues/3270
-  private readonly state: { tag: number, data: [Uint8Array] }
+  private readonly data: [Uint8Array]
+  private readonly meta: {
+    readonly nonce: number
+    readonly tag: MetaTag
+    // XXX: https://github.com/ethereum/solidity/issues/3270
+    readonly data: [Uint8Array, Uint8Array, Uint8Array]
+  }
 }
 
 class BasicMove implements Move {

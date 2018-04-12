@@ -55,7 +55,7 @@ async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
 
       switch (match.playerID) {
         case 0:
-          switch ((nextState as any).state.tag) {
+          switch ((nextState as any).metaState.state.tag) {
             case 0:
               match.queueMove(await match.createMove(new Uint8Array([0])))
               break
@@ -76,7 +76,7 @@ async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
           break
 
         case 1:
-          switch ((nextState as any).state.tag) {
+          switch ((nextState as any).metaState.state.tag) {
             case 1:
               match.queueMove(await match.createMove(new Uint8Array([4])))
               break

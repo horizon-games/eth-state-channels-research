@@ -26,7 +26,7 @@ async function createMatch(): Promise<void> {
 
     switch (match.playerID) {
     case 0:
-      switch ((nextState as any).state.tag) {
+      switch ((nextState as any).metaState.state.tag) {
       case 0:
         match.queueMove(await match.createMove(new Uint8Array([0])))
         break
@@ -47,7 +47,7 @@ async function createMatch(): Promise<void> {
       break
 
     case 1:
-      switch ((nextState as any).state.tag) {
+      switch ((nextState as any).metaState.state.tag) {
       case 1:
         match.queueMove(await match.createMove(new Uint8Array([4])))
         break

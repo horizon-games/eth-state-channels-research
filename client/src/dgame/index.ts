@@ -3,16 +3,33 @@ import * as ethers from 'ethers'
 import * as rxjs from 'rxjs'
 
 const ArcadeumAddress = `0xcfeb869f69431e42cdb54a4f4f105c19c080a601`
+const ServerAddress = `ws://localhost:8000/`
+
 const ArcadeumContract = require(`arcadeum-contracts/build/contracts/Arcadeum.json`)
 const GameContract = require(`arcadeum-contracts/build/contracts/DGame.json`)
 
 export class Game {
-  constructor(gameAddress: string) {
-    const web3 = (window as any)[`web3`]
-    const provider = new ethers.providers.Web3Provider(web3.currentProvider)
-    this.signer = provider.getSigner()
+  constructor(gameAddress: string, options?: { arcadeumAddress?: string, serverAddress?: string, wallet?: ethers.Wallet }) {
+    let arcadeumAddress = ArcadeumAddress
+    if (options !== undefined && options.arcadeumAddress !== undefined) {
+      arcadeumAddress = options.arcadeumAddress
+    }
 
-    this.arcadeumContract = new ethers.Contract(ArcadeumAddress, ArcadeumContract.abi, this.signer)
+    this.serverAddress = ServerAddress
+    if (options !== undefined && options.serverAddress !== undefined) {
+      this.serverAddress = options.serverAddress
+    }
+
+    if (options !== undefined && options.wallet !== undefined) {
+      this.signer = options.wallet
+
+    } else {
+      const web3 = (window as any)[`web3`]
+      const provider = new ethers.providers.Web3Provider(web3.currentProvider)
+      this.signer = provider.getSigner()
+    }
+
+    this.arcadeumContract = new ethers.Contract(arcadeumAddress, ArcadeumContract.abi, this.signer)
     this.gameContract = new ethers.Contract(gameAddress, GameContract.abi, this.signer)
   }
 
@@ -21,12 +38,13 @@ export class Game {
   }
 
   createMatch(secretSeed: Uint8Array): Match {
-    return new BasicMatch(secretSeed, this.signer, this.arcadeumContract, this.gameContract)
+    return new BasicMatch(secretSeed, this.arcadeumContract, this.gameContract, this.serverAddress, this.signer)
   }
 
-  private readonly signer: ethers.providers.Web3Signer
   private readonly arcadeumContract: ethers.Contract
   private readonly gameContract: ethers.Contract
+  private readonly serverAddress: string
+  private readonly signer: ethers.Wallet | ethers.providers.Web3Signer
 }
 
 export interface Match {
@@ -71,7 +89,7 @@ export interface NextStateCallback {
 }
 
 class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
-  constructor(private readonly secretSeed: Uint8Array, private readonly signer: ethers.providers.Web3Signer, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
+  constructor(private readonly secretSeed: Uint8Array, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract, private readonly serverAddress: string, private readonly signer: ethers.Wallet | ethers.providers.Web3Signer) {
     this.callbacks = []
     this.queue = []
     this.isRunning = true
@@ -174,11 +192,12 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(this.subkey.address)
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
 
+    const url = new URL(this.serverAddress)
     const seed64 = base64(this.secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
     const relaySignature = new wsrelay.Signature(subkeySignature.v, r64, s64)
-    this.relay = new wsrelay.Relay(`localhost`, 8000, false, seed64, relaySignature, this.subkey.address, 1)
+    this.relay = new wsrelay.Relay(url.hostname, +url.port, url.protocol === `wss:`, seed64, relaySignature, this.subkey.address, 1)
     this.relay.subscribe(this)
 
     const timestamp = JSON.parse((await this.relay.connectForTimestamp()).payload)

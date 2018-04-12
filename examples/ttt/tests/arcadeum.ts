@@ -4,9 +4,7 @@ const cfg = config[process.env.NODE_ENV]
 
 const arcadeumAddress = cfg.arcadeumAddress
 const gameAddress = cfg.gameAddress
-const arcadeumServerHost = cfg.arcadeumServerHost
-const arcadeumServerPort = cfg.arcadeumServerPort
+const serverAddress = cfg.serverAddress
 const deposit = cfg.deposit
-const ssl = cfg.ssl
 
-export { arcadeumAddress, gameAddress, arcadeumServerHost, arcadeumServerPort, deposit, ssl }
+export { arcadeumAddress, gameAddress, serverAddress, deposit }

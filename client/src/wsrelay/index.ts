@@ -37,28 +37,25 @@ export interface ConnectHandler {
 }
 
 export class Relay {
-  private host: string
-  private port: number
   private seed: string
   private signature: Signature
   private subkey: string
   private gameID: number
   private ws: WebSocket
   private index: number // player ID
-  private ssl: boolean
   private stream: Observable<Message>
 
   constructor(
-    host: string,
-    port: number,
-    ssl = true,
+    private url: string,
     seed = '',
     signature = new Signature(),
     subkey = '',
     gameID = -1) {
-    this.host = host
-    this.port = port
-    this.ssl = ssl
+
+    if (this.url.endsWith('/')) {
+      this.url = this.url.slice(0, -1)
+    }
+
     this.seed = seed
     this.subkey = subkey
     this.signature = signature
@@ -71,7 +68,7 @@ export class Relay {
   }
 
   connect(callbacks?: ConnectHandler): Observable<Message> {
-    this.ws = new WebSocket(`${this.ssl ? 'wss' : 'ws'}://${this.host}${this.port === 80 ? '' : `:${this.port}`}/ws?token=${this.token()}`)
+    this.ws = new WebSocket(`${this.url}/ws?token=${this.token()}`)
     return Observable.create((obv: Subscriber<Message>) => {
       this.ws.onopen = callbacks && callbacks.onOpen != null ? callbacks.onOpen(obv) : this.onOpen(obv)
       this.ws.onmessage = callbacks && callbacks.onMessage != null ? callbacks.onMessage(obv) : this.onMessage(obv)

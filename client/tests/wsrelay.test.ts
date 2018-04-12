@@ -3,8 +3,7 @@ import { Server } from 'mock-socket'
 import { setTimeout } from 'timers'
 
 describe('Relay', () => {
-  const host = 'localhost'
-  const port = 8888
+  const url = `wss://localhost:8888/`
   const matchID = 1 
   const message = 'foo'
   const signature = new Signature(92, '03PpsnqhjDKZxvhbPTeTnZgJI2O814WLcdKK7kTn3g==', 'ls8hxypZp31Ubbget5DM4P09x1b2FL61FnfwUkCqH9g=')
@@ -15,8 +14,8 @@ describe('Relay', () => {
   let mockServer: Server
 
   beforeEach(() => {
-    const token = new Relay(host, port, true, seed, signature, subkey, gameID).token()
-    mockServer = new Server(`wss://${host}:${port}/ws?token=${token}`)
+    const token = new Relay(url, seed, signature, subkey, gameID).token()
+    mockServer = new Server(`${url}/ws?token=${token}`)
   })
 
   afterEach(() => {
@@ -27,7 +26,7 @@ describe('Relay', () => {
     mockServer.on('connection', server => {
       mockServer.send(`{"meta": {"matchID": ${matchID}, "index": ${playerIdx}, "code": 1}, "payload": "{\\"signature\\":\\"signedmessage\\"}"}`)
     })
-    const relay = new Relay(host, port, true, seed, signature, subkey, gameID)
+    const relay = new Relay(url, seed, signature, subkey, gameID)
     const result: Message[] = []
     relay.connect().subscribe((val: Message) => {
       result.push(val)
@@ -49,7 +48,7 @@ describe('Relay', () => {
     mockServer.on('message', server => {
       mockServer.send(`{"meta": {"matchID": "${matchID}", "playerIdx": ${playerIdx}, "code": 0}, "payload": "${payload}"}`)
     })
-      const relay = new Relay(host, port, true, seed, signature, subkey, gameID)
+      const relay = new Relay(url, seed, signature, subkey, gameID)
     const result: Message[] = []
     relay.connect().subscribe((val: Message) => {
       result.push(val)
@@ -71,7 +70,7 @@ describe('Relay', () => {
       mockServer.send(`{"meta": {"matchID": "${matchID}", "playerIdx": ${playerIdx}, "code": 0}, "payload": "${payload1}"}`)
       mockServer.send(`{"meta": {"matchID": "${matchID}", "playerIdx": ${playerIdx}, "code": 0}, "payload": "${payload2}"}`)
     })
-    const relay = new Relay(host, port, true, seed, signature, subkey, gameID)
+    const relay = new Relay(url, seed, signature, subkey, gameID)
     const result: Message[] = []
     relay.connect().subscribe((val: Message) => {
       result.push(val)
@@ -89,7 +88,7 @@ describe('Relay', () => {
     mockServer.on('connection', server => {
       mockServer.send(`{lksjdfsdf}`) // unparseable JSON
     })
-    const relay = new Relay(host, port, true, seed, signature, subkey, gameID)
+    const relay = new Relay(url, seed, signature, subkey, gameID)
     const result: Message[] = []
     const errs: Message[] = []
     relay.connect().subscribe((val: Message) => {
@@ -110,7 +109,7 @@ describe('Relay', () => {
     mockServer.on('connection', server => {
       mockServer.send(`{"meta": {"matchID": "${matchID}", "playerIdx": ${playerIdx}, "code": -1}, "payload": "Uh oh!"}`)
     })
-    const relay = new Relay(host, port, true, seed, signature, subkey, gameID)
+    const relay = new Relay(url, seed, signature, subkey, gameID)
     const result: Message[] = []
     const errs: Message[] = []
     relay.connect().subscribe((val: Message) => {

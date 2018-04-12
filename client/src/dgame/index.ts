@@ -192,12 +192,11 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(this.subkey.address)
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
 
-    const url = new URL(this.serverAddress)
     const seed64 = base64(this.secretSeed)
     const r64 = base64(subkeySignature.r)
     const s64 = base64(subkeySignature.s)
     const relaySignature = new wsrelay.Signature(subkeySignature.v, r64, s64)
-    this.relay = new wsrelay.Relay(url.hostname, +url.port, url.protocol === `wss:`, seed64, relaySignature, this.subkey.address, 1)
+    this.relay = new wsrelay.Relay(this.serverAddress, seed64, relaySignature, this.subkey.address, 1)
     this.relay.subscribe(this)
 
     const timestamp = JSON.parse((await this.relay.connectForTimestamp()).payload)

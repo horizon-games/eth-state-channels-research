@@ -45,7 +45,7 @@ describe('ttt', () => {
 // Client game logic that would normally run in the browser
 async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
   return new Promise<dgame.Winner>(async (resolve, reject) => {
-    const match = await game.createMatch(new Uint8Array(0))
+    const match = game.createMatch(new Uint8Array(0))
 
     match.addCallback(async (nextState: dgame.State, previousState?: dgame.State, aMove?: dgame.Move, anotherMove?: dgame.Move) => {
       const winner = await nextState.winner
@@ -55,7 +55,11 @@ async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
 
       switch (match.playerID) {
         case 0:
-          switch ((nextState as any).tag) {
+          switch ((nextState as any).state.tag) {
+            case 0:
+              match.queueMove(await match.createMove(new Uint8Array([0])))
+              break
+
             case 2:
               match.queueMove(await match.createMove(new Uint8Array([8])))
               break
@@ -72,7 +76,7 @@ async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
           break
 
         case 1:
-          switch ((nextState as any).tag) {
+          switch ((nextState as any).state.tag) {
             case 1:
               match.queueMove(await match.createMove(new Uint8Array([4])))
               break
@@ -90,8 +94,7 @@ async function createMatch(game: dgame.Game): Promise<dgame.Winner> {
       }
     })
 
-    if (match.playerID === 0) {
-      match.queueMove(await match.createMove(new Uint8Array([0])))
-    }
+    match.ready
   })
+
 }

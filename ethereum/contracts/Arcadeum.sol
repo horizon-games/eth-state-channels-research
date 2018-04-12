@@ -70,7 +70,7 @@ contract Arcadeum {
   function deposit() external payable {
     balance[msg.sender] += msg.value;
 
-    balanceChanged(msg.sender);
+    emit balanceChanged(msg.sender);
   }
 
   function isWithdrawing(address account) public view returns (bool) {
@@ -82,7 +82,7 @@ contract Arcadeum {
 
     withdrawalTime[msg.sender] = now + WITHDRAWAL_TIME;
 
-    withdrawalStarted(msg.sender);
+    emit withdrawalStarted(msg.sender);
   }
 
   function canFinishWithdrawal(address account) public view returns (bool) {
@@ -111,7 +111,7 @@ contract Arcadeum {
     delete balance[msg.sender];
     msg.sender.transfer(value);
 
-    balanceChanged(msg.sender);
+    emit balanceChanged(msg.sender);
   }
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
@@ -170,9 +170,9 @@ contract Arcadeum {
     balance[account] -= value;
     balance[owner] += value;
 
-    balanceChanged(account);
-    balanceChanged(owner);
-    withdrawalStopped(account);
+    emit balanceChanged(account);
+    emit balanceChanged(owner);
+    emit withdrawalStopped(account);
   }
 
   event balanceChanged(address indexed account);
@@ -284,7 +284,7 @@ contract Arcadeum {
     opponentSeedRating = aMatch.players[1 - aMatch.playerID].seedRating;
     aMatch.game.registerWin(msg.sender, winnerSeedRating, opponentSeedRating, metaState.state, aMatch.playerID);
 
-    rewardClaimed(msg.sender, timestampSubkey(aMatch.timestamp, aMatch.players[aMatch.playerID].timestampSignature), aMatch.timestamp);
+    emit rewardClaimed(msg.sender, timestampSubkey(aMatch.timestamp, aMatch.players[aMatch.playerID].timestampSignature), aMatch.timestamp);
   }
 
   function canReportCheater(Match aMatch, DGame.MetaState metaState, Move cheaterMove) public view returns (bool) {
@@ -332,10 +332,10 @@ contract Arcadeum {
 
     aMatch.game.registerCheat(opponent);
 
-    balanceChanged(opponent);
-    balanceChanged(msg.sender);
-    balanceChanged(owner);
-    cheaterReported(opponent, timestampSubkey(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature), aMatch.timestamp);
+    emit balanceChanged(opponent);
+    emit balanceChanged(msg.sender);
+    emit balanceChanged(owner);
+    emit cheaterReported(opponent, timestampSubkey(aMatch.timestamp, aMatch.players[1 - aMatch.playerID].timestampSignature), aMatch.timestamp);
   }
 
   event rewardClaimed(address indexed account, address indexed subkey, uint indexed timestamp);

@@ -3,7 +3,7 @@ import { Server } from 'mock-socket'
 import { setTimeout } from 'timers'
 
 describe('Relay', () => {
-  const url = `wss://localhost:8888/`
+  const url = `wss://localhost:8888`
   const matchID = 1 
   const message = 'foo'
   const signature = new Signature(92, '03PpsnqhjDKZxvhbPTeTnZgJI2O814WLcdKK7kTn3g==', 'ls8hxypZp31Ubbget5DM4P09x1b2FL61FnfwUkCqH9g=')

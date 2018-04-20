@@ -213,8 +213,7 @@ contract Arcadeum {
       nextPlayers = aMatch.game.nextPlayers(metaState);
 
       if (nextPlayers != DGame.NextPlayers.BOTH) {
-        // XXX: https://github.com/ethereum/solidity/issues/3516
-        (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = aMatch.game.nextStateXXX(metaState, loserMove.move);
+        nextState = aMatch.game.nextState(metaState, loserMove.move);
         i = 0;
 
       } else /* nextPlayers == DGame.NextPlayers.PLAYER_0 || nextPlayers == DGame.NextPlayers.PLAYER_1 */ {
@@ -228,8 +227,7 @@ contract Arcadeum {
           return false;
         }
 
-        // XXX: https://github.com/ethereum/solidity/issues/3516
-        (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = aMatch.game.nextStateXXX(metaState, loserMove.move, winnerMoves[0]);
+        nextState = aMatch.game.nextState(metaState, loserMove.move, winnerMoves[0]);
         i = 1;
       }
     }
@@ -251,8 +249,7 @@ contract Arcadeum {
         return false;
       }
 
-      // XXX: https://github.com/ethereum/solidity/issues/3516
-      (nextState.nonce, nextState.tag, nextState.data, nextState.state.tag, nextState.state.data) = aMatch.game.nextStateXXX(nextState, winnerMoves[i]);
+      nextState = aMatch.game.nextState(nextState, winnerMoves[i]);
       winner = aMatch.game.winner(nextState);
     }
 

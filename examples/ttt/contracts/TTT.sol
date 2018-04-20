@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
 // import '../../../../node_modules/arcadeum-contracts/contracts/DGame.sol';
@@ -9,7 +9,7 @@ contract TTT is DGame {
   uint32 private constant REASON_NOT_A_SQUARE = 2;
   uint32 private constant REASON_ALREADY_PLAYED = 3;
 
-  function TTT(address owner) DGame(owner) public {
+  constructor(address owner) DGame(owner) public {
   }
 
   function matchDuration() public pure returns (uint) {

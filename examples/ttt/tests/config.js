@@ -2,7 +2,7 @@ module.exports = {
   development: {
     network: "ganache",
     arcadeumAddress: "0xcfeb869f69431e42cdb54a4f4f105c19c080a601",
-    gameAddress: "0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb",
+    gameAddress: "0x9561c133dd8580860b6b7e504bc5aa500f0f06a7",
     wallet1Password: "0x829e924fdf021ba3dbbc4225edfece9aca04b929d6e75613329ca6f1d31c0bb4",
     wallet2Password: "0xb0057716d5917badaf911b193b12b910811c1497b5bada8d7711f758981c3773",
     deposit: "0.02",

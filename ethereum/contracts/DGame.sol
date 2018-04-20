@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
@@ -54,7 +54,7 @@ contract DGame {
     bytes data;
   }
 
-  function DGame(address anOwner) public {
+  constructor(address anOwner) public {
     owner = anOwner;
   }
 

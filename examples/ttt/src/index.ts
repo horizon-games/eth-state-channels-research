@@ -1,7 +1,7 @@
 import * as arcadeum from 'arcadeum'
 import * as ethers from 'ethers'
 
-const game = new arcadeum.Game(`0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb`)
+const game = new arcadeum.Game(`0x9561c133dd8580860b6b7e504bc5aa500f0f06a7`)
 const signer = (game as any).signer
 const arcadeumContract = (game as any).arcadeumContract
 

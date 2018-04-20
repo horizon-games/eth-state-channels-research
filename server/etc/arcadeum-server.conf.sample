@@ -26,4 +26,4 @@ etherscan_price_url = "https://api.etherscan.io/api?module=stats&action=ethprice
 [[arcadeum.games]]
 id = 1
 name = "ttt"
-contract_address = "0xd833215cbcc3f914bd1c9ece3ee7bf8b14f841bb"
+contract_address = "0x9561c133dd8580860b6b7e504bc5aa500f0f06a7"

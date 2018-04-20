@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
 import './DGame.sol';
@@ -60,7 +60,7 @@ contract Arcadeum {
     bytes32 s;
   }
 
-  function Arcadeum() public {
+  constructor() public {
     owner = msg.sender;
   }
 

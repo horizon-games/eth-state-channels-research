@@ -410,6 +410,7 @@ contract Arcadeum {
     return ecrecover(hash, subkeySignature.v, subkeySignature.r, subkeySignature.s);
   }
 
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function timestampSubkeyXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS) public pure returns (address) {
     return timestampSubkey(timestamp, Signature(timestampV, timestampR, timestampS));
   }

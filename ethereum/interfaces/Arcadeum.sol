@@ -41,6 +41,7 @@ contract Arcadeum {
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function subkeyParentXXX(address subkey, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address);
 
+  // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function timestampSubkeyXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS) public pure returns (address);
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple

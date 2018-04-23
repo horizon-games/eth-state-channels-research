@@ -1,7 +1,6 @@
 pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
-// import '../../../../node_modules/arcadeum-contracts/contracts/DGame.sol';
 import 'arcadeum-contracts/contracts/DGame.sol';
 
 contract TTT is DGame {

@@ -214,8 +214,8 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     }), 2)
 
     const response = JSON.parse((await this.relay.connectForMatchVerified()).payload)
-    response.players[0].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[0].publicSeed))]
-    response.players[1].publicSeed = [ethers.utils.bigNumberify(unbase64(response.players[1].publicSeed))]
+    response.players[0].publicSeed = unbase64(response.players[0].publicSeed)
+    response.players[1].publicSeed = unbase64(response.players[1].publicSeed)
     response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
     response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
     response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
@@ -252,7 +252,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
 
     switch (nextState.metaState.tag) {
     case MetaTag.CommittingRandom:
-      this.random = ethers.utils.randomBytes(nextState.metaState.data[0][31])
+      this.random = ethers.utils.randomBytes(nextState.metaState.data[0])
       this.queueMove(await this.createMove(ethers.utils.arrayify(ethers.utils.keccak256(this.random))))
       break
 
@@ -405,20 +405,17 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
 
 interface Player {
   readonly seedRating: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly publicSeed: [Uint8Array]
+  readonly publicSeed: Uint8Array
   readonly timestampSignature: Signature
 }
 
 interface MetaState {
   readonly nonce: number
   readonly tag: MetaTag
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  readonly data: [Uint8Array, Uint8Array, Uint8Array]
+  readonly data: Uint8Array
   readonly state: {
     readonly tag: number
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [Uint8Array]
+    readonly data: Uint8Array
   }
 }
 
@@ -433,19 +430,11 @@ enum MetaTag {
 class BasicState implements State {
   constructor(metaState: MetaState, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract) {
     this.tag = metaState.state.tag
-    this.data = metaState.state.data
+    this.data = ethers.utils.arrayify(metaState.state.data)
     this.meta = {
       nonce: metaState.nonce,
       tag: metaState.tag,
-      data: metaState.data
-    }
-
-    for (let i in this.data) {
-      this.data[i] = ethers.utils.arrayify(this.data[i])
-    }
-
-    for (let i in this.meta.data) {
-      this.meta.data[i] = ethers.utils.arrayify(this.meta.data[i])
+      data: ethers.utils.arrayify(metaState.data)
     }
   }
 
@@ -472,21 +461,21 @@ class BasicState implements State {
 
       switch (aMove.length) {
       case 1:
-        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes,(uint32,bytes)),(uint8,bytes))`]
         return new BasicState(await nextState(this.metaState, aMove[0]), this.arcadeumContract, this.gameContract)
 
       case 2:
-        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes,(uint32,bytes)),(uint8,bytes),(uint8,bytes))`]
         return new BasicState(await nextState(this.metaState, aMove[0], aMove[1]), this.arcadeumContract, this.gameContract)
       }
 
     } else /* aMove: Move */ {
       if (anotherMove === undefined) {
-        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes))`]
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes,(uint32,bytes)),(uint8,bytes))`]
         return new BasicState(await nextState(this.metaState, aMove), this.arcadeumContract, this.gameContract)
 
       } else {
-        nextState = this.gameContract[`nextState((uint32,uint8,bytes32[3],(uint32,bytes32[1])),(uint8,bytes),(uint8,bytes))`]
+        nextState = this.gameContract[`nextState((uint32,uint8,bytes,(uint32,bytes)),(uint8,bytes),(uint8,bytes))`]
         return new BasicState(await nextState(this.metaState, aMove, anotherMove), this.arcadeumContract, this.gameContract)
       }
     }
@@ -512,13 +501,11 @@ class BasicState implements State {
   }
 
   private readonly tag: number
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  private readonly data: [Uint8Array]
+  private readonly data: Uint8Array
   private readonly meta: {
     readonly nonce: number
     readonly tag: MetaTag
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    readonly data: [Uint8Array, Uint8Array, Uint8Array]
+    readonly data: Uint8Array
   }
 }
 

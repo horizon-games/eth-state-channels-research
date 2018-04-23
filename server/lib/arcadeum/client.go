@@ -357,25 +357,14 @@ func (c *Client) PublicSeed(gameID uint32, secretSeed []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := contract.DGameCaller.PublicSeed(
+	return contract.DGameCaller.PublicSeed(
 		&bind.CallOpts{},
 		secretSeed,
 	)
-	if err != nil {
-		return nil, err
-	}
-	return res[0][:], nil
 }
 
 func (c *Client) MatchHash(msg *MatchVerifiedMessage) ([32]byte, error) {
 	contract := c.ArcadeumContract
-	// Due to a bug in abigen, you have to hack the solidity code so abigen
-	// produces something remotely workable. Hence the awful datatype [2][1][32]byte
-	var publicSeeds [2][1][32]byte
-	var seed1, seed2 [32]byte
-	copy(seed1[:], msg.Players[0].PublicSeed)
-	copy(seed2[:], msg.Players[1].PublicSeed)
-	publicSeeds = [2][1][32]byte{{seed1}, {seed2}}
 	return contract.MatchHash(
 		&bind.CallOpts{},
 		msg.GameAddress,
@@ -383,7 +372,7 @@ func (c *Client) MatchHash(msg *MatchVerifiedMessage) ([32]byte, error) {
 		msg.Accounts,
 		msg.Subkeys,
 		[2]uint32{msg.Players[0].SeedRating, msg.Players[1].SeedRating},
-		publicSeeds,
+		[2][]byte{msg.Players[0].PublicSeed, msg.Players[1].PublicSeed},
 	)
 
 }

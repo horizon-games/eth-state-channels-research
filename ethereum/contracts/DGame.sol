@@ -2,12 +2,6 @@ pragma solidity ^0.4.23;
 pragma experimental ABIEncoderV2;
 
 contract DGame {
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  // *** THIS MUST MATCH Arcadeum.sol ***
-  uint internal constant PUBLIC_SEED_LENGTH = 1;
-  uint internal constant META_STATE_DATA_LENGTH = 3;
-  uint internal constant STATE_DATA_LENGTH = 1;
-
   enum Winner {
     NONE,
     PLAYER_0,
@@ -38,15 +32,13 @@ contract DGame {
   struct MetaState {
     uint32 nonce;
     MetaTag tag;
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    bytes32[META_STATE_DATA_LENGTH] data;
+    bytes data;
     State state;
   }
 
   struct State {
     uint32 tag;
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    bytes32[STATE_DATA_LENGTH] data;
+    bytes data;
   }
 
   struct Move {
@@ -70,13 +62,13 @@ contract DGame {
     return 0;
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  function publicSeed(bytes /* secretSeed */) public pure returns (bytes32[PUBLIC_SEED_LENGTH]) {
-    return [bytes32(0)];
+  function publicSeed(bytes /* secretSeed */) public pure returns (bytes) {
+    return new bytes(0);
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3270
-  function initialState(bytes32[PUBLIC_SEED_LENGTH] publicSeed0, bytes32[PUBLIC_SEED_LENGTH] publicSeed1) public pure returns (MetaState);
+  function initialState(bytes /* publicSeed0 */, bytes /* publicSeed1 */) public pure returns (MetaState) {
+    return meta(State(0, new bytes(0)));
+  }
 
   function winner(MetaState metaState) public pure returns (Winner) {
     if (metaState.tag == MetaTag.NONE) {
@@ -121,6 +113,7 @@ contract DGame {
   function isMoveLegal(MetaState metaState, Move move) public pure returns (bool, uint32) {
     NextPlayers next;
     bytes32 hash;
+    uint i;
 
     next = nextPlayers(metaState);
 
@@ -156,9 +149,10 @@ contract DGame {
 
       hash = keccak256(move.data);
 
-      // XXX: https://github.com/ethereum/solidity/issues/3270
-      if (hash != metaState.data[1 + move.playerID]) {
-        return (false, REASON_WRONG_HASH);
+      for (i = 0; i < 32; i++) {
+        if (hash[i] != metaState.data[1 + 32 * move.playerID + i]) {
+          return (false, REASON_WRONG_HASH);
+        }
       }
 
       return (true, REASON_NONE);
@@ -174,9 +168,10 @@ contract DGame {
     } else if (metaState.tag == MetaTag.REVEALING_SECRET) {
       hash = keccak256(move.data);
 
-      // XXX: https://github.com/ethereum/solidity/issues/3270
-      if (hash != metaState.data[move.playerID]) {
-        return (false, REASON_WRONG_HASH);
+      for (i = 0; i < 32; i++) {
+        if (hash[i] != metaState.data[32 * move.playerID + i]) {
+          return (false, REASON_WRONG_HASH);
+        }
       }
 
       return (true, REASON_NONE);
@@ -233,12 +228,12 @@ contract DGame {
 
       } else {
         next.tag = MetaTag.REVEALING_RANDOM;
+        next.data = new bytes(65);
         next.data[0] = metaState.data[0];
 
-        // XXX: https://github.com/ethereum/solidity/issues/3270
         for (i = 0; i < 32; i++) {
-          next.data[1] |= bytes32(moves[0].data[i]) >> (8 * i);
-          next.data[2] |= bytes32(moves[1].data[i]) >> (8 * i);
+          next.data[1 + i] = moves[0].data[i];
+          next.data[33 + i] = moves[1].data[i];
         }
 
         next.state = metaState.state;
@@ -265,11 +260,11 @@ contract DGame {
 
       } else {
         next.tag = MetaTag.REVEALING_SECRET;
+        next.data = new bytes(64);
 
-        // XXX: https://github.com/ethereum/solidity/issues/3270
         for (i = 0; i < 32; i++) {
-          next.data[0] |= bytes32(moves[0].data[i]) >> (8 * i);
-          next.data[1] |= bytes32(moves[1].data[i]) >> (8 * i);
+          next.data[i] = moves[0].data[i];
+          next.data[32 + i] = moves[1].data[i];
         }
 
         next.state = metaState.state;
@@ -335,8 +330,8 @@ contract DGame {
     require(nBytes >= 8);
 
     metaState.tag = MetaTag.COMMITTING_RANDOM;
-    // XXX: https://github.com/ethereum/solidity/issues/3270
-    metaState.data[0] = bytes32(nBytes);
+    metaState.data = new bytes(1);
+    metaState.data[0] = byte(nBytes);
     metaState.state = state;
 
     return metaState;
@@ -349,22 +344,6 @@ contract DGame {
     metaState.state = state;
 
     return metaState;
-  }
-
-  function read(bytes32 b, uint i, uint n) internal pure returns (uint) {
-    uint mask;
-
-    mask = (uint(1) << n) - 1;
-
-    return uint(b >> i) & mask;
-  }
-
-  function write(bytes32 b, uint i, uint n, uint x) internal pure returns (bytes32) {
-    uint mask;
-
-    mask = (uint(1) << n) - 1;
-
-    return b & bytes32(~(mask << i)) | bytes32((x & mask) << i);
   }
 
   address private owner;

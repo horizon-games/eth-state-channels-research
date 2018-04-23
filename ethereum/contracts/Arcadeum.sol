@@ -23,16 +23,14 @@ contract Arcadeum {
     uint8 playerID;
     Player[2] players;
     Signature matchSignature;
-    // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-    SubkeySignature opponentSubkeySignature;
+    Signature opponentSubkeySignature;
   }
 
   struct Player {
     uint32 seedRating;
     // XXX: https://github.com/ethereum/solidity/issues/3270
     bytes32[PUBLIC_SEED_LENGTH] publicSeed;
-    // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-    TimestampSignature timestampSignature;
+    Signature timestampSignature;
   }
 
   struct Move {
@@ -41,20 +39,6 @@ contract Arcadeum {
   }
 
   struct Signature {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-  }
-
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  struct SubkeySignature {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-  }
-
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  struct TimestampSignature {
     uint8 v;
     bytes32 r;
     bytes32 s;
@@ -116,11 +100,10 @@ contract Arcadeum {
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function couldStopWithdrawalXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool) {
-    return couldStopWithdrawal(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return couldStopWithdrawal(timestamp, Signature(timestampV, timestampR, timestampS), Signature(subkeyV, subkeyR, subkeyS));
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function couldStopWithdrawal(uint timestamp, TimestampSignature timestampSignature, SubkeySignature) public view returns (bool) {
+  function couldStopWithdrawal(uint timestamp, Signature timestampSignature, Signature) public view returns (bool) {
     if (now >= timestamp) {
       return false;
     }
@@ -134,11 +117,10 @@ contract Arcadeum {
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function canStopWithdrawalXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public view returns (bool) {
-    return canStopWithdrawal(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return canStopWithdrawal(timestamp, Signature(timestampV, timestampR, timestampS), Signature(subkeyV, subkeyR, subkeyS));
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function canStopWithdrawal(uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public view returns (bool) {
+  function canStopWithdrawal(uint timestamp, Signature timestampSignature, Signature subkeySignature) public view returns (bool) {
     address account;
 
     account = playerAccount(timestamp, timestampSignature, subkeySignature);
@@ -148,12 +130,11 @@ contract Arcadeum {
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function stopWithdrawalXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public {
-    stopWithdrawal(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    stopWithdrawal(timestamp, Signature(timestampV, timestampR, timestampS), Signature(subkeyV, subkeyR, subkeyS));
   }
 
   // XXX: https://github.com/ethereum/solidity/issues/3199#issuecomment-365035663
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function stopWithdrawal(uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public {
+  function stopWithdrawal(uint timestamp, Signature timestampSignature, Signature subkeySignature) public {
     address account;
     uint value;
 
@@ -386,11 +367,10 @@ contract Arcadeum {
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function subkeyParentXXX(address subkey, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address) {
-    return subkeyParent(subkey, SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return subkeyParent(subkey, Signature(subkeyV, subkeyR, subkeyS));
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function subkeyParent(address subkey, SubkeySignature subkeySignature) public pure returns (address) {
+  function subkeyParent(address subkey, Signature subkeySignature) public pure returns (address) {
     bytes20 subkeyBytes;
     bytes memory subkeyHex;
     uint i;
@@ -431,20 +411,19 @@ contract Arcadeum {
   }
 
   function timestampSubkeyXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS) public pure returns (address) {
-    return timestampSubkey(timestamp, TimestampSignature(timestampV, timestampR, timestampS));
+    return timestampSubkey(timestamp, Signature(timestampV, timestampR, timestampS));
   }
 
-  function timestampSubkey(uint timestamp, TimestampSignature timestampSignature) public pure returns (address) {
+  function timestampSubkey(uint timestamp, Signature timestampSignature) public pure returns (address) {
     return ecrecover(keccak256(timestamp), timestampSignature.v, timestampSignature.r, timestampSignature.s);
   }
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function playerAccountXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address) {
-    return playerAccount(timestamp, TimestampSignature(timestampV, timestampR, timestampS), SubkeySignature(subkeyV, subkeyR, subkeyS));
+    return playerAccount(timestamp, Signature(timestampV, timestampR, timestampS), Signature(subkeyV, subkeyR, subkeyS));
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function playerAccount(uint timestamp, TimestampSignature timestampSignature, SubkeySignature subkeySignature) public pure returns (address) {
+  function playerAccount(uint timestamp, Signature timestampSignature, Signature subkeySignature) public pure returns (address) {
     return subkeyParent(timestampSubkey(timestamp, timestampSignature), subkeySignature);
   }
 
@@ -457,8 +436,7 @@ contract Arcadeum {
     return keccak256(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data);
   }
 
-  // XXX: https://github.com/ethereum/solidity/issues/3275#issuecomment-365087323
-  function moveMaker(DGame.MetaState metaState, Move move, SubkeySignature subkeySignature) public pure returns (address) {
+  function moveMaker(DGame.MetaState metaState, Move move, Signature subkeySignature) public pure returns (address) {
     bytes32 hash;
 
     hash = keccak256(stateHash(metaState), move.move.playerID, move.move.data);
@@ -466,11 +444,11 @@ contract Arcadeum {
     return subkeyParent(ecrecover(hash, move.signature.v, move.signature.r, move.signature.s), subkeySignature);
   }
 
-  function invalidateTimestamp(uint timestamp, TimestampSignature timestampSignature) private {
+  function invalidateTimestamp(uint timestamp, Signature timestampSignature) private {
     invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))] = true;
   }
 
-  function isTimestampInvalid(uint timestamp, TimestampSignature timestampSignature) private view returns (bool) {
+  function isTimestampInvalid(uint timestamp, Signature timestampSignature) private view returns (bool) {
     return invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))];
   }
 

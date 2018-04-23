@@ -103,7 +103,7 @@ contract Arcadeum {
     return couldStopWithdrawal(timestamp, Signature(timestampV, timestampR, timestampS), Signature(subkeyV, subkeyR, subkeyS));
   }
 
-  function couldStopWithdrawal(uint timestamp, Signature timestampSignature, Signature) public view returns (bool) {
+  function couldStopWithdrawal(uint timestamp, Signature timestampSignature, Signature /* subkeySignature */) public view returns (bool) {
     if (now >= timestamp) {
       return false;
     }

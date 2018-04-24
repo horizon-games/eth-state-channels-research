@@ -364,15 +364,12 @@ func (c *Client) PublicSeed(gameID uint32, secretSeed []byte) ([]byte, error) {
 }
 
 func (c *Client) MatchHash(msg *MatchVerifiedMessage) ([32]byte, error) {
-	contract := c.ArcadeumContract
-	return contract.MatchHash(
+	return c.ArcadeumContract.MatchHashXXX(
 		&bind.CallOpts{},
 		msg.GameAddress,
 		big.NewInt(msg.Timestamp),
 		msg.Accounts,
 		msg.Subkeys,
 		[2]uint32{msg.Players[0].SeedRating, msg.Players[1].SeedRating},
-		[2][]byte{msg.Players[0].PublicSeed, msg.Players[1].PublicSeed},
 	)
-
 }

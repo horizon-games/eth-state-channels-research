@@ -43,5 +43,6 @@ contract Arcadeum {
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
   function playerAccountXXX(uint timestamp, uint8 timestampV, bytes32 timestampR, bytes32 timestampS, uint8 subkeyV, bytes32 subkeyR, bytes32 subkeyS) public pure returns (address);
 
-  function matchHash(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings, bytes[2] publicSeeds) public pure returns (bytes32);
+  // XXX: encoding for 'bytes[2] publicSeeds' is broken
+  function matchHashXXX(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings) public pure returns (bytes32);
 }

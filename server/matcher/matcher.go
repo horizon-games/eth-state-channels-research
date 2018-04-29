@@ -128,20 +128,15 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 		return
 	}
 
-	var playerR, playerS, sessR, sessS [32]byte
-	copy(playerR[:], player.TimestampSig.R)
-	copy(playerS[:], player.TimestampSig.S)
-	copy(sessR[:], sess.Signature.R)
-	copy(sessS[:], sess.Signature.S)
 	canWithdraw, err := contract.CanStopWithdrawalXXX(
 		&bind.CallOpts{},
 		big.NewInt(sess.Timestamp),
 		player.TimestampSig.V,
-		playerR,
-		playerS,
+		player.TimestampSig.R,
+		player.TimestampSig.S,
 		sess.Signature.V,
-		sessR,
-		sessS)
+		sess.Signature.R,
+		sess.Signature.S)
 	if err != nil {
 		log.Printf("ERROR: Could not read CanStopWithdrawal() value from blockchain", err)
 		return
@@ -156,11 +151,11 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 			opts,
 			big.NewInt(sess.Timestamp),
 			player.TimestampSig.V,
-			playerR,
-			playerS,
+			player.TimestampSig.R,
+			player.TimestampSig.S,
 			sess.Signature.V,
-			sessR,
-			sessS)
+			sess.Signature.R,
+			sess.Signature.S)
 		if err != nil {
 			log.Printf("ERROR: failure to slash withdrawal account %s", player.Account)
 			return
@@ -448,11 +443,9 @@ func (srv *Service) BuildMatchVerifiedMessageWithSignature(s *Session) (*arcadeu
 	if err != nil {
 		return nil, err
 	}
-	msg.SignatureMatchHash = &crypto.Signature{
-		V: 27 + sig[64],
-		R: sig[0:32],
-		S: sig[32:64],
-	}
+	msg.SignatureMatchHash = &crypto.Signature{V: 27 + sig[64]}
+	copy(msg.SignatureMatchHash.R[:], sig[0:32])
+	copy(msg.SignatureMatchHash.S[:], sig[32:64])
 
 	return msg, nil
 }

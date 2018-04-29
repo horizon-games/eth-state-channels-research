@@ -17,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/horizon-games/arcadeum/server/config"
 	"github.com/horizon-games/arcadeum/server/lib/crypto"
-	"github.com/horizon-games/arcadeum/server/lib/util"
 )
 
 const (
@@ -114,40 +113,16 @@ func (c *Client) HandleWithdrawalStarted(handler IWithdrawalStartedHandler) {
 	}
 }
 
-func (c *Client) VerifySignedTimestamp(
-	req *VerifyTimestampRequest,
-	subkeySig *crypto.Signature) (common.Address, error) {
-	contract := c.ArcadeumContract
-	sigR, err := util.DecodeHexString(string(req.Signature.R))
-	if err != nil {
-		return common.Address{}, err
-	}
-	sigS, err := util.DecodeHexString(string(req.Signature.S))
-	if err != nil {
-		return common.Address{}, err
-	}
-	subkeyR, err := util.DecodeHexString(string(subkeySig.R))
-	if err != nil {
-		return common.Address{}, err
-	}
-	subkeyS, err := util.DecodeHexString(string(subkeySig.S))
-	if err != nil {
-		return common.Address{}, err
-	}
-	var r1, s1, r2, s2 [32]byte
-	copy(r1[:], sigR)
-	copy(s1[:], sigS)
-	copy(r2[:], subkeyR)
-	copy(s2[:], subkeyS)
-	return contract.ArcadeumCaller.PlayerAccountXXX(
+func (c *Client) VerifySignedTimestamp(req *VerifyTimestampRequest, subkeySig *crypto.Signature) (common.Address, error) {
+	return c.ArcadeumContract.ArcadeumCaller.PlayerAccountXXX(
 		&bind.CallOpts{},
 		big.NewInt(req.Timestamp),
 		req.Signature.V,
-		r1,
-		s1,
+		req.Signature.R,
+		req.Signature.S,
 		subkeySig.V,
-		r2,
-		s2,
+		subkeySig.R,
+		subkeySig.S,
 	)
 }
 
@@ -253,55 +228,23 @@ func (c *Client) CalculateRank(gameID uint32, secretSeed []byte) (uint32, error)
 
 // Return the address of the signer of the subkey
 func (c *Client) SubKeyParent(subkey common.Address, sig *crypto.Signature) (common.Address, error) {
-	contract := c.ArcadeumContract
-
-	r, err := util.DecodeHexString(string(sig.R))
-	if err != nil {
-		return common.BytesToAddress(make([]byte, 20)), err
-	}
-	s, err := util.DecodeHexString(string(sig.S))
-	if err != nil {
-		return common.BytesToAddress(make([]byte, 20)), err
-	}
-
-	var r32 [32]byte
-	var s32 [32]byte
-	copy(r32[:], r)
-	copy(s32[:], s)
-
-	return contract.ArcadeumCaller.SubkeyParentXXX(
+	return c.ArcadeumContract.ArcadeumCaller.SubkeyParentXXX(
 		&bind.CallOpts{},
 		subkey,
 		sig.V,
-		r32,
-		s32,
+		sig.R,
+		sig.S,
 	)
 }
 
 // Return the subkey that signed a given timestamp
 func (c *Client) TimestampSubkey(timestamp int64, sig crypto.Signature) (common.Address, error) {
-	contract := c.ArcadeumContract
-
-	r, err := util.DecodeHexString(string(sig.R))
-	if err != nil {
-		return common.BytesToAddress(make([]byte, 20)), err
-	}
-	s, err := util.DecodeHexString(string(sig.S))
-	if err != nil {
-		return common.BytesToAddress(make([]byte, 20)), err
-	}
-
-	var r32 [32]byte
-	var s32 [32]byte
-	copy(r32[:], r)
-	copy(s32[:], s)
-
-	return contract.ArcadeumCaller.TimestampSubkeyXXX(
+	return c.ArcadeumContract.ArcadeumCaller.TimestampSubkeyXXX(
 		&bind.CallOpts{},
 		big.NewInt(timestamp),
 		sig.V,
-		r32,
-		s32,
+		sig.R,
+		sig.S,
 	)
 }
 
@@ -311,14 +254,10 @@ func (c *Client) IsSecretSeedValid(gameID uint32, account common.Address, secret
 	if err != nil {
 		return false, err
 	}
-	ss, err := util.DecodeHexString(string(secretSeed))
-	if err != nil {
-		return false, err
-	}
 	return contract.DGameCaller.IsSecretSeedValid(
 		&bind.CallOpts{},
 		account,
-		ss,
+		secretSeed,
 	)
 }
 

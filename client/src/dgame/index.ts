@@ -96,15 +96,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     this.didQueueChange = false
     this.processedMoves = [undefined, undefined]
     this.playerMoves = []
-
-    this.next = (message: wsrelay.Message) => {
-      const move = JSON.parse(message.payload)
-      move.data = decodeBytes(move.data)
-      move.signature.r = decodeBytes(move.signature.r)
-      move.signature.s = decodeBytes(move.signature.s)
-      this.queueMove(new BasicMove(move))
-    }
-
+    this.next = (message: wsrelay.Message) => { this.queueMove(new BasicMove(JSON.parse(message.payload))) }
     this.error = (error: any) => {}
     this.complete = () => {}
   }
@@ -192,11 +184,8 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
     const subkeyMessage = await this.arcadeumContract.subkeyMessage(this.subkey.address)
     const subkeySignature = new Signature(await this.signer.signMessage(subkeyMessage))
 
-    const seed64 = base64(this.secretSeed)
-    const r64 = base64(subkeySignature.r)
-    const s64 = base64(subkeySignature.s)
-    const relaySignature = new wsrelay.Signature(subkeySignature.v, r64, s64)
-    this.relay = new wsrelay.Relay(this.serverAddress, seed64, relaySignature, this.subkey.address, 1)
+    const relaySignature = new wsrelay.Signature(subkeySignature.v, base64(subkeySignature.r), base64(subkeySignature.s))
+    this.relay = new wsrelay.Relay(this.serverAddress, base64(this.secretSeed), relaySignature, this.subkey.address, 1)
     this.relay.subscribe(this)
 
     const timestamp = JSON.parse((await this.relay.connectForTimestamp()).payload)
@@ -206,24 +195,16 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
       gameID: 1,
       subkey: this.subkey.address,
       timestamp: timestamp,
-      signature: {
-        v: timestampSignature.v,
-        r: base64(timestampSignature.r),
-        s: base64(timestampSignature.s)
-      }
+      signature: timestampSignature
     }), 2)
 
     const response = JSON.parse((await this.relay.connectForMatchVerified()).payload)
     response.players[0].publicSeed = unbase64(response.players[0].publicSeed)
     response.players[1].publicSeed = unbase64(response.players[1].publicSeed)
-    response.players[0].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.r)))
-    response.players[1].timestampSignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.r)))
-    response.players[0].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[0].timestampSignature.s)))
-    response.players[1].timestampSignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.players[1].timestampSignature.s)))
-    response.matchSignature.r = unbase64(response.matchSignature.r)
-    response.matchSignature.s = unbase64(response.matchSignature.s)
-    response.opponentSubkeySignature.r = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.r)))
-    response.opponentSubkeySignature.s = ethers.utils.arrayify(ethers.utils.toUtf8String(unbase64(response.opponentSubkeySignature.s)))
+    response.players[0].timestampSignature = new Signature(response.players[0].timestampSignature)
+    response.players[1].timestampSignature = new Signature(response.players[1].timestampSignature)
+    response.matchSignature = new Signature(response.matchSignature)
+    response.opponentSubkeySignature = new Signature(response.opponentSubkeySignature)
 
     this.game = response.game
     this.timestamp = response.timestamp
@@ -510,10 +491,14 @@ class BasicState implements State {
 }
 
 class BasicMove implements Move {
-  constructor(readonly move: { playerID: number, data: Uint8Array, signature?: Signature }) {
+  constructor(readonly move: { playerID: number, data: string | Uint8Array, signature?: Signature }) {
+    if (typeof move.data === `string`) {
+      move.data = unbase64(move.data)
+    }
+
     this.playerID = move.playerID
     this.data = move.data
-    this.signature = move.signature
+    this.signature = new Signature(move.signature)
   }
 
   readonly playerID: number
@@ -538,10 +523,18 @@ class BasicMove implements Move {
 
   private stateHash?: Uint8Array
   private signature?: Signature
+
+  private toJSON(): any {
+    return {
+      playerID: this.playerID,
+      data: base64(this.data),
+      signature: this.signature
+    }
+  }
 }
 
 class Signature {
-  constructor(signature?: string | Signature) {
+  constructor(signature?: string | { readonly v: number, readonly r: string | Uint8Array, readonly s: string | Uint8Array }) {
     if (typeof signature === `string`) {
       const signatureBytes = ethers.utils.arrayify(signature)
 
@@ -549,71 +542,60 @@ class Signature {
       this.r = new Uint8Array(signatureBytes.buffer, 0, 32)
       this.s = new Uint8Array(signatureBytes.buffer, 32, 32)
 
-    } else /* signature?: Signature */ {
+    } else if (signature !== undefined) {
+      this.v = signature.v
+
+      if (typeof signature.r === `string`) {
+        this.r = unbase64(signature.r)
+      } else {
+        this.r = signature.r
+      }
+
+      if (typeof signature.s === `string`) {
+        this.s = unbase64(signature.s)
+      } else {
+        this.s = signature.s
+      }
+
+    } else {
       this.v = 0
       this.r = new Uint8Array(32)
       this.s = new Uint8Array(32)
-
-      if (signature !== undefined) {
-        if (signature.hasOwnProperty(`v`)) {
-          this.v = signature.v
-        }
-
-        if (signature.hasOwnProperty(`r`)) {
-          this.r = signature.r
-        }
-
-        if (signature.hasOwnProperty(`s`)) {
-          this.s = signature.s
-        }
-      }
     }
   }
 
   readonly v: number
   readonly r: Uint8Array
   readonly s: Uint8Array
+
+  private toJSON(): any {
+    return {
+      v: this.v,
+      r: base64(this.r),
+      s: base64(this.s)
+    }
+  }
 }
 
 function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature {
   const hash = ethers.utils.solidityKeccak256(types, values)
   const signature = new ethers.SigningKey(wallet.privateKey).signDigest(hash)
 
-  return {
+  return new Signature({
     v: 27 + signature.recoveryParam,
     r: ethers.utils.padZeros(ethers.utils.arrayify(signature.r), 32),
     s: ethers.utils.padZeros(ethers.utils.arrayify(signature.s), 32)
-  }
+  })
 }
 
 function base64(data: Uint8Array): string {
-  return new Buffer(ethers.utils.hexlify(data)).toString(`base64`)
+  // XXX
+  // @ts-ignore
+  return Buffer.from(data).toString(`base64`)
 }
 
 function unbase64(data: string): Uint8Array {
-  return Uint8Array.from(Buffer.from(data, `base64`))
-}
-
-interface Bytes {
-  readonly length?: number
-  readonly [index: number]: number
-}
-
-function decodeBytes(bytes: Bytes): Uint8Array {
-  const data = [] as number[]
-
-  if (bytes.length !== undefined) {
-    for (let i = 0; i < bytes.length; i++) {
-      data.push(bytes[i])
-    }
-
-  } else {
-    for (let i = 0; bytes[i] !== undefined; i++) {
-      data.push(bytes[i])
-    }
-  }
-
-  return new Uint8Array(data)
+  return new Uint8Array(Buffer.from(data, `base64`))
 }
 
 interface Arrayish {

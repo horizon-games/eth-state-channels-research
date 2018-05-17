@@ -17,31 +17,31 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 
 ### Client
 
-1. cd client/
-2. yarn test
-3. yarn build
+1. `cd client/`
+2. `yarn test`
+3. `yarn build`
 
 
 ### Ethereum
 
-1. cd ethereum/
-2. yarn testrpc -- run in a separate terminal and import one of the private keys other than the first one into MetaMask
-3. yarn migrate
+1. `cd ethereum/`
+2. `yarn testrpc` -- run in a separate terminal and import one of the private keys other than the first one into MetaMask
+3. `yarn migrate`
 
 
 ### Server
 
-1. cd server/
-2. make run
+1. `cd server/`
+2. `make run`
 
 
 ### Running TTT example
 
-1. cd examples/ttt
-2. yarn install -- this is required because `ttt` is configured outside of the arcadeum workspace
-3. yarn build -- this will compile the TTT.sol ethereum contract
-4. yarn migrate -- migrate the contract to the ganache testrpc
-5. yarn dev -- this will start the webapp on http://localhost:3000/
+1. `cd examples/ttt/`
+2. `yarn install` -- this is required because `ttt` is configured outside of the arcadeum workspace
+3. `yarn build` -- this will compile the TTT.sol ethereum contract
+4. `yarn migrate` -- migrate the contract to the ganache testrpc
+5. `yarn dev` -- this will start the webapp on http://localhost:3000/
 
 
 # TODO, Build Optimizations

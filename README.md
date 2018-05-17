@@ -26,6 +26,7 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 
 1. `cd ethereum/`
 2. `yarn ganache` -- run in a separate terminal and import one of the private keys other than the first one into MetaMask
+  - (`yarn ganache:docker` will run a patched ganache with [EIP 170](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-170.md) disabled)
 3. `yarn migrate`
 
 

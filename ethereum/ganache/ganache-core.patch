@@ -1,0 +1,49 @@
+diff --git a/lib/blockchain_double.js b/lib/blockchain_double.js
+index 5190f59..4ce797b 100644
+--- a/lib/blockchain_double.js
++++ b/lib/blockchain_double.js
+@@ -96,7 +96,8 @@ BlockchainDouble.prototype.initialize = function(accounts, callback) {
+           }
+         },
+         enableHomestead: true,
+-        activatePrecompiles: true
++        activatePrecompiles: true,
++        allowUnlimitedContractSize: true
+       });
+ 
+       if (options.debug == true) {
+@@ -294,7 +295,7 @@ BlockchainDouble.prototype.putAccount = function(account, address, callback) {
+ 
+   address = utils.toBuffer(address);
+ 
+-  this.vm.stateManager._putAccount(address, account, function(err) {
++  this.vm.stateManager.putAccount(address, account, function(err) {
+     if (err) return callback(err);
+ 
+     self.vm.stateManager.cache.flush(callback);
+diff --git a/lib/utils/forkedblockchain.js b/lib/utils/forkedblockchain.js
+index 5e2d272..c48c991 100644
+--- a/lib/utils/forkedblockchain.js
++++ b/lib/utils/forkedblockchain.js
+@@ -317,7 +317,7 @@ ForkedBlockchain.prototype.putCode = function(address, value, callback) {
+         if (err) return callback(err);
+ 
+         // Ensure the cache updates as well.
+-        self.vm.stateManager._putAccount(address, account, callback);
++        self.vm.stateManager.putAccount(address, account, callback);
+       });
+     });
+   })
+diff --git a/package.json b/package.json
+index 5369130..6c93cd5 100644
+--- a/package.json
++++ b/package.json
+@@ -20,7 +20,7 @@
+     "ethereumjs-block": "~1.2.2",
+     "ethereumjs-tx": "^1.3.0",
+     "ethereumjs-util": "^5.1.5",
+-    "ethereumjs-vm": "2.3.3",
++    "ethereumjs-vm": "link:../ethereumjs-vm",
+     "ethereumjs-wallet": "~0.6.0",
+     "fake-merkle-patricia-tree": "~1.0.1",
+     "heap": "~0.2.6",

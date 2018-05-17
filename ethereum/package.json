@@ -15,7 +15,8 @@
     "migrate": "truffle migrate --network ganache",
     "staging:migrate": "truffle migrate --network rinkeby",
     "prepare-abi": "echo TODO",
-    "testrpc": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 -v"
+    "testrpc": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000",
+    "testrpc:verbose": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 -v"
   },
   "devDependencies": {
     "ganache-cli": "6.1.0",

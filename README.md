@@ -25,7 +25,7 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 ### Ethereum
 
 1. `cd ethereum/`
-2. `yarn testrpc` -- run in a separate terminal and import one of the private keys other than the first one into MetaMask
+2. `yarn ganache` -- run in a separate terminal and import one of the private keys other than the first one into MetaMask
 3. `yarn migrate`
 
 

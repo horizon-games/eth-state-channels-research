@@ -400,7 +400,7 @@ contract Arcadeum {
       subkeyHex[2 * i + 1] = byte(lo);
     }
 
-    hash = keccak256(ETH_SIGN_PREFIX, MESSAGE_LENGTH, MESSAGE_PREFIX, PLAYER_PREFIX, subkeyHex);
+    hash = keccak256(abi.encodePacked(ETH_SIGN_PREFIX, MESSAGE_LENGTH, MESSAGE_PREFIX, PLAYER_PREFIX, subkeyHex));
 
     return ecrecover(hash, subkeySignature.v, subkeySignature.r, subkeySignature.s);
   }
@@ -411,7 +411,7 @@ contract Arcadeum {
   }
 
   function timestampSubkey(uint timestamp, Signature timestampSignature) public pure returns (address) {
-    return ecrecover(keccak256(timestamp), timestampSignature.v, timestampSignature.r, timestampSignature.s);
+    return ecrecover(keccak256(abi.encodePacked(timestamp)), timestampSignature.v, timestampSignature.r, timestampSignature.s);
   }
 
   // XXX: abigen: Failed to generate ABI binding: unsupported arg type: tuple
@@ -425,27 +425,27 @@ contract Arcadeum {
 
   // XXX: encoding for 'bytes[2] publicSeeds' is broken
   function matchHashXXX(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings) public pure returns (bytes32) {
-    return keccak256(game, timestamp, accounts[0], accounts[1], subkeys[0], subkeys[1], seedRatings[0], seedRatings[1]);
+    return keccak256(abi.encodePacked(game, timestamp, accounts[0], accounts[1], subkeys[0], subkeys[1], seedRatings[0], seedRatings[1]));
   }
 
   function stateHash(DGame.MetaState metaState) public pure returns (bytes32) {
-    return keccak256(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data);
+    return keccak256(abi.encodePacked(metaState.nonce, metaState.tag, metaState.data, metaState.state.tag, metaState.state.data));
   }
 
   function moveMaker(DGame.MetaState metaState, Move move, Signature subkeySignature) public pure returns (address) {
     bytes32 hash;
 
-    hash = keccak256(stateHash(metaState), move.move.playerID, move.move.data);
+    hash = keccak256(abi.encodePacked(stateHash(metaState), move.move.playerID, move.move.data));
 
     return subkeyParent(ecrecover(hash, move.signature.v, move.signature.r, move.signature.s), subkeySignature);
   }
 
   function invalidateTimestamp(uint timestamp, Signature timestampSignature) private {
-    invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))] = true;
+    invalidatedTimestamps[keccak256(abi.encodePacked(timestamp, timestampSubkey(timestamp, timestampSignature)))] = true;
   }
 
   function isTimestampInvalid(uint timestamp, Signature timestampSignature) private view returns (bool) {
-    return invalidatedTimestamps[keccak256(timestamp, timestampSubkey(timestamp, timestampSignature))];
+    return invalidatedTimestamps[keccak256(abi.encodePacked(timestamp, timestampSubkey(timestamp, timestampSignature)))];
   }
 
   function matchMaker(Match aMatch, address sender) private pure returns (address) {

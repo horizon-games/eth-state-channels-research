@@ -326,7 +326,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
         throw Error(`move not signed by opponent`)
       }
 
-      const { isMoveLegal: isMoveLegal, reason: reason } = await state.isMoveLegal(move)
+      const { isMoveLegal, reason } = await state.isMoveLegal(move)
 
       if (!isMoveLegal) {
         if (await this.arcadeumContract.canReportCheater(this, state.metaState, move)) {
@@ -505,7 +505,7 @@ class BasicMove implements Move {
   readonly data: Uint8Array
 
   async sign(subkey: ethers.Wallet, state: BasicState): Promise<void> {
-    const { isMoveLegal: isMoveLegal, reason: reason } = await state.isMoveLegal(this)
+    const { isMoveLegal, reason } = await state.isMoveLegal(this)
 
     if (!isMoveLegal) {
       throw Error(`illegal player move: reason ${reason}`)

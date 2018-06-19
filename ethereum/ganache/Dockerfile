@@ -19,7 +19,7 @@ RUN ["yarn", "link"]
 WORKDIR /home/node
 RUN ["git", "clone", "https://github.com/trufflesuite/ganache-core.git"]
 WORKDIR /home/node/ganache-core
-RUN ["git", "checkout", "757097084581dd100c2aaebc3f18dffae31b5338"]
+RUN ["git", "checkout", "v2.1.2"]
 RUN ["git", "apply", "../ganache-core.patch"]
 RUN ["yarn"]
 RUN ["yarn", "link", "ethereumjs-vm"]
@@ -28,7 +28,7 @@ RUN ["yarn", "link"]
 WORKDIR /home/node
 RUN ["git", "clone", "https://github.com/trufflesuite/ganache-cli.git"]
 WORKDIR /home/node/ganache-cli
-RUN ["git", "checkout", "32a622023749f50d5b9b8ce14f23dd36d9787b3d"]
+RUN ["git", "checkout", "v6.1.3"]
 RUN ["yarn", "link", "ethereumjs-vm"]
 RUN ["yarn", "link", "ganache-core"]
 RUN ["yarn"]

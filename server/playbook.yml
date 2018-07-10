@@ -1,0 +1,45 @@
+- hosts: "{{ host | default('dev') }}"
+
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    - name: create destination directory
+      file:
+        path: /usr/local/arcadeum-server
+        state: directory
+
+    - name: upload docker files
+      synchronize:
+        src: ./
+        dest: /usr/local/arcadeum-server
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--verbose"
+
+    - name: run redis
+      docker_container:
+        image: redis
+        name: redis
+        ports:
+          - 0.0.0.0:6379:6379
+        state: started
+
+    - name: docker build image
+      docker_image:
+        path: /usr/local/arcadeum-server
+        name: horizon-games/arcadeum-server
+        state: present
+        force: yes
+
+    - name: docker run container
+      docker_container:
+        image: horizon-games/arcadeum-server
+        name: arcadeum-server
+        volumes:
+          /usr/local/arcadeum-server/etc/arcadeum-server.dev.conf:/data/etc/arcadeum-server.conf
+        ports:
+          - 127.0.0.1:8000:8000
+        state: started

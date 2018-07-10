@@ -1,0 +1,44 @@
+- hosts: "{{ host | default('dev') }}"
+
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+
+    - name: create destination directory
+      file:
+        path: /usr/local/ganache
+        state: directory
+
+    - name: upload files
+      synchronize:
+        src: ./
+        dest: /usr/local/ganache
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--verbose"
+          - "--include=./***"
+          - "--exclude=node_modules"
+
+    - name: build docker image
+      docker_image:
+        rm: yes
+        path: /usr/local/ganache
+        name: horizon-games/ganache
+        state: present
+        force: yes
+
+    - name: run docker container
+      docker_container:
+        image: horizon-games/ganache
+        name: ganache
+        ports:
+          - 127.0.0.1:8545:8545
+        state: started
+        command: yarn ganache:verbose
+
+    - name: run migrations
+      become_user: root
+      command: docker exec ganache bash -c 'cd /app && yarn migrate'

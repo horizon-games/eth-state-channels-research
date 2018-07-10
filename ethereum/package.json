@@ -15,16 +15,13 @@
     "migrate": "truffle migrate --network ganache",
     "staging:migrate": "truffle migrate --network rinkeby",
     "prepare-abi": "echo TODO",
-    "ganache": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000",
-    "ganache:verbose": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 -v",
-    "ganache:docker": "(yarn ganache:docker:kill 2> /dev/null || true) && sudo docker build -t arcadeum/ganache-cli ganache && sudo docker run -p 8545:8545 arcadeum/ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000",
-    "ganache:docker:verbose": "(yarn ganache:docker:kill 2> /dev/null || true) && sudo docker build -t arcadeum/ganache-cli ganache && sudo docker run -p 8545:8545 arcadeum/ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 -v",
-    "ganache:docker:kill": "sudo docker rm -f `sudo docker ps -a -q -f expose=8545`",
+    "ganache": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize",
+    "ganache:verbose": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize -v",
     "testrpc": "echo '*** DEPRECATED: please use \"yarn ganache\" instead ***' && yarn ganache",
     "testrpc:verbose": "echo '*** DEPRECATED: please use \"yarn ganache:verbose\" instead ***' && yarn ganache:verbose"
   },
   "devDependencies": {
-    "ganache-cli": "6.1.0",
+    "ganache-cli": "6.1.6",
     "truffle": "^4.1.7",
     "truffle-hdwallet-provider": "^0.0.3"
   }

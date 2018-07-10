@@ -1,3 +1,4 @@
+DEPLOY_TARGET ?= dev
 SHELL=bash -o pipefail
 TEST_FLAGS ?=
 
@@ -66,7 +67,7 @@ run:
 arcadeum-server:
 	$(call run,arcadeum-server)
 
-test: 
+test:
 	@$(MAKE) -j1 test-matcher
 
 test-matcher:
@@ -131,3 +132,6 @@ dep: $(GOPATH)/bin/dep
 
 dep-status: $(GOPATH)/bin/dep
 	dep status
+
+deploy:
+	ansible-playbook -i ../../SkyWeaver/ansible.hosts -v playbook.yml -e "host=$(DEPLOY_TARGET)"

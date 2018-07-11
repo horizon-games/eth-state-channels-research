@@ -1,9 +1,9 @@
 FROM node:9-jessie
 
-RUN mkdir /app
+RUN mkdir -p /app/arcadeum/ethereum
 
-COPY . /app
+COPY . /app/arcadeum/ethereum
 
-WORKDIR /app
+WORKDIR /app/arcadeum/ethereum
 
-RUN cd /app && yarn
+RUN cd /app/arcadeum/ethereum && yarn

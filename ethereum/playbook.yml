@@ -22,6 +22,13 @@
           - "--include=./***"
           - "--exclude=node_modules"
 
+    - name: remove docker image
+      docker_image:
+        path: /usr/local/ganache
+        name: horizon-games/ganache
+        state: absent
+        force: yes
+
     - name: build docker image
       docker_image:
         rm: yes
@@ -29,16 +36,3 @@
         name: horizon-games/ganache
         state: present
         force: yes
-
-    - name: run docker container
-      docker_container:
-        image: horizon-games/ganache
-        name: ganache
-        ports:
-          - 127.0.0.1:8545:8545
-        state: started
-        command: yarn ganache:verbose
-
-    - name: run migrations
-      become_user: root
-      command: docker exec ganache bash -c 'cd /app && yarn migrate'

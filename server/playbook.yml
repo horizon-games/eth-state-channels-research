@@ -36,6 +36,7 @@
 
     - name: docker run container
       docker_container:
+        restart: yes
         image: horizon-games/arcadeum-server
         name: arcadeum-server
         volumes:

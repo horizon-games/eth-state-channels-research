@@ -277,7 +277,7 @@ func (c *Client) GetStakedStatus(from common.Address) (StakedStatus, error) {
 		return UNKNOWN, err
 	}
 	log.Println("price balance min_stake", price, balance, price*float64(c.MinStakeUSD))
-	if float64(balance.Uint64()) > price*float64(c.MinStakeUSD) {
+	if float64(balance.Uint64()) >= price*float64(c.MinStakeUSD) {
 		return STAKED, nil
 	} else if balance.Uint64() > 0 {
 		return STAKED_INSUFFICIENT_BALANCE, nil

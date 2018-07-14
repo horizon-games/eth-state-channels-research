@@ -40,7 +40,7 @@
         image: horizon-games/arcadeum-server
         name: arcadeum-server
         volumes:
-          /usr/local/arcadeum-server/etc/arcadeum-server.dev.conf:/data/etc/arcadeum-server.conf
+          /usr/local/arcadeum-server/etc/:/data/etc/
         ports:
           - 127.0.0.1:8000:8000
         state: started

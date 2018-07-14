@@ -511,7 +511,7 @@ func (srv *Service) PrivKey() *ecdsa.PrivateKey {
 	path := fmt.Sprintf("%s/%s", srv.ENV.WorkingDir, srv.Config.PrivKeyFile)
 	privkey, err := gethcrypto.LoadECDSA(path)
 	if err != nil {
-		log.Fatalf("Invalid private key")
+		log.Fatalf("Invalid private key: %v", err)
 	}
 	return privkey
 }

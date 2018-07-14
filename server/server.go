@@ -4,13 +4,13 @@ import (
 	"log"
 	"net/http"
 
+	"fmt"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
 	"github.com/horizon-games/arcadeum/server/config"
 	"github.com/horizon-games/arcadeum/server/matcher"
 	"github.com/pkg/errors"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-	"fmt"
 )
 
 type Server struct {
@@ -105,6 +105,8 @@ func (s *Server) HandleConnections(w http.ResponseWriter, r *http.Request) {
 				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 					break
 				}
+				log.Printf("client is gone")
+				return
 			} else {
 				relay <- &MessageRequest{PlayerConn: ws, Message: &msg}
 			}

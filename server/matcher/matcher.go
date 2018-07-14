@@ -16,6 +16,8 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"strings"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	gethcrypto "github.com/ethereum/go-ethereum/crypto"
@@ -24,7 +26,6 @@ import (
 	"github.com/horizon-games/arcadeum/server/lib/crypto"
 	"github.com/horizon-games/arcadeum/server/lib/util"
 	"github.com/pborman/uuid"
-	"strings"
 )
 
 type Code int
@@ -262,6 +263,7 @@ func (s *Service) Authenticate(token *Token) (*MatchResponse, error) {
 		return nil, errors.New(fmt.Sprintf("Error validating stake.", err))
 	}
 	if status == arcadeum.STAKED {
+		log.Println("Seed information: GameID: %d, address: %s, seed byte length: %d, seed: %s", token.GameID, address, len(token.Seed), string(token.Seed))
 		owner, err := s.ArcClient.IsSecretSeedValid(token.GameID, address, token.Seed)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Error verifying seed ownership.", err))

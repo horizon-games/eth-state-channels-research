@@ -10,3 +10,4 @@ COPY . /app/arcadeum/ethereum
 WORKDIR /app/arcadeum/ethereum
 
 RUN cd /app/arcadeum/ethereum && yarn
+

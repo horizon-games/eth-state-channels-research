@@ -15,7 +15,7 @@
     "migrate": "truffle migrate --network ganache",
     "staging:migrate": "truffle migrate --network rinkeby",
     "prepare-abi": "echo TODO",
-    "ganache": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize",
+    "ganache": "ganache-cli -d -h 0.0.0.0 -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize",
     "ganache:verbose": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize -v",
     "testrpc": "echo '*** DEPRECATED: please use \"yarn ganache\" instead ***' && yarn ganache",
     "testrpc:verbose": "echo '*** DEPRECATED: please use \"yarn ganache:verbose\" instead ***' && yarn ganache:verbose"

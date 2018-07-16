@@ -1,12 +1,12 @@
-FROM node:10-alpine
+FROM trufflesuite/ganache-cli:latest
 
 RUN apk add --no-cache --update bash make git \
-	python g++ coreutils
+  python g++ coreutils
 
 RUN mkdir -p /app/arcadeum/ethereum
 
 COPY . /app/arcadeum/ethereum
 
-WORKDIR /app/arcadeum/ethereum
-
-RUN cd /app/arcadeum/ethereum && yarn
+RUN cd /app/arcadeum/ethereum && \
+  yarn && \
+  yarn build

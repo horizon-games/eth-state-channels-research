@@ -10,4 +10,4 @@ docker-build:
 	docker build -t horizon-games/ganache .
 
 deploy:
-	ansible-playbook -i ../../SkyWeaver/ansible.hosts -v playbook.yml -e "host=$(DEPLOY_TARGET)"
+	ansible-playbook -i ../../SkyWeaver/conf/ansible.hosts -v playbook.yml -e "host=$(DEPLOY_TARGET)"

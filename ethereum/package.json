@@ -1,28 +1,28 @@
 {
-  "name": "arcadeum-contracts",
-  "version": "0.1.0",
-  "description": "Arcadeum.network Ethereum Smart Contracts",
-  "repository": "https://github.com/horizon-games/arcadeum",
-  "license": "(c) 2018-present Horizon Blockchain Games Inc.",
-  "keywords": [
-    "arcadeum",
-    "dgame",
-    "ethereum",
-    "horizongames"
-  ],
-  "scripts": {
-    "build": "rm -rf ./build && truffle compile",
-    "migrate": "truffle migrate --network ganache",
-    "staging:migrate": "truffle migrate --network rinkeby",
-    "prepare-abi": "echo TODO",
-    "ganache": "ganache-cli -d -h 0.0.0.0 -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize",
-    "ganache:verbose": "ganache-cli -d -h 0.0.0.0 -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize -v",
-    "testrpc": "echo '*** DEPRECATED: please use \"yarn ganache\" instead ***' && yarn ganache",
-    "testrpc:verbose": "echo '*** DEPRECATED: please use \"yarn ganache:verbose\" instead ***' && yarn ganache:verbose"
-  },
-  "devDependencies": {
-    "ganache-cli": "6.1.6",
-    "truffle": "^4.1.7",
-    "truffle-hdwallet-provider": "^0.0.3"
-  }
+    "name": "arcadeum-contracts",
+    "version": "0.1.0",
+    "description": "Arcadeum.network Ethereum Smart Contracts",
+    "repository": "https://github.com/horizon-games/arcadeum",
+    "license": "(c) 2018-present Horizon Blockchain Games Inc.",
+    "keywords": [
+        "arcadeum",
+        "dgame",
+        "ethereum",
+        "horizongames"
+    ],
+    "scripts": {
+        "build": "rm -rf ./build && truffle compile",
+        "migrate": "truffle migrate --network ganache",
+        "staging:migrate": "truffle migrate --network rinkeby",
+        "prepare-abi": "echo TODO",
+        "ganache": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize -h 0.0.0.0",
+        "ganache:verbose": "ganache-cli -d -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize -h 0.0.0.0 -v",
+        "testrpc": "echo '*** DEPRECATED: please use \"yarn ganache\" instead ***' && yarn ganache",
+        "testrpc:verbose": "echo '*** DEPRECATED: please use \"yarn ganache:verbose\" instead ***' && yarn ganache:verbose"
+    },
+    "devDependencies": {
+        "ganache-cli": "6.1.6",
+        "truffle": "^4.1.7",
+        "truffle-hdwallet-provider": "^0.0.3"
+    }
 }

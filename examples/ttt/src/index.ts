@@ -24,58 +24,77 @@ async function createMatch(): Promise<void> {
     console.log(aMove)
     console.log(nextState)
 
-    switch (match.playerID) {
-    case 0:
-      switch ((nextState as any).metaState.state.tag) {
-      case 0:
-        match.queueMove(await match.createMove(new Uint8Array([0])))
-        break
-
-      case 2:
-        match.queueMove(await match.createMove(new Uint8Array([8])))
-        break
-
-      case 4:
-        match.queueMove(await match.createMove(new Uint8Array([6])))
-        break
-
-      case 6:
-        match.queueMove(await match.createMove(new Uint8Array([7])))
-        break
-      }
-
-      break
-
-    case 1:
-      switch ((nextState as any).metaState.state.tag) {
-      case 1:
-        match.queueMove(await match.createMove(new Uint8Array([4])))
-        break
-
-      case 3:
-        match.queueMove(await match.createMove(new Uint8Array([2])))
-        break
-
-      case 5:
-        match.queueMove(await match.createMove(new Uint8Array([3])))
-        break
-      }
-
-      break
-    }
+    render((nextState as any).metaState.state.data)
   })
 
   console.log(match)
 
-  return match.ready
+  await match.ready
+
+  window[`match`] = match
 }
 
-(window as any).deposit = deposit;
-(window as any).startWithdrawal = startWithdrawal;
-(window as any).finishWithdrawal = finishWithdrawal;
-(window as any).createMatch = createMatch
+function render(squares: number[]): void {
+  const canvas = document.getElementById(`canvas`) as HTMLCanvasElement
+  const { width, height } = canvas
+  const context = canvas.getContext(`2d`)
 
-window.setInterval(async () => {
+  if (context === null) {
+    throw Error(`no canvas context`)
+  }
+
+  context.fillStyle = `white`
+  context.fillRect(0, 0, width, height)
+
+  context.strokeStyle = `black`
+  context.lineWidth = 5
+  context.lineCap = `round`
+  context.lineJoin = `round`
+  context.beginPath()
+  context.moveTo((1 / 3) * width, 10)
+  context.lineTo((1 / 3) * width, height - 10)
+  context.moveTo((2 / 3) * width, 10)
+  context.lineTo((2 / 3) * width, height - 10)
+  context.moveTo(10, (1 / 3) * height)
+  context.lineTo(width - 10, (1 / 3) * height)
+  context.moveTo(10, (2 / 3) * height)
+  context.lineTo(width - 10, (2 / 3) * height)
+  context.stroke()
+
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      switch (squares[3 * i + j]) {
+      case 1:
+        context.strokeStyle = `red`
+        context.lineWidth = 10
+        context.beginPath()
+        context.moveTo((j / 3) * width + 30, (i / 3) * height + 30)
+        context.lineTo(((j + 1) / 3) * width - 30, ((i + 1) / 3) * height - 30)
+        context.moveTo(((j + 1) / 3) * width - 30, (i / 3) * height + 30)
+        context.lineTo((j / 3) * width + 30, ((i + 1) / 3) * height - 30)
+        context.stroke()
+        break
+
+      case 2:
+        context.strokeStyle = `blue`
+        context.lineWidth = 10
+        context.beginPath()
+        context.ellipse(((j + 0.5) / 3) * width, ((i + 0.5) / 3) * height, width / 6 - 30, height / 6 - 30, 0, 0, 2 * Math.PI)
+        context.stroke()
+        break
+      }
+    }
+  }
+}
+
+window[`deposit`] = deposit
+window[`startWithdrawal`] = startWithdrawal
+window[`finishWithdrawal`] = finishWithdrawal
+window[`createMatch`] = createMatch
+
+let renderCanvas = true
+
+setInterval(async () => {
   (document.getElementById(`currentTime`))!.textContent = new Date().toLocaleString()
 
   const account = await signer.getAddress()
@@ -87,4 +106,22 @@ window.setInterval(async () => {
   arcadeumContract.withdrawalTime(account).then((withdrawalTime) => {
     (document.getElementById(`withdrawalTime`))!.textContent = new Date(1000 * withdrawalTime.toNumber()).toLocaleString()
   })
+
+  if (renderCanvas && document.getElementById(`canvas`)) {
+    renderCanvas = false
+
+    render([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    const canvas = document.getElementById(`canvas`) as HTMLCanvasElement
+    canvas.addEventListener(`click`, async (event: MouseEvent) => {
+      const match = window[`match`]
+      const { width, height } = canvas
+
+      if (match === undefined) {
+        return
+      }
+
+      match.queueMove(await match.createMove(new Uint8Array([3 * Math.floor(event.offsetY / (height / 3)) + Math.floor(event.offsetX / (width / 3))])))
+    })
+  }
 }, 1000)

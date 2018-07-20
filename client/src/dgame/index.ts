@@ -33,7 +33,7 @@ export class Game {
     this.gameContract = new ethers.Contract(gameAddress, GameContract.abi, this.signer)
   }
 
-  async deposit(wei: ethers.utils.BigNumber): Promise<string> {
+  async deposit(wei: ethers.utils.types.BigNumber): Promise<string> {
     return (await this.arcadeumContract.deposit({ value: wei })).hash
   }
 
@@ -44,7 +44,7 @@ export class Game {
   private readonly arcadeumContract: ethers.Contract
   private readonly gameContract: ethers.Contract
   private readonly serverAddress: string
-  private readonly signer: ethers.Wallet | ethers.providers.Web3Signer
+  private readonly signer: ethers.Wallet | ethers.providers.JsonRpcSigner
 }
 
 export interface Match {
@@ -89,7 +89,7 @@ export interface NextStateCallback {
 }
 
 class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
-  constructor(private readonly secretSeed: Uint8Array, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract, private readonly serverAddress: string, private readonly signer: ethers.Wallet | ethers.providers.Web3Signer) {
+  constructor(private readonly secretSeed: Uint8Array, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract, private readonly serverAddress: string, private readonly signer: ethers.Wallet | ethers.providers.JsonRpcSigner) {
     this.callbacks = []
     this.queue = []
     this.isRunning = true
@@ -152,7 +152,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
   readonly complete: () => void
 
   private game?: string
-  private timestamp?: ethers.utils.BigNumber
+  private timestamp?: ethers.utils.types.BigNumber
   private players?: [Player, Player]
   private matchSignature?: Signature
   private opponentSubkeySignature?: Signature
@@ -581,11 +581,23 @@ function sign(wallet: ethers.Wallet, types: string[], values: any[]): Signature 
   const hash = ethers.utils.solidityKeccak256(types, values)
   const signature = new ethers.SigningKey(wallet.privateKey).signDigest(hash)
 
-  return new Signature({
-    v: 27 + signature.recoveryParam,
-    r: ethers.utils.padZeros(ethers.utils.arrayify(signature.r), 32),
-    s: ethers.utils.padZeros(ethers.utils.arrayify(signature.s), 32)
-  })
+  if (signature.v) {
+    return new Signature({
+      v: signature.v,
+      r: ethers.utils.padZeros(ethers.utils.arrayify(signature.r), 32),
+      s: ethers.utils.padZeros(ethers.utils.arrayify(signature.s), 32)
+    })
+
+  } else if (signature.recoveryParam) {
+    return new Signature({
+      v: 27 + signature.recoveryParam,
+      r: ethers.utils.padZeros(ethers.utils.arrayify(signature.r), 32),
+      s: ethers.utils.padZeros(ethers.utils.arrayify(signature.s), 32)
+    })
+
+  } else {
+    throw Error(`no recovery id`)
+  }
 }
 
 function base64(data: Uint8Array): string {

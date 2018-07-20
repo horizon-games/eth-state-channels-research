@@ -18,7 +18,7 @@ let entry = {
 module.exports = {
   entry,
   output: {
-    path: path.resolve(__dirname, '../../dist/umd'),
+    path: path.resolve(__dirname, './dist/umd'),
     filename: '[name].js',
     libraryTarget: 'umd',
     library: 'arcadeum',
@@ -63,7 +63,8 @@ module.exports = {
     new ForkTsCheckerWebpackPlugin({
       async: false,
       memoryLimit: 4096,
-      checkSyntacticErrors: true
+      checkSyntacticErrors: true,
+      tsconfig: './tsconfig.cjs.json'
     })
   ]
 }

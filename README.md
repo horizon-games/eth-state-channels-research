@@ -31,8 +31,9 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 
 ### Server
 
-1. `cd server/`
-2. `make run`
+1. Install redis-server and have it running in the background
+2. `cd server/`
+3. `make run`
 
 
 ### Running TTT example

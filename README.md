@@ -9,7 +9,7 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 
 **Tools:**
 
-1. Install node v8.x or v9.x
+1. Install node v8.x or v10.x
 2. `yarn install`
 3. `yarn bootstrap`
 4. `yarn build`
@@ -48,9 +48,8 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 # TODO, Build Optimizations
 
 * ethereum/
-  * dedicated abi.json files for each contract
+  * dedicated abi.json files for each contract to reduce bundle filesize
 
 * client/
-  * why is filesize so large? minified at 544 kb for such a small code-base
-  * analyze bundle size
+  * optimize dist bundle filesize
   * potentially refactor out rxjs if turns out to be adding weight

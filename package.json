@@ -4,7 +4,7 @@
     "client",
     "ethereum"
   ],
-  "license": "none",
+  "license": "AGPL-3.0",
   "scripts": {
     "bootstrap": "yarn clean && yarn install && lerna bootstrap",
     "clean": "lerna clean --yes; rm -rf ./node_modules",

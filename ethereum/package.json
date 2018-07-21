@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Arcadeum.network Ethereum Smart Contracts",
   "repository": "https://github.com/horizon-games/arcadeum",
-  "license": "(c) 2018-present Horizon Blockchain Games Inc.",
+  "license": "AGPL-3.0",
   "keywords": [
     "arcadeum",
     "dgame",

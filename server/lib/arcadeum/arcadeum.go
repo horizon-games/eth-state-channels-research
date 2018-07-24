@@ -621,7 +621,7 @@ type ArcadeumBalanceChanged struct {
 
 // FilterBalanceChanged is a free log retrieval operation binding the contract event 0xeadc109e76de61f30acdeb8f317d29d2bfc33fb375d996835e421c72aabb7170.
 //
-// Solidity: event balanceChanged(account indexed address)
+// Solidity: e balanceChanged(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) FilterBalanceChanged(opts *bind.FilterOpts, account []common.Address) (*ArcadeumBalanceChangedIterator, error) {
 
 	var accountRule []interface{}
@@ -638,7 +638,7 @@ func (_Arcadeum *ArcadeumFilterer) FilterBalanceChanged(opts *bind.FilterOpts, a
 
 // WatchBalanceChanged is a free log subscription operation binding the contract event 0xeadc109e76de61f30acdeb8f317d29d2bfc33fb375d996835e421c72aabb7170.
 //
-// Solidity: event balanceChanged(account indexed address)
+// Solidity: e balanceChanged(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) WatchBalanceChanged(opts *bind.WatchOpts, sink chan<- *ArcadeumBalanceChanged, account []common.Address) (event.Subscription, error) {
 
 	var accountRule []interface{}
@@ -755,7 +755,7 @@ type ArcadeumCheaterReported struct {
 
 // FilterCheaterReported is a free log retrieval operation binding the contract event 0x423574c10f85c584a34398d1162a81db5d7f6c1482f7e9788a562d5f9368aebb.
 //
-// Solidity: event cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
+// Solidity: e cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
 func (_Arcadeum *ArcadeumFilterer) FilterCheaterReported(opts *bind.FilterOpts, account []common.Address, subkey []common.Address, timestamp []*big.Int) (*ArcadeumCheaterReportedIterator, error) {
 
 	var accountRule []interface{}
@@ -780,7 +780,7 @@ func (_Arcadeum *ArcadeumFilterer) FilterCheaterReported(opts *bind.FilterOpts, 
 
 // WatchCheaterReported is a free log subscription operation binding the contract event 0x423574c10f85c584a34398d1162a81db5d7f6c1482f7e9788a562d5f9368aebb.
 //
-// Solidity: event cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
+// Solidity: e cheaterReported(account indexed address, subkey indexed address, timestamp indexed uint256)
 func (_Arcadeum *ArcadeumFilterer) WatchCheaterReported(opts *bind.WatchOpts, sink chan<- *ArcadeumCheaterReported, account []common.Address, subkey []common.Address, timestamp []*big.Int) (event.Subscription, error) {
 
 	var accountRule []interface{}
@@ -905,7 +905,7 @@ type ArcadeumRewardClaimed struct {
 
 // FilterRewardClaimed is a free log retrieval operation binding the contract event 0x1b187dff96b38a8cbbbdbbc7758627a4bc7248425c7aecef38ac84a63107837f.
 //
-// Solidity: event rewardClaimed(account indexed address, subkey indexed address, timestamp indexed uint256)
+// Solidity: e rewardClaimed(account indexed address, subkey indexed address, timestamp indexed uint256)
 func (_Arcadeum *ArcadeumFilterer) FilterRewardClaimed(opts *bind.FilterOpts, account []common.Address, subkey []common.Address, timestamp []*big.Int) (*ArcadeumRewardClaimedIterator, error) {
 
 	var accountRule []interface{}
@@ -930,7 +930,7 @@ func (_Arcadeum *ArcadeumFilterer) FilterRewardClaimed(opts *bind.FilterOpts, ac
 
 // WatchRewardClaimed is a free log subscription operation binding the contract event 0x1b187dff96b38a8cbbbdbbc7758627a4bc7248425c7aecef38ac84a63107837f.
 //
-// Solidity: event rewardClaimed(account indexed address, subkey indexed address, timestamp indexed uint256)
+// Solidity: e rewardClaimed(account indexed address, subkey indexed address, timestamp indexed uint256)
 func (_Arcadeum *ArcadeumFilterer) WatchRewardClaimed(opts *bind.WatchOpts, sink chan<- *ArcadeumRewardClaimed, account []common.Address, subkey []common.Address, timestamp []*big.Int) (event.Subscription, error) {
 
 	var accountRule []interface{}
@@ -1053,7 +1053,7 @@ type ArcadeumWithdrawalStarted struct {
 
 // FilterWithdrawalStarted is a free log retrieval operation binding the contract event 0x3ab48c8f15bc703088e6dd5631e3d30792f37e03cbdf5011637a8915b0d0bb47.
 //
-// Solidity: event withdrawalStarted(account indexed address)
+// Solidity: e withdrawalStarted(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) FilterWithdrawalStarted(opts *bind.FilterOpts, account []common.Address) (*ArcadeumWithdrawalStartedIterator, error) {
 
 	var accountRule []interface{}
@@ -1070,7 +1070,7 @@ func (_Arcadeum *ArcadeumFilterer) FilterWithdrawalStarted(opts *bind.FilterOpts
 
 // WatchWithdrawalStarted is a free log subscription operation binding the contract event 0x3ab48c8f15bc703088e6dd5631e3d30792f37e03cbdf5011637a8915b0d0bb47.
 //
-// Solidity: event withdrawalStarted(account indexed address)
+// Solidity: e withdrawalStarted(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) WatchWithdrawalStarted(opts *bind.WatchOpts, sink chan<- *ArcadeumWithdrawalStarted, account []common.Address) (event.Subscription, error) {
 
 	var accountRule []interface{}
@@ -1185,7 +1185,7 @@ type ArcadeumWithdrawalStopped struct {
 
 // FilterWithdrawalStopped is a free log retrieval operation binding the contract event 0xd002c0e157290359441a1dfa197f28329220c0e1d378d1974e9a87d3a6480633.
 //
-// Solidity: event withdrawalStopped(account indexed address)
+// Solidity: e withdrawalStopped(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) FilterWithdrawalStopped(opts *bind.FilterOpts, account []common.Address) (*ArcadeumWithdrawalStoppedIterator, error) {
 
 	var accountRule []interface{}
@@ -1202,7 +1202,7 @@ func (_Arcadeum *ArcadeumFilterer) FilterWithdrawalStopped(opts *bind.FilterOpts
 
 // WatchWithdrawalStopped is a free log subscription operation binding the contract event 0xd002c0e157290359441a1dfa197f28329220c0e1d378d1974e9a87d3a6480633.
 //
-// Solidity: event withdrawalStopped(account indexed address)
+// Solidity: e withdrawalStopped(account indexed address)
 func (_Arcadeum *ArcadeumFilterer) WatchWithdrawalStopped(opts *bind.WatchOpts, sink chan<- *ArcadeumWithdrawalStopped, account []common.Address) (event.Subscription, error) {
 
 	var accountRule []interface{}

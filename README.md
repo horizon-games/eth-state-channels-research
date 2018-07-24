@@ -45,6 +45,11 @@ Arcadeum is a collection of Solidity smart contracts as well as a TypeScript lib
 5. `yarn dev` -- this will start the webapp on http://localhost:3000/
 
 
+### Building docs
+
+Building the docs requires PlantUML and pdflatex.
+
+
 # TODO, Build Optimizations
 
 * ethereum/

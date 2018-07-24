@@ -1,0 +1,95 @@
+@startuml
+
+actor Winner as winner
+actor "Loser/Cheater" as loser
+participant Matcher as matcher
+participant "Local EVM" as local
+participant "Global EVM" as global
+
+== Entering Arcadeum ==
+
+winner -[#blue]> global: deposit
+
+...
+
+loser -[#blue]> global: deposit
+
+== Requesting a match ==
+
+winner -> matcher: game address, subkey address, winner.sign(subkey address), secret seed
+matcher -> local: assert winner not withdrawing
+matcher -> local: assert balance[winner] - required stake * active requests > required stake
+matcher -> local: assert secret seed valid
+matcher -> local: calculate secret seed rating
+
+...
+
+loser -> matcher: game address, subkey address, loser.sign(subkey address), secret seed
+matcher -> local: assert loser not withdrawing
+matcher -> local: assert balance[loser] - required stake * active requests > required stake
+matcher -> local: assert secret seed valid
+matcher -> local: calculate secret seed rating
+
+== Starting a match ==
+
+matcher -> winner: timestamp
+matcher -> loser: timestamp
+winner -> matcher: winner.subkey.sign(timestamp)
+loser -> matcher: loser.subkey.sign(timestamp)
+matcher -> local: compute public seeds from secret seeds
+matcher -> winner: timestamp signatures, subkey signatures, public seeds, matcher.sign(game address, timestamp, accounts, public seeds)
+matcher -> loser: timestamp signatures, subkey signatures, public seeds, matcher.sign(game address, timestamp, accounts, public seeds)
+
+== Playing a match ==
+
+winner -> loser
+loser -> winner
+winner -> loser
+loser -> winner
+
+...
+
+alt winner won
+
+loser -> winner
+winner -> loser
+winner -> global: game address, timestamp, loser's timestamp signature, loser's subkey signature, public seeds, matcher signature, game state, loser's last signed move, winner's winning moves, winner's secret seed
+global -[#blue]-> winner: reward
+
+else cheater cheated
+
+loser -> winner
+winner -> global: game address, timestamp, cheater's timestamp signature, cheater's subkey signature, public seeds, matcher signature, game state, cheater's last signed illegal move
+global -[#blue]-> loser: slash
+
+end
+
+== Exiting Arcadeum ==
+
+alt no game in progress
+
+winner -> global: start withdrawal
+local -> matcher: withdrawal event
+matcher -> local: assert no active timestamp
+
+...
+
+winner -> global: finish withdrawal
+global -[#blue]> winner: refund
+
+else game in progress
+
+loser -> global: start withdrawal
+local -> matcher: withdrawal event
+matcher -> local: assert no active timestamp
+matcher -> global: timestamp, timestamp signature, subkey signature
+local -> loser: withdrawal cancelled event
+loser -[#blue]> matcher: slash cost of withdrawal cancellation
+
+...
+
+loser ->x global: finish withdrawal
+
+end
+
+@enduml

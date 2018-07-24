@@ -1,6 +1,6 @@
 # Arcadeum
 
-Welcome to the ARCADEUM.network
+Welcome to the ARCADEUM.net
 
 Arcadeum is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
 

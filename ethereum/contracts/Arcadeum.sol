@@ -423,9 +423,8 @@ contract Arcadeum {
     return subkeyParent(timestampSubkey(timestamp, timestampSignature), subkeySignature);
   }
 
-  // XXX: encoding for 'bytes[2] publicSeeds' is broken
-  function matchHashXXX(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings) public pure returns (bytes32) {
-    return keccak256(abi.encodePacked(game, timestamp, accounts[0], accounts[1], subkeys[0], subkeys[1], seedRatings[0], seedRatings[1]));
+  function matchHash(DGame game, uint timestamp, address[2] accounts, address[2] subkeys, uint32[2] seedRatings, bytes[2] publicSeeds) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(game, timestamp, accounts[0], accounts[1], subkeys[0], subkeys[1], seedRatings[0], seedRatings[1], publicSeeds[0], publicSeeds[1]));
   }
 
   function stateHash(DGame.MetaState metaState) public pure returns (bytes32) {
@@ -463,7 +462,7 @@ contract Arcadeum {
     seedRatings[1] = aMatch.players[1].seedRating;
     publicSeeds[0] = aMatch.players[0].publicSeed;
     publicSeeds[1] = aMatch.players[1].publicSeed;
-    hash = matchHashXXX(aMatch.game, aMatch.timestamp, accounts, subkeys, seedRatings);
+    hash = matchHash(aMatch.game, aMatch.timestamp, accounts, subkeys, seedRatings, publicSeeds);
 
     return ecrecover(hash, aMatch.matchSignature.v, aMatch.matchSignature.r, aMatch.matchSignature.s);
   }

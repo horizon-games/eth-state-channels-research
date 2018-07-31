@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"fmt"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
@@ -124,10 +125,10 @@ func (s *Server) FindMatch(token *matcher.Token, conn *websocket.Conn) {
 func OnMessage(ws *websocket.Conn, messages chan *matcher.Message) {
 	for {
 		msg := <-messages
-		log.Printf("GOT PUBLISHED MESSAGE, sending to client: %s", msg)
+		log.Printf("GOT PUBLISHED MESSAGE, sending to client: %v", msg)
 		err := ws.WriteJSON(msg)
 		if err != nil {
-			log.Printf("Error sending message to client over websocket %s", err.Error())
+			log.Printf("Error sending message to client over websocket %v", err.Error())
 		}
 		if msg.Code == matcher.TERMINATE {
 			break

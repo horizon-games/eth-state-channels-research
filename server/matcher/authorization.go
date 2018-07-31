@@ -31,14 +31,14 @@ func AddTokenContext(next http.Handler) http.Handler {
 		}
 		decoded, err := base64.StdEncoding.DecodeString(tokenb64)
 		if err != nil {
-			log.Printf("decode error: %s", err.Error())
+			log.Printf("decode error: %v", err.Error())
 			writeUnauthorized(w)
 			return
 		}
 		token := &Token{}
 		er := json.Unmarshal(decoded, &token)
 		if er != nil {
-			log.Printf("parse error: %s", er.Error())
+			log.Printf("parse error: %v", er.Error())
 			writeUnauthorized(w)
 			return
 		}

@@ -6,17 +6,15 @@ import (
 	"crypto/rand"
 	"encoding/asn1"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
-	"time"
-
-	"encoding/json"
 	"strconv"
-
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -106,11 +104,11 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 	account := event.Account
 	sess, err := s.GetSessionByAccount(&account)
 	if err != nil {
-		log.Println("ERROR: Could not find session %s", err.Error())
+		log.Printf("ERROR: Could not find session %s\n", err.Error())
 		return
 	}
 	if sess.IsEmpty() {
-		log.Println("ERROR: empty session for account %s", account.String())
+		log.Printf("ERROR: empty session for account %s\n", account.String())
 		return
 	}
 	contract := s.ArcClient.ArcadeumContract
@@ -125,7 +123,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 
 	player, err := sess.FindPlayerByAccount(account)
 	if err != nil {
-		log.Printf("ERROR: could not find account %s in session", account)
+		log.Printf("ERROR: could not find account %s in session\n", account)
 		return
 	}
 
@@ -139,7 +137,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 		sess.Signature.R,
 		sess.Signature.S)
 	if err != nil {
-		log.Printf("ERROR: Could not read CanStopWithdrawal() value from blockchain", err)
+		log.Println("ERROR: Could not read CanStopWithdrawal() value from blockchain", err)
 		return
 	}
 	if !canWithdraw { // Slash player
@@ -158,7 +156,7 @@ func (s *Service) OnWithdrawalStarted(event *arcadeum.ArcadeumWithdrawalStarted)
 			sess.Signature.R,
 			sess.Signature.S)
 		if err != nil {
-			log.Printf("ERROR: failure to slash withdrawal account %s", player.Account)
+			log.Printf("ERROR: failure to slash withdrawal account %s\n", player.Account)
 			return
 		}
 	}
@@ -263,7 +261,8 @@ func (s *Service) Authenticate(token *Token) (*MatchResponse, error) {
 		return nil, errors.New(fmt.Sprintf("Error validating stake.", err))
 	}
 	if status == arcadeum.STAKED {
-		log.Println("Seed information: GameID: %d, address: %s, seed byte length: %d, seed: %s", token.GameID, address, len(token.Seed), string(token.Seed))
+		seedHex := fmt.Sprintf("%x", token.Seed)
+		log.Printf("Seed information: GameID: %d, address: %s, seed byte length: %d, seed: %s\n", token.GameID, address.Hex(), len(token.Seed), seedHex)
 		owner, err := s.ArcClient.IsSecretSeedValid(token.GameID, address, token.Seed)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Error verifying seed ownership.", err))

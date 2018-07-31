@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Arcadeum.network Ethereum Smart Contracts",
   "repository": "https://github.com/horizon-games/arcadeum",
-  "license": "AGPL-3.0",
+  "license": "MIT",
   "keywords": [
     "arcadeum",
     "dgame",
@@ -23,6 +23,6 @@
   "devDependencies": {
     "ganache-cli": "6.1.6",
     "truffle": "^4.1.13",
-    "truffle-hdwallet-provider": "^0.0.5"
+    "truffle-hdwallet-provider": "^0.0.6"
   }
 }

@@ -4,7 +4,7 @@
     "client",
     "ethereum"
   ],
-  "license": "AGPL-3.0",
+  "license": "MIT",
   "scripts": {
     "bootstrap": "yarn clean && yarn install && lerna bootstrap",
     "clean": "lerna clean --yes; rm -rf ./node_modules",
@@ -26,10 +26,10 @@
   "devDependencies": {
     "jest": "^23.4.1",
     "lerna": "^2.9.1",
-    "prettier": "^1.13.7",
+    "prettier": "^1.14.0",
     "ts-jest": "^23.0.1",
     "tslint": "^5.11.0",
-    "typescript": "2.9.2"
+    "typescript": "3.0.1"
   },
   "jest": {
     "globals": {

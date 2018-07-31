@@ -2,8 +2,9 @@ package matcher
 
 import (
 	"encoding/json"
-	"github.com/horizon-games/arcadeum/server/lib/util"
 	"log"
+
+	"github.com/horizon-games/arcadeum/server/lib/util"
 )
 
 const (
@@ -23,18 +24,18 @@ func NewPubSubManager(smgr *SessionManager) *PubSubManager {
 }
 
 func (mgr *PubSubManager) Publish(channel string, msg Message) error {
-	log.Printf("Attempting to send message %s to channel %s", msg, channel)
+	log.Printf("Attempting to send message %v to channel %v\n", msg, channel)
 	msgJson, err := util.Jsonify(msg)
 	if err != nil {
-		log.Printf("Error jsonifying message %s", err.Error())
+		log.Printf("Error jsonifying message %s\n", err.Error())
 		return err
 	}
 	count, err := mgr.RedisClient.Publish(channel, msgJson).Result()
 	if err != nil {
-		log.Printf("Error sending message to channel %s, %s", channel, err.Error())
+		log.Printf("Error sending message to channel %v, %v\n", channel, err.Error())
 		return err
 	}
-	log.Printf("%d messages broadcast to channel %s", count, channel)
+	log.Printf("%d messages broadcast to channel %v\n", count, channel)
 	return nil
 }
 

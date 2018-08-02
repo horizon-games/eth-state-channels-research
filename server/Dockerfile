@@ -23,4 +23,4 @@ COPY --from=builder /go/src/github.com/horizon-games/arcadeum/server/bin/* /usr/
 EXPOSE 8000
 
 # TODO: make this path configurable or fix playbook
-CMD ["/usr/bin/arcadeum-server", "-config=/data/etc/arcadeum-server.dev.conf"]
+CMD ["/usr/bin/arcadeum-server", "-config=/data/etc/arcadeum-server.conf"]

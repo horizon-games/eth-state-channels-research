@@ -21,6 +21,3 @@ RUN apk add --no-cache --update ca-certificates tzdata
 COPY --from=builder /go/src/github.com/horizon-games/arcadeum/server/bin/* /usr/bin/
 
 EXPOSE 8000
-
-# TODO: make this path configurable or fix playbook
-CMD ["/usr/bin/arcadeum-server", "-config=/data/etc/arcadeum-server.dev.conf"]

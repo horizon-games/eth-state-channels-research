@@ -2,6 +2,12 @@ DEPLOY_TARGET ?= dev
 SHELL=bash -o pipefail
 TEST_FLAGS ?=
 
+ARCADEUM_SERVER_IMAGE		?= arcadeum/server
+
+GIT_BRANCH				?= $(shell git rev-parse --abbrev-ref HEAD)
+GIT_SHORTHASH			= $(shell git rev-parse --short=8 HEAD)
+DOCKER_TAG				= $(shell echo "${GIT_SHORTHASH}_${GIT_BRANCH}")
+
 all:
 	@echo "***************************************************************************"
 	@echo "**                      DGame Server Build Tool                          **"
@@ -135,3 +141,10 @@ dep-status: $(GOPATH)/bin/dep
 
 deploy:
 	ansible-playbook -i ../../SkyWeaver/config/ansible.hosts -v playbook.yml -e "host=$(DEPLOY_TARGET)"
+
+docker-image:
+	docker build -t $(ARCADEUM_SERVER_IMAGE) -f ./Dockerfile .
+
+docker-push: docker-image
+	docker tag $(ARCADEUM_SERVER_IMAGE) $(ARCADEUM_SERVER_IMAGE):$(DOCKER_TAG) && \
+	docker push $(ARCADEUM_SERVER_IMAGE):$(DOCKER_TAG)

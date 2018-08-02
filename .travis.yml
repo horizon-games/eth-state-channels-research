@@ -1,0 +1,18 @@
+matrix:
+  include:
+
+#
+# SkyWeaver API
+#
+    - language: go
+      go:
+        - "1.10.x"
+      sudo: required
+      before_script:
+        - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        - export GIT_BRANCH=$TRAVIS_BRANCH
+      script:
+        - (cd server && make docker-push)
+
+notifications:
+  email: false

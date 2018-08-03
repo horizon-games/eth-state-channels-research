@@ -1,12 +1,12 @@
-DEPLOY_TARGET ?= dev
-SHELL=bash -o pipefail
-TEST_FLAGS ?=
+SHELL                   = bash -o pipefail
+DEPLOY_TARGET           ?= dev
+TEST_FLAGS              ?=
 
-ARCADEUM_SERVER_IMAGE		?= arcadeum/server
+ARCADEUM_SERVER_IMAGE   ?= arcadeum/server
 
-GIT_BRANCH				?= $(shell git rev-parse --abbrev-ref HEAD)
-GIT_SHORTHASH			= $(shell git rev-parse --short=8 HEAD)
-DOCKER_TAG				= $(shell echo "${GIT_SHORTHASH}_${GIT_BRANCH}")
+GIT_BRANCH              ?= $(shell git rev-parse --abbrev-ref HEAD)
+GIT_SHORTHASH           = $(shell git rev-parse --short=8 HEAD)
+DOCKER_TAG              = $(shell echo "${GIT_SHORTHASH}_${GIT_BRANCH}")
 
 all:
 	@echo "***************************************************************************"

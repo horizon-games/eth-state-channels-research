@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"encoding/binary"
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,13 +12,10 @@ import (
 )
 
 func buildService() *matcher.Service {
-	gopath := os.Getenv("GOPATH")
 	service := matcher.NewService(
-		&config.ENVConfig{
-			WorkingDir: fmt.Sprintf("%s/%s", gopath, "src/github.com/horizon-games/arcadeum/server/"),
-		},
+		&config.ENVConfig{},
 		&config.MatcherConfig{
-			PrivKeyFile: "etc/keys/ec-secp256k1-priv.key",
+			PrivKeyFile: "./etc/keys/ec-secp256k1-priv.key",
 		},
 		&config.ETHConfig{
 			NodeURL: "http://localhost:8545",
@@ -37,7 +32,7 @@ func TestVerifySignature(t *testing.T) {
 	service := buildService()
 	compact, _ := matcher.Compact("bits", "and", "bytes")
 	hash := crypto.Keccak256(compact)
-	path := fmt.Sprintf("%s/%s", service.ENV.WorkingDir, service.Config.PrivKeyFile)
+	path := service.Config.PrivKeyFile
 	privkey, _ := crypto.LoadECDSA(path)
 	r, s, _ := service.SignElliptic("bits", "and", "bytes")
 	if !ecdsa.Verify(&privkey.PublicKey, hash, r, s) {

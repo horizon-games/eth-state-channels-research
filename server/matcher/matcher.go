@@ -236,7 +236,7 @@ func (s *Service) Reconnect(token *Token) (bool, error) {
 func (s *Service) FindMatch(token *Token) {
 	reconnection, err := s.Reconnect(token)
 	if err != nil {
-		s.PublishToSubKey(token.SubKey, NewTerminateMessage(fmt.Sprintf("failure finding match, disconnecting", err.Error())))
+		s.PublishToSubKey(token.SubKey, NewTerminateMessage(fmt.Sprintf("failure finding match, disconnecting: %s", err.Error())))
 		return
 	}
 	if reconnection {
@@ -258,21 +258,21 @@ func (s *Service) Authenticate(token *Token) (*MatchResponse, error) {
 	}
 	status, err := s.ArcClient.GetStakedStatus(address)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error validating stake.", err))
+		return nil, errors.New(fmt.Sprintf("Error validating stake: %v", err))
 	}
 	if status == arcadeum.STAKED {
 		seedHex := fmt.Sprintf("%x", token.Seed)
 		log.Printf("Seed information: GameID: %d, address: %s, seed byte length: %d, seed: %s\n", token.GameID, address.Hex(), len(token.Seed), seedHex)
 		owner, err := s.ArcClient.IsSecretSeedValid(token.GameID, address, token.Seed)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Error verifying seed ownership.", err))
+			return nil, errors.New(fmt.Sprintf("Error verifying seed ownership: %v", err))
 		}
 		if !owner {
 			return nil, errors.New("Invalid seed ownership.")
 		}
 		rank, err := s.ArcClient.CalculateRank(token.GameID, token.Seed)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Error calculating rank.", err))
+			return nil, errors.New(fmt.Sprintf("Error calculating rank: %v", err))
 		}
 		return &MatchResponse{
 			Account: address,
@@ -507,7 +507,7 @@ func (srv *Service) SignElliptic(inputs ...interface{}) (r, s *big.Int, err erro
 }
 
 func (srv *Service) PrivKey() *ecdsa.PrivateKey {
-	path := fmt.Sprintf("%s/%s", srv.ENV.WorkingDir, srv.Config.PrivKeyFile)
+	path := srv.Config.PrivKeyFile
 	privkey, err := gethcrypto.LoadECDSA(path)
 	if err != nil {
 		log.Fatalf("Invalid private key: %v", err)

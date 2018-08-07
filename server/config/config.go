@@ -16,7 +16,6 @@ type ENVConfig struct {
 	TLSEnabled  bool   `toml:"tls_enabled"`
 	TLSCertFile string `toml:"tls_cert_file"`
 	TLSKeyFile  string `toml:"tls_key_file"`
-	WorkingDir  string `toml:"working_dir"`
 }
 
 type MatcherConfig struct {

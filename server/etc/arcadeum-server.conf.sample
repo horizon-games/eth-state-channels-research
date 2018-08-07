@@ -7,15 +7,6 @@ tls_enabled   = false
 tls_cert_file = "./etc/certs/localhost.crt"
 tls_key_file  = "./etc/certs/localhost.key"
 
-# Working directory of the server/
-#
-# Usually this will just be $GOPATH/src/github.com/horizon-games/arcadeum/server/
-#
-# TODO: we should deprecate this option altogether to simplify the configuration
-# and instead require files to be absolute paths or make it an optional base_dir
-# defaulting to "/"
-working_dir   = ""
-
 [matcher]
 priv_key_file  = "etc/keys/ec-secp256k1-priv.key"
 

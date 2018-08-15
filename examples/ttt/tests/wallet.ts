@@ -6,9 +6,9 @@ let provider
 const cfg = config[process.env.NODE_ENV]
 
 if (cfg.network === 'ganache') {
-  provider = new ethers.JsonRpcProvider(cfg.jsonRpcUrl)
+  provider = new ethers.providers.JsonRpcProvider(cfg.jsonRpcUrl)
 } else if (cfg.network === 'rinkeby') {
-  provider = new ethers.InfuraProvider(ethers.utils.getNetwork('rinkeby'), cfg.infuraApiToken)
+  provider = new ethers.providers.InfuraProvider(ethers.utils.getNetwork('rinkeby'), cfg.infuraApiToken)
 }
 
 const wallet1 = new ethers.Wallet(cfg.wallet1Password, provider)

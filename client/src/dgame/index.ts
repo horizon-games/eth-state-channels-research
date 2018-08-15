@@ -25,7 +25,7 @@ export class Game {
 
     } else {
       const web3 = (window as any)[`web3`]
-      const provider = new ethers.Web3Provider(web3.currentProvider)
+      const provider = new ethers.providers.Web3Provider(web3.currentProvider)
       this.signer = provider.getSigner()
     }
 
@@ -33,7 +33,7 @@ export class Game {
     this.gameContract = new ethers.Contract(gameAddress, GameContract.abi, this.signer)
   }
 
-  async deposit(wei: ethers.utils.BigNumber): Promise<string> {
+  async deposit(wei: ethers.BigNumber): Promise<string> {
     return (await this.arcadeumContract.deposit({ value: wei })).hash
   }
 
@@ -44,7 +44,7 @@ export class Game {
   private readonly arcadeumContract: ethers.Contract
   private readonly gameContract: ethers.Contract
   private readonly serverAddress: string
-  private readonly signer: ethers.Wallet | ethers.types.JsonRpcSigner
+  private readonly signer: ethers.Wallet | ethers.providers.JsonRpcSigner
 }
 
 export interface Match {
@@ -89,7 +89,7 @@ export interface NextStateCallback {
 }
 
 class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
-  constructor(private readonly secretSeed: Uint8Array, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract, private readonly serverAddress: string, private readonly signer: ethers.Wallet | ethers.types.JsonRpcSigner) {
+  constructor(private readonly secretSeed: Uint8Array, private readonly arcadeumContract: ethers.Contract, private readonly gameContract: ethers.Contract, private readonly serverAddress: string, private readonly signer: ethers.Wallet | ethers.providers.JsonRpcSigner) {
     this.callbacks = []
     this.queue = []
     this.isRunning = true
@@ -152,7 +152,7 @@ class BasicMatch implements Match, rxjs.Observer<wsrelay.Message> {
   readonly complete: () => void
 
   private game?: string
-  private timestamp?: ethers.utils.BigNumber
+  private timestamp?: ethers.BigNumber
   private players?: [Player, Player]
   private matchSignature?: Signature
   private opponentSubkeySignature?: Signature

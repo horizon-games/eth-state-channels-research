@@ -13,6 +13,7 @@
   "scripts": {
     "build": "rm -rf ./build && truffle compile",
     "migrate": "truffle migrate --network local --verbose-rpc",
+    "dev:migrate": "truffle migrate --network dev --verbose-rpc",
     "staging:migrate": "truffle migrate --network rinkeby",
     "prepare-abi": "echo TODO",
     "ganache": "ganache-cli -d -h 0.0.0.0 -e 1000000000 -g 1 -l 4000000000000000 --allowUnlimitedContractSize",

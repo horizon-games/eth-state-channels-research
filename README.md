@@ -1,8 +1,6 @@
-# Arcadeum
+# Ethereum State Channel Research
 
-Welcome to the ARCADEUM.net
-
-Arcadeum is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity.
+Enclosed is a collection of Solidity smart contracts as well as a TypeScript library for verifying turn-based games implemented as finite state machines in Solidity. This was in fact the original Arcadeum provably-fair game logic design, which includes a fully working tic-tac-toe game as a state channel. We've since progressed beyond this research to focus on WASM-based blockchain like EWASM, Substrate and others. Stay tuned for future publications of our latest research and we hope you enjoy this repo. However, this research is still relevent and can be utilized to build a token transfer design or other simple state updates. Through our experimentation we determined writing complex game logic in Solidity in a channel design isn't ideal and although it's possible for basic games, the constructions become complex with layers of machinery and its more important to have a game be cryptoeconomically secure than cryptographically secure. 
 
 
 ## Usage / Dev
